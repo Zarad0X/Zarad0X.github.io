@@ -17,13 +17,17 @@ const projects = (await getCollection("projects"))
         Projects
       </div>
       <ul class="animate flex flex-col gap-4">
-        {
+        {projects.length > 0 ? (
           projects.map((project) => (
             <li>
               <ArrowCard entry={project}/>
             </li>
           ))
-        }
+        ) : (
+          <li class="opacity-75">
+            No projects yet. Updates coming soon.
+          </li>
+        )}
       </ul>
     </div>
   </Container>

@@ -6,6 +6,7 @@ import { dateRange } from "@lib/utils";
 import { WORK } from "@consts";
 
 const collection = (await getCollection("work"))
+  .filter(work => !work.data.draft)
   .sort((a, b) => new Date(b.data.dateStart).valueOf() - new Date(a.data.dateStart).valueOf());
 
 const work = await Promise.all(
@@ -23,24 +24,32 @@ const work = await Promise.all(
         Work
       </div>
       <ul class="flex flex-col space-y-4">
-        { 
+        {work.length > 0 ? (
           work.map(entry => (
-            <li class="animate">
-              <div class="text-sm opacity-75">
-                {dateRange(entry.data.dateStart, entry.data.dateEnd)}
-              </div>
-              <div class="font-semibold text-black dark:text-white">
-                {entry.data.company}
-              </div>
-              <div class="text-sm opacity-75">
-                {entry.data.role}
+            <li class="animate space-y-2">
+              <div class="grid gap-1 md:grid-cols-[1fr_auto] md:items-start md:gap-4">
+                <div>
+                  <div class="font-semibold text-black dark:text-white">
+                    {entry.data.company}
+                  </div>
+                  <div class="text-sm opacity-75">
+                    {entry.data.role}
+                  </div>
+                </div>
+                <div class="text-sm opacity-75 md:text-right">
+                  {dateRange(entry.data.dateStart, entry.data.dateEnd)}
+                </div>
               </div>
               <article>
                 <entry.Content />
               </article>
             </li>
           ))
-        }
+        ) : (
+          <li class="animate opacity-75">
+            No work entries yet. Updates coming soon.
+          </li>
+        )}
       </ul>
 <!-- 
       <ul class="animate flex flex-col gap-4">
