@@ -2,7 +2,7 @@
 
 Personal academic website and portfolio built with Astro, Tailwind, and TypeScript.
 
-Explore more   [here](https://zarad0x.github.io/)
+Explore more   [ here ](https://zarad0x.github.io/)
 
 ## Sections
 
