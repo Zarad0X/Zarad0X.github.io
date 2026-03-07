@@ -1,64 +1,64 @@
-![Astro Nano](_astro_nano.png)
+# Han Zhang - Personal Website
 
-Astro Nano is a static, minimalist, lightweight, lightning fast portfolio and blog theme.
+Personal academic website and portfolio built with Astro, Tailwind, and TypeScript.
 
-Built with Astro, Tailwind and Typescript, an no frameworks.
+Explore more on [text](https://zarad0x.github.io/)
 
-It was designed as an even more minimal theme than my popular theme [Astro Sphere](https://github.com/markhorn-dev/astro-sphere)
+## Sections
 
-## 🚀 Deploy your own
+- Home
+- Work Experience
+- Projects
+- Blog
 
-[![Deploy with Vercel](_deploy_vercel.svg)](https://vercel.com/new/clone?repository-url=https://github.com/markhorn-dev/astro-nano)  [![Deploy with Netlify](_deploy_netlify.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/markhorn-dev/astro-nano)
+## Project Structure
 
-## 📋 Features
+```text
+src/
+  consts.ts                 # Site name, metadata, socials
+  pages/
+    index.astro             # Homepage copy
+    work/index.astro
+    projects/index.astro
+    blog/index.astro
+  content/
+    work/*.md               # Work entries
+    projects/*/index.md     # Project entries
+    blog/*/index.md|mdx     # Blog posts
+```
 
-- ✅ 100/100 Lighthouse performance
-- ✅ Responsive
-- ✅ Accessible
-- ✅ SEO-friendly
-- ✅ Typesafe
-- ✅ Minimal style
-- ✅ Light/Dark Theme
-- ✅ Animated UI
-- ✅ Tailwind styling
-- ✅ Auto generated sitemap
-- ✅ Auto generated RSS Feed
-- ✅ Markdown support
-- ✅ MDX Support (components in your markdown)
+## Content Editing
 
-## 💯 Lighthouse score
-![Astro Nano Lighthouse Score](_lighthouse.png)
+- Global site info: `src/consts.ts`
+- Homepage intro: `src/pages/index.astro`
+- Work entries: `src/content/work/*.md`
+- Project entries: `src/content/projects/*/index.md`
+- Blog posts: `src/content/blog/*/index.md` or `index.mdx`
 
-## 🕊️ Lightweight
-No frameworks or added bulk
+Set `draft: false` to publish an entry, `draft: true` to hide it.
 
-## ⚡︎ Fast
-Rendered in ~40ms on localhost
+## Local Development
 
-## 📄 Configuration
+```bash
+npm install
+npm run dev
+```
 
-The blog posts on the demo serve as the documentation and configuration.
+Open `http://localhost:4321`.
 
-## 💻 Commands
+## Build and Preview
 
-All commands are run from the root of the project, from a terminal:
+```bash
+npm run build
+npm run preview
+```
 
-Replace npm with your package manager of choice. `npm`, `pnpm`, `yarn`, `bun`, etc
+## Scripts
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run dev:network`     | Starts local dev server on local network         |
-| `npm run sync`            | Generates TypeScript types for all Astro modules.|
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run preview:network` | Preview build on local network                   |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-| `npm run lint`            | Run ESLint                                       |
-| `npm run lint:fix`        | Auto-fix ESLint issues                           |
-
-## 🏛️ License
-
-MIT
+- `npm run dev` - start dev server
+- `npm run dev:network` - start dev server on local network
+- `npm run build` - type-check and production build
+- `npm run preview` - preview production build
+- `npm run preview:network` - preview on local network
+- `npm run lint` - lint project
+- `npm run lint:fix` - auto-fix lint issues
