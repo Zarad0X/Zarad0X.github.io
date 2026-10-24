@@ -1,190 +1,189 @@
 ---
-title: "瞬息全宇宙"
-description: "一个 AI 专业 final-year 本科生，关于科研、PhD、焦虑与生活的一些阶段性想法。"
+title: "Everything Everywhere All at Once"
+description: "Notes from a final-year AI undergrad on research, PhD applications, anxiety, and not postponing life."
 date: "Oct 24 2026"
----
---A final-year ug In the Thick of AI，SI & robotics
-
-作为一个 AI 专业的 final-year 本科生，idk 是幸运还是不幸，正好赶上了人类历史上也许最快的一次科技爆发。说实话，这远说不上容易：到处 seeking opportunities，做一个又一个选择，等待别人的判断，接受各种评价体系的打分。无论是精力还是 mental，都被消耗得很厉害。所以这段时间，我一边自己反复想，一边向外学习，也和我的 AI agent 聊了很多。
-
-我把一些想法整理在这里，一是给自己留个记录，二是觉得可能有人和我处在类似的阶段。它们不是什么结论，也算不上一篇 polished 的文章，更像一份阶段性的随笔，或者说一些 key points 的集合。
-
+lang: "en"
+translationKey: "everything-everywhere"
 ---
 
-## Part I. Research、PhD & Future
+*— A final-year UG in the thick of AI, SI & robotics*
+
+As a final-year undergrad majoring in AI, I happen to have landed (idk if that's lucky or unlucky) right in the middle of what may be the fastest technological explosion in human history. Honestly, it's been far from easy: seeking opportunities everywhere, making one choice after another, waiting for other people's judgment, getting scored by all kinds of evaluation systems. It drains both my energy and my mental bandwidth. So over the past while, I've been thinking things over on my own, learning from others, and talking a lot with my AI agent.
+
+I'm putting some of those thoughts here, partly as a record for myself, and partly because someone out there might be at a similar stage. These aren't conclusions, and this isn't a polished essay either. It's more like a snapshot of where I am right now, a collection of notes and key points.
+
+---
+
+## Part I. Research, PhD & Future
 
 ### 1. Research Game ≠ Publication Game ≠ Resource Game
 
-聊天时我们谈到了 CV 和 Robotics 领域这几年的一些结构性变化：论文数量暴涨，注意力越来越稀缺，资源向头部集中，马太效应也越来越明显。
+In those chats we talked about some structural shifts in CV and robotics over the past few years: the number of papers exploding, attention becoming scarcer, resources concentrating at the top, and the Matthew effect becoming more and more obvious.
 
-但我觉得有必要区分三个游戏：
+But I think it's worth separating three games:
 
-- **Research Game**：探索未知，解决真正重要的问题。
-- **Publication Game**：发论文、积累引用、争取学术认可。
-- **Resource Game**：获得资金、算力、设备、人才与合作机会。
+- **Research Game**: exploring the unknown and solving problems that truly matter.
+- **Publication Game**: publishing papers, accumulating citations, earning academic recognition.
+- **Resource Game**: securing funding, compute, equipment, talent, and collaborations.
 
-这三者有交集，但并不完全相同。
+They overlap, but they're not the same thing.
 
-这里并不是想评判哪个 Game 好、哪个不好，而且现实中也很难只置身于其中某一个。更重要的是清楚where u are、需要什么、why u play，并且记住：一个游戏里的评价，并不能决定你在另一个游戏里的价值。
+The point isn't to judge which game is good or bad, and in reality it's hard to stand in only one of them anyway. What matters more is knowing where u are, what you need, and why u play. And remembering that how you're rated in one game doesn't determine your worth in another.
 
 ### 2. PhD as an Investment, Not an Identity
 
-一个好的 PhD 项目，价值不只在于学位、论文数量或导师的名气，而在于它能不能提供成长为独立研究者所需要的条件：优秀的指导、算力和资源、高水平的合作者，以及探索自己感兴趣问题的自由。
+The value of a good PhD program isn't just the degree, the paper count, or the advisor's fame. It's whether the program gives you what you need to grow into an independent researcher: good mentorship, compute and resources, strong collaborators, and the freedom to explore problems you actually care about.
 
-所以读 PhD 的核心目的，不应该只是拿一个学历，或者发若干篇顶会论文，而是进入一个能帮助自己成长为独立研究者的环境。
+So the core purpose of a PhD shouldn't just be getting a credential or a few top-conference papers. It should be getting into an environment that helps you become an independent researcher.
 
-我现在觉得（personally），理想的研究环境需要两种互补的 mentorship：
+Personally, I now think an ideal research environment needs two complementary kinds of mentorship:
 
-- **PI**：有出色的 research taste 和长远的 vision，能给出关键的方向判断，提供资源支持，也给你研究上的自主权。
-- **Senior PhD / Postdoc**：能和你进行深入的技术讨论，在具体的研究过程中一起思考、一起解决问题、一起把项目往前推。
+- **PI**: great research taste and long-term vision; someone who can make the key calls on direction, provide resources, and give you research autonomy.
+- **Senior PhD / Postdoc**: someone you can have deep technical discussions with, who thinks through problems with you, solves them with you, and pushes the project forward with you.
 
-以及记住 investment 都是有 cost 和风险的。Actually，现在已经有很多关于未来 PhD 是否仍有必要去读的讨论了，不过 that's another long topic。
+And remember that every investment comes with cost and risk. Actually, there are already plenty of discussions about whether a PhD will still be worth doing in the future, but that's another long topic.
 
 ### 3. Maximize Optionality
 
-面对不确定的未来，尽可能多地寻找可能性，本身就是一种有价值的策略。
+When the future is uncertain, looking for as many possibilities as you can is a valuable strategy in itself.
 
-PhD、Research Engineer、Research Assistant、Predoc，或是加入一个优秀的工业界研究团队，它们并不必然构成一条从优到劣的路径。它们只是不同的研究组织形式，提供不同程度的指导、自由、资源和成长机会。
+PhD, Research Engineer, Research Assistant, Predoc, or joining a great industry research team: these don't necessarily form a ranking from best to worst. They're just different ways of organizing research, offering different degrees of mentorship, freedom, resources, and growth.
 
-这件事有点像找天使投资。
+It's a bit like raising angel investment.
 
-这些申请有一定的非对称收益：失败主要损失的是时间，成功则可能显著改变你未来的机会集合。当然，试错也不是完全免费的，机会成本要算进去。
+These applications have an asymmetric payoff: failure mostly costs you time, while success can significantly change your future set of opportunities. Of course, trial and error isn't entirely free; the opportunity cost has to be counted.
 
-更重要的是，不要把某一条路当成唯一的正解，再把其他所有选择都定义成"失败之后的退路"。
+More importantly, don't treat one path as the only right answer and then label every other option as "the fallback after failure."
 
-在还没有足够的信息和选择权之前，不必急着给未来做出唯一的决定。接受悬而未决的状态很难，但它是有用的。
+Until you have enough information and enough options, there's no need to rush into a single decision about your future. Living with things unresolved is hard, but it's useful.
 
 ---
 
-## Part II. 关于焦虑、比较与不确定性
+## Part II. On Anxiety, Comparison & Uncertainty
 
 ### 4. Make Peace with Uncertainty
 
-我在为未来努力，但关键的结果并不完全由我控制。
+I'm working hard for my future, but the outcomes that matter most aren't fully within my control.
 
-这很容易形成一种心理循环：
+That easily turns into a loop:
 
-> 未来不确定 → 焦虑 → cold email、做 research、关注别人的进展... → 暂时获得控制感 → 没有结果时，更焦虑
+> uncertain future → anxiety → cold emails, doing research, checking other people's progress... → a temporary sense of control → no results → more anxiety
 
-我们聊到的解决办法，不是停止努力，而是把 looking for opportunities 变成一项有计划、有边界的工作，而不是一种 24 小时持续的精神状态。
+The answer we landed on isn't to stop trying. It's to turn looking for opportunities into a planned, bounded piece of work, instead of a 24-hour state of mind.
 
-每天认真完成自己能控制的事情，然后允许结果暂时悬而未决。
+Do the things within my control well each day, then let the outcome stay unresolved for a while.
 
 > I can do everything within my control without needing to control everything.
 
 ### 5. The Worst Outcome Is Not the End
 
-这是我自己一直在尝试实践的一点：告诉自己，即使没有拿到理想的 offer，我也能接受，也还有其他路可以走。
+This is something I've been trying to practice: telling myself that even if I don't get the offer I want, I can accept it, and there are still other paths.
 
-但仔细想想，这里其实藏着两种不同的心态。
+But thinking about it more carefully, there are actually two different mindsets hiding here.
 
-第一种是："就算失败也没关系，所以我不应该难过。"
+The first: "Even if I fail, it's fine, so I shouldn't be sad."
 
-第二种是："我非常想成功。如果失败，我会失望，甚至会难过很久，但我知道自己仍然可以重新出发。"
+The second: "I really want to succeed. If I fail, I'll be disappointed, maybe sad for a long time, but I know I can still start again."
 
-或许第二种更合适。
+The second one probably fits better.
 
 > I can care deeply about the outcome without being destroyed by it.
 
 ### 6. Other People's Success Is Not a Verdict on My Worth
 
-关于 peer pressure。在一个高度竞争、成就可以被量化的环境里，比较几乎是不可避免的。
+On peer pressure. In a highly competitive environment where achievement can be quantified, comparison is almost inevitable.
 
-但比较也分两种：
+But there are two kinds of comparison:
 
-**Information-oriented comparison**
-他做出了很好的研究，我能从中学到什么？他的 research taste、方法、合作方式，有哪些值得借鉴？
+- **Information-oriented comparison**: They did great research. What can I learn from it? What about their research taste, methods, and ways of collaborating is worth borrowing?
+- **Identity-oriented comparison**: They've already published so many papers and I haven't. Does that mean I'm not good enough? Am I falling behind?
 
-**Identity-oriented comparison**
-他已经发了很多论文，而我还没有，是不是说明我不够优秀？我是不是落后了？
+The first kind drives growth. The second easily turns external achievements into a judgment of your own worth. Especially in research, outcomes depend on advisors, resources, collaborators, luck, research direction, and much more. Paper count is not a precise ranking of ability.
 
-第一种比较能促进成长，第二种则很容易把外在的成就变成对自身价值的判断。尤其在科研里，成果受导师、资源、合作者、运气和研究方向等很多因素影响，论文数量并不是个人能力的精确排序。
+You can admire people who are better than you, envy their results, and work hard to learn from them and catch up.
 
-你可以欣赏比自己更优秀的人，可以羡慕他们的成果，也可以努力去学习，追赶。
-
-不过，别人的优秀，永远不构成对自己的否定。
+But someone else's excellence is never a verdict against you.
 
 ---
 
-## Part III. 关于 Ambition、Inner Peace 与生活
+## Part III. On Ambition, Inner Peace & Life
 
 ### 7. Ambition without Attachment
 
-Ambition 和 inner peace 并不是对立的。
+Ambition and inner peace are not opposites.
 
-我可以非常想进入 Stanford、Berkeley 或者其他顶级实验室，想做出重要的科研成果，想成为真正优秀的 researcher。
+I can want very badly to get into Stanford, Berkeley, or another top lab, to do important research, to become a truly great researcher.
 
-与此同时，我也可以享受一个没有任何科研进展的周末。
+And at the same time, I can enjoy a weekend with zero research progress.
 
-动力大概有两种：
+There are roughly two kinds of motivation:
 
-- **Aspiration**：我想成为顶尖研究者，因为这是一个值得追求的目标。
-- **Obligation**：我必须成为顶尖研究者，否则我就无法认可自己。
+- **Aspiration**: I want to become a top researcher, because it's a goal worth pursuing.
+- **Obligation**: I have to become a top researcher, otherwise I can't accept myself.
 
-两者在外部行为上几乎没有区别：同样努力，同样竞争，同样希望做到最好。但前者是在向理想靠近，后者却可能变成一种持续的自我压迫。
+From the outside they look almost identical: the same effort, the same competition, the same desire to be the best. But the first moves you toward an ideal, while the second can turn into constant self-pressure.
 
-我不需要放弃野心，而是可以慢慢尝试，减少那种"必须通过成就来证明自己"的压力。
+I don't need to give up my ambition. I can slowly try to ease the pressure of "having to prove myself through achievements."
 
-全力争取理想的结果，但不把自身的价值完全寄托在结果上。
+Go all in for the outcome you want, but don't hang your entire worth on it.
 
 ### 8. Success, Status & Security
 
-诚实地说，我对科研的四种动力都存在：
+To be honest, all four of these motivations exist in me:
 
-| 动力                    | 它应该发挥的作用                     |
-| ----------------------- | ------------------------------------ |
-| ① 对研究的热爱         | 帮助我选择真正感兴趣的方向           |
-| ② 对成就与影响力的追求 | 激励我去解决重要而困难的问题         |
-| ③ 对同行认可的渴望     | 提供反馈，但不定义我的价值           |
-| ④ 对安全感和自由的追求 | 推动我建立现实的经济基础和职业选择权 |
+| Motivation | The role it should play |
+| --- | --- |
+| ① Love of research | Helps me choose directions I'm genuinely interested in |
+| ② Drive for achievement and impact | Pushes me to tackle important, hard problems |
+| ③ Desire for peer recognition | Gives feedback, but doesn't define my worth |
+| ④ Need for security and freedom | Drives me to build a real financial base and career options |
 
-这里有一个很重要的陷阱：如果把长期的安全感完全建立在学术地位之上，那可能永远都难以满足。
+There's an important trap here: if you build your long-term sense of security entirely on academic status, you may never feel satisfied.
 
-进了 HKU，可能开始羡慕 Stanford；进了 Stanford，可能开始羡慕 DeepMind；进了 DeepMind，又开始比较谁能做出更大的成果。
+Get into HKU, and you may start envying Stanford; get into Stanford, and you may start envying DeepMind; get into DeepMind, and you start comparing who's done the bigger thing.
 
-地位竞争没有自然的终点，而安全感需要一个可以逐渐建立起来的基础。
+Status competition has no natural finish line, while security needs a foundation you can build up over time.
 
-所以要区分两件事：自己希望达到的最高高度，和能够认可自己生活的基本条件。而且，这两者并不需要是同一个标准。
+So it's worth separating two things: the highest point you hope to reach, and the basic conditions under which you can accept your own life. And these two don't need to be the same standard.
 
 ### 9. Don't Postpone Living
 
-这或许是整篇里离当下生活最近的一点。
+This may be the point in this post that's closest to everyday life.
 
-我完全可以认真投入科研，同时打网球、健身、看电影、和朋友吃饭、去探索这座城市。
+I can absolutely throw myself into research and still play tennis, work out, watch movies, have dinner with friends, and explore the city.
 
-但有一点要特别强调：这些事情不需要以"让我明天科研更高效"为理由。
+But one thing I want to stress: none of these need the justification of "it'll make me more productive at research tomorrow."
 
-看电影，是因为我喜欢电影。去 citywalk，是因为生活本来就值得体验。即使一天没有任何科研进展，它也仍然可以是美好而有价值的一天。
+I watch movies because I like movies. I go on citywalks because life is worth experiencing. Even a day with no research progress at all can still be a good and meaningful day.
 
-不要把幸福一再推迟到下一个里程碑之后：
+Don't keep pushing happiness back until after the next milestone:
 
-- "等我拿到 offer，就可以安心了。"
-- "等我进了顶级实验室，就可以享受科研了。"
-- "等我发出一篇很好的论文，就可以放松了。"
+- "Once I get the offer, I can finally relax."
+- "Once I'm in a top lab, I can enjoy research."
+- "Once I publish a really good paper, I can take a break."
 
-因为目标实现之后，新的目标和压力往往马上就会出现。
+Because once a goal is reached, new goals and new pressure often show up right away.
 
-不要把一年四季划分成 ICCV、NeurIPS、ICLR 和 CVPR。
+Don't divide the four seasons into ICCV, NeurIPS, ICLR, and CVPR.
 
 > Don't postpone living until you've achieved your next milestone.
 
-我正在争取一个更好的未来，但我的生活并不是从拿到梦想 offer 的那一天才正式开始的。
+I'm working toward a better future, but my life doesn't officially begin on the day I get my dream offer.
 
-### 10. 我不需要现在回答"我是否必须成为顶尖的人"
+### 10. I Don't Have to Answer "Must I Be the Best?" Right Now
 
-最后，我们聊到了一个我目前还没有答案的问题：
+Finally, we talked about a question I don't have an answer to yet:
 
-如果十年后，我有不错的收入、自由的生活，能继续做自己喜欢的研究，但没有成为最优秀的那一批研究者，我能真正对自己满意吗？
+If, ten years from now, I have a decent income and a free life, and I can keep doing research I love, but I'm not among the very best researchers, can I truly be satisfied with myself?
 
-我说我现在回答不了。
+I said I can't answer that right now.
 
-而这完全可以。
+And that's completely okay.
 
-因为这可能不是一个仅靠理性思考就能得出结论的问题。我还没有经历过许多未来可能的生活状态，也没办法准确预知几年后自己的价值观会变成什么样。
+Because this may not be a question you can settle through reasoning alone. I haven't lived many of the lives I might end up living, and I can't predict what my values will look like a few years from now.
 
-我可以给自己保留重新定义成功的权利，现在不必选定一个终身不变的成功标准。
+I can keep the right to redefine success for myself. I don't have to pick a lifelong standard of success right now.
 
-更不必把寻找 inner peace 变成一个新的 KPI，要求自己以后必须不焦虑、不羡慕、不比较。有时候感到焦虑，并不代表我失败了。
+And I definitely don't need to turn finding inner peace into a new KPI, demanding that I never feel anxious again, never envy, never compare. Feeling anxious sometimes doesn't mean I've failed.
 
-
-So next week i'll probably 去中环体验一下HK Halloween
+So next week I'll probably head to Central to check out Halloween in HK.

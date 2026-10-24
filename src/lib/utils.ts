@@ -15,8 +15,10 @@ export function formatDate(date: Date) {
 
 export function readingTime(html: string) {
   const textOnly = html.replace(/<[^>]+>/g, "");
-  const wordCount = textOnly.split(/\s+/).length;
-  const readingTimeMinutes = ((wordCount / 200) + 1).toFixed();
+  // CJK text has no spaces between words, so count its characters separately
+  const cjkCount = (textOnly.match(/[\u3400-\u9fff\uf900-\ufaff]/g) || []).length;
+  const wordCount = textOnly.replace(/[\u3400-\u9fff\uf900-\ufaff]/g, " ").split(/\s+/).filter(Boolean).length;
+  const readingTimeMinutes = ((wordCount / 200) + (cjkCount / 400) + 1).toFixed();
   return `${readingTimeMinutes} min read`;
 }
 

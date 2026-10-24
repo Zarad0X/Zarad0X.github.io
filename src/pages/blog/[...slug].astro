@@ -10,23 +10,48 @@ export async function getStaticPaths() {
   const posts = (await getCollection("blog"))
     .filter(post => !post.data.draft)
     .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: post,
-  }));
+  return posts.map((post) => {
+    const translations = posts
+      .filter(other => post.data.translationKey && other.data.translationKey === post.data.translationKey)
+      .sort((a, b) => a.data.lang.localeCompare(b.data.lang));
+    return {
+      params: { slug: post.slug },
+      props: { post, translations },
+    };
+  });
 }
-type Props = CollectionEntry<"blog">;
+type Props = {
+  post: CollectionEntry<"blog">;
+  translations: CollectionEntry<"blog">[];
+};
 
-const post = Astro.props;
+const LANG_LABELS = { en: "EN", zh: "中文" };
+
+const { post, translations } = Astro.props;
 const { Content } = await post.render();
 ---
 
 <PageLayout title={post.data.title} description={post.data.description}>
   <Container>
-    <div class="animate">
+    <div class="animate flex items-center justify-between">
       <BackToPrev href="/blog">
         Back to blog
       </BackToPrev>
+      {translations.length > 1 && (
+        <div class="flex text-sm rounded border border-black/15 dark:border-white/20 overflow-hidden">
+          {translations.map((t) => (
+            t.slug === post.slug ? (
+              <span class="px-3 py-1.5 bg-black/5 dark:bg-white/10 text-black dark:text-white">
+                {LANG_LABELS[t.data.lang]}
+              </span>
+            ) : (
+              <a href={`/blog/${t.slug}/`} lang={t.data.lang} class="px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white transition-colors duration-300 ease-in-out">
+                {LANG_LABELS[t.data.lang]}
+              </a>
+            )
+          ))}
+        </div>
+      )}
     </div>
     <div class="space-y-1 my-10">
       <div class="animate flex items-center gap-1.5">
@@ -42,7 +67,7 @@ const { Content } = await post.render();
         {post.data.title}
       </div>
     </div>
-    <article class="animate">
+    <article class="animate" lang={post.data.lang}>
       <Content />
     </article>
   </Container>
