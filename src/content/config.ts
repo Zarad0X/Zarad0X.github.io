@@ -16,6 +16,8 @@ const work = defineCollection({
   type: "content",
   schema: z.object({
     company: z.string(),
+    unit: z.string().optional(),
+    advisor: z.string().optional(),
     role: z.string(),
     dateStart: z.coerce.date(),
     dateEnd: z.union([z.coerce.date(), z.string()]),

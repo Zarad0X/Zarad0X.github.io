@@ -1,9 +1,8 @@
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
-import tailwind from "@astrojs/tailwind";
 
 export default defineConfig({
-  site: "https://Zarad0X.github.io",
-  integrations: [mdx(), sitemap(), tailwind()],
+  site: "https://zarad0x.github.io",
+  integrations: [mdx(), sitemap()],
 });

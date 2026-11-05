@@ -1,9 +1,11 @@
 ---
-company: "CUHK(SZ) GAP Lab"
-role: "Research Intern"
+company: "CUHK-Shenzhen"
+role: "Summer Research Intern"
 dateStart: "2026-05-01"
 dateEnd: "Present"
 draft: false
+advisor: "Prof. Xiaoguang Han"
+unit: "GAP Lab"
 ---
 
-Conducted on-site summer research at GAP Lab, The Chinese University of Hong Kong, Shenzhen (May–Aug 2026). Continuing remote collaboration on ongoing projects.
+Research on articulated 3D representations, disassembly and assembly datasets, and VLM-based physical-property reasoning with VLA policies for long-horizon manipulation.

@@ -1,34 +1,14 @@
 ---
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
-import Container from "@components/Container.astro";
-import ArrowCard from "@components/ArrowCard.astro";
-import { PROJECTS } from "@consts";
-
-const projects = (await getCollection("projects"))
-  .filter(project => !project.data.draft)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const projects = (await getCollection("projects")).filter(project => !project.data.draft).sort((a,b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
-
-<PageLayout title={PROJECTS.TITLE} description={PROJECTS.DESCRIPTION}>
-  <Container>
-    <div class="space-y-10">
-      <div class="animate font-semibold text-black dark:text-white">
-        Projects
-      </div>
-      <ul class="animate flex flex-col gap-4">
-        {projects.length > 0 ? (
-          projects.map((project) => (
-            <li>
-              <ArrowCard entry={project}/>
-            </li>
-          ))
-        ) : (
-          <li class="opacity-75">
-            No projects yet. Updates coming soon.
-          </li>
-        )}
-      </ul>
-    </div>
-  </Container>
+<PageLayout title="Research" description="Research projects and publications by Han Zhang.">
+  <div class="standalone-heading"><h1>Research</h1><p>Selected projects and publications.</p></div>
+  <div class="project-list">
+    {projects.map(project => <article class="project-entry">
+      {project.slug === "freeartgs" && <a class="paper-image" href={`/projects/${project.slug}/`} aria-label="View FreeArtGS"><img src="/assets/freeartgs-teaser.png" alt="FreeArtGS teaser showing articulated object reconstruction" width="1826" height="1015" /></a>}
+      <div><h2><a href={`/projects/${project.slug}/`}>{project.data.title}</a></h2><p>{project.data.description}</p><div class="paper-links"><a href={`/projects/${project.slug}/`}>Details →</a>{project.data.demoURL && <a href={project.data.demoURL}>Project ↗</a>}{project.data.repoURL && <a href={project.data.repoURL}>Code ↗</a>}</div></div>
+    </article>)}
+  </div>
 </PageLayout>

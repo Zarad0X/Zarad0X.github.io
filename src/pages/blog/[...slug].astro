@@ -1,74 +1,42 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
-import Container from "@components/Container.astro";
-import FormattedDate from "@components/FormattedDate.astro";
-import { readingTime } from "@lib/utils";
-import BackToPrev from "@components/BackToPrev.astro";
-
+import { SITE } from "@consts";
 export async function getStaticPaths() {
-  const posts = (await getCollection("blog"))
-    .filter(post => !post.data.draft)
-    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-  return posts.map((post) => {
-    const translations = posts
-      .filter(other => post.data.translationKey && other.data.translationKey === post.data.translationKey)
-      .sort((a, b) => a.data.lang.localeCompare(b.data.lang));
-    return {
-      params: { slug: post.slug },
-      props: { post, translations },
-    };
-  });
+  const posts = (await getCollection("blog")).filter(post => !post.data.draft);
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post, translations: posts.filter(other => post.data.translationKey && other.data.translationKey === post.data.translationKey).sort((a,b) => a.data.lang.localeCompare(b.data.lang)) },
+  }));
 }
-type Props = {
-  post: CollectionEntry<"blog">;
-  translations: CollectionEntry<"blog">[];
-};
-
-const LANG_LABELS = { en: "EN", zh: "中文" };
-
+interface Props { post: CollectionEntry<"blog">; translations: CollectionEntry<"blog">[]; }
 const { post, translations } = Astro.props;
-const { Content } = await post.render();
+const { Content, headings } = await post.render();
+const parts = headings.filter(heading => heading.depth === 2);
+const zh = post.data.lang === "zh";
+const back = zh ? "所有文章" : "All posts";
+const date = new Intl.DateTimeFormat("en-US", { month:"short", day:"2-digit", year:"numeric", timeZone:"UTC" }).format(post.data.date);
 ---
-
-<PageLayout title={post.data.title} description={post.data.description}>
-  <Container>
-    <div class="animate flex items-center justify-between">
-      <BackToPrev href="/blog">
-        Back to blog
-      </BackToPrev>
-      {translations.length > 1 && (
-        <div class="flex text-sm rounded border border-black/15 dark:border-white/20 overflow-hidden">
-          {translations.map((t) => (
-            t.slug === post.slug ? (
-              <span class="px-3 py-1.5 bg-black/5 dark:bg-white/10 text-black dark:text-white">
-                {LANG_LABELS[t.data.lang]}
-              </span>
-            ) : (
-              <a href={`/blog/${t.slug}/`} lang={t.data.lang} class="px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white transition-colors duration-300 ease-in-out">
-                {LANG_LABELS[t.data.lang]}
-              </a>
-            )
-          ))}
-        </div>
-      )}
-    </div>
-    <div class="space-y-1 my-10">
-      <div class="animate flex items-center gap-1.5">
-        <div class="font-base text-sm">
-          <FormattedDate date={post.data.date} />
-        </div>
-        &bull;
-        <div class="font-base text-sm">
-          {readingTime(post.body)}
-        </div>
-      </div>
-      <div class="animate text-2xl font-semibold text-black dark:text-white">
-        {post.data.title}
-      </div>
-    </div>
-    <article class="animate" lang={post.data.lang}>
-      <Content />
-    </article>
-  </Container>
+<PageLayout title={post.data.title} description={post.data.description} lang={post.data.lang} type="article" reading>
+  <Fragment slot="head">
+    {translations.map(translation => <link rel="alternate" hreflang={translation.data.lang} href={new URL(`/blog/${translation.slug}/`, Astro.site)} />)}
+  </Fragment>
+  <div class="article-toolbar">
+    <a class="back-link" href="/blog/">← {back}</a>
+    {translations.length > 1 && <div class="language-switch" role="navigation" aria-label="Article language">
+      {translations.map((translation,index) => <Fragment>
+        {index > 0 && <span aria-hidden="true">/</span>}
+        <a href={`/blog/${translation.slug}/`} lang={translation.data.lang} hreflang={translation.data.lang} aria-current={translation.slug === post.slug ? "page" : undefined}>{translation.data.lang === "en" ? "English" : "中文"}</a>
+      </Fragment>)}
+    </div>}
+  </div>
+  <article class="blog-article">
+    <header class="article-header">
+      <p class="article-date"><time datetime={post.data.date.toISOString().slice(0,10)}>{date}</time></p>
+      <h1>{post.data.title}</h1><p class="article-description">{post.data.description}</p>
+    </header>
+    {parts.length > 0 && <details class="article-contents"><summary>{zh ? "目录" : "In this essay"}</summary><ol>{parts.map(part => <li><a href={`#${part.slug}`}>{part.text}</a></li>)}</ol></details>}
+    <div class="prose"><Content /></div>
+  </article>
+  <div class="article-end"><a href="/blog/">← {back}</a><a href={`mailto:${SITE.EMAIL}`}>{zh ? "联系我" : "Get in touch"} ↗</a></div>
 </PageLayout>

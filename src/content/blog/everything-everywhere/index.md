@@ -1,7 +1,7 @@
 ---
 title: "Everything Everywhere All at Once"
 description: "Notes from a final-year AI undergrad on research, PhD applications, anxiety, and not postponing life."
-date: "Oct 24 2026"
+date: "2026-10-24"
 lang: "en"
 translationKey: "everything-everywhere"
 ---

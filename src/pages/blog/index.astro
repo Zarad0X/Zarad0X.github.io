@@ -1,62 +1,32 @@
 ---
-import { type CollectionEntry, getCollection } from "astro:content";
+import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
-import Container from "@components/Container.astro";
-import ArrowCard from "@components/ArrowCard.astro";
-import { BLOG } from "@consts";
-
-const data = (await getCollection("blog"))
-  .filter(post => !post.data.draft && post.data.lang === "en")
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-  
-type Acc = {
-  [year: string]: CollectionEntry<"blog">[];
-}
-
-const posts = data.reduce((acc: Acc, post) => {
-    const year = post.data.date.getFullYear().toString();
-    if (!acc[year]) {
-      acc[year] = [];
-    }
-    acc[year].push(post);
-    return acc;
-  }, {});
-
-const years = Object.keys(posts).sort((a, b) => parseInt(b) - parseInt(a)); 
+const allPosts = (await getCollection("blog")).filter(post => !post.data.draft);
+const posts = allPosts.filter(post => post.data.lang === "en").sort((a,b) => b.data.date.valueOf() - a.data.date.valueOf());
+const years = [...new Set(posts.map(post => post.data.date.getUTCFullYear()))].sort((a,b) => b-a);
+const dateLabel = (date: Date) => new Intl.DateTimeFormat("en-US", { month:"short", day:"2-digit", timeZone:"UTC" }).format(date);
 ---
-
-<PageLayout title={BLOG.TITLE} description={BLOG.DESCRIPTION}>
-  <Container>
-    <div class="space-y-10">
-      <div class="animate font-semibold text-black dark:text-white">
-        Blog
-      </div>
-      <div class="space-y-4">
-        {years.length > 0 ? (
-          years.map(year => (
-            <section class="animate space-y-4">
-              <div class="font-semibold text-black dark:text-white">
-                {year}
+<PageLayout title="Blog" description="Notes on research, PhD applications, and life by Han Zhang." reading>
+  <div class="blog-index-heading"><h1>Blog</h1><p>Notes on research and life.</p></div>
+  {years.map(year => (
+    <section class="blog-year" aria-labelledby={`year-${year}`}>
+      <h2 id={`year-${year}`}>{year}</h2>
+      {posts.filter(post => post.data.date.getUTCFullYear() === year).map(post => {
+        const zh = allPosts.find(other => post.data.translationKey && other.data.translationKey === post.data.translationKey && other.data.lang === "zh");
+        return (
+          <article class="blog-entry">
+            <time datetime={post.data.date.toISOString().slice(0,10)}>{dateLabel(post.data.date)}</time>
+            <div>
+              <h3><a href={`/blog/${post.slug}/`}>{post.data.title}</a></h3>
+              <p>{post.data.description}</p>
+              <div class="entry-languages">
+                <a href={`/blog/${post.slug}/`} lang="en" hreflang="en">Read in English →</a>
+                {zh && <a href={`/blog/${zh.slug}/`} lang="zh" hreflang="zh">阅读中文版 →</a>}
               </div>
-              <div>
-                <ul class="flex flex-col gap-4">
-                  {
-                    posts[year].map((post) => (
-                      <li>
-                        <ArrowCard entry={post}/>
-                      </li>
-                    ))
-                  }
-                </ul>
-              </div>
-            </section>
-          ))
-        ) : (
-          <p class="animate opacity-75">
-            No posts yet. New articles coming soon.
-          </p>
-        )}
-      </div>
-    </div>
-  </Container>
+            </div>
+          </article>
+        );
+      })}
+    </section>
+  ))}
 </PageLayout>

@@ -1,60 +1,8 @@
 ---
-import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
-import Container from "@components/Container.astro";
-import { dateRange } from "@lib/utils";
-import { WORK } from "@consts";
-
-const collection = (await getCollection("work"))
-  .filter(work => !work.data.draft)
-  .sort((a, b) => new Date(b.data.dateStart).valueOf() - new Date(a.data.dateStart).valueOf());
-
-const work = await Promise.all(
-  collection.map(async (item) => {
-    const { Content } = await item.render();
-    return { ...item, Content };
-  })
-);
+import ExperienceList from "@components/ExperienceList.astro";
 ---
-
-<PageLayout title={WORK.TITLE} description={WORK.DESCRIPTION}>
-  <Container>
-    <div class="space-y-10">
-      <div class="animate font-semibold text-black dark:text-white">
-        Work
-      </div>
-      <ul class="flex flex-col space-y-4">
-        {work.length > 0 ? (
-          work.map(entry => (
-            <li class="animate space-y-2">
-              <div class="grid gap-1 md:grid-cols-[1fr_auto] md:items-start md:gap-4">
-                <div>
-                  <div class="font-semibold text-black dark:text-white">
-                    {entry.data.company}
-                  </div>
-                  <div class="text-sm opacity-75">
-                    {entry.data.role}
-                  </div>
-                </div>
-                <div class="text-sm opacity-75 md:text-right">
-                  {dateRange(entry.data.dateStart, entry.data.dateEnd)}
-                </div>
-              </div>
-              <article>
-                <entry.Content />
-              </article>
-            </li>
-          ))
-        ) : (
-          <li class="animate opacity-75">
-            No work entries yet. Updates coming soon.
-          </li>
-        )}
-      </ul>
-<!-- 
-      <ul class="animate flex flex-col gap-4">
-
-      </ul> -->
-    </div>
-  </Container>
+<PageLayout title="Experience" description="Han Zhang's research experience at HKUST, CUHK-Shenzhen GAP Lab, and PKU–Agibot Lab.">
+  <div class="standalone-heading"><h1>Experience</h1></div>
+  <ExperienceList />
 </PageLayout>

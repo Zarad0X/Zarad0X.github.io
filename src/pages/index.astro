@@ -1,171 +1,41 @@
 ---
-import { getCollection } from "astro:content";
-import Container from "@components/Container.astro";
 import PageLayout from "@layouts/PageLayout.astro";
-import ArrowCard from "@components/ArrowCard.astro";
-import Link from "@components/Link.astro";
-import { dateRange } from "@lib/utils";
-import { SITE, HOME, SOCIALS } from "@consts";
-
-const blog = (await getCollection("blog"))
-  .filter(post => !post.data.draft && post.data.lang === "en")
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0,SITE.NUM_POSTS_ON_HOMEPAGE);
-
-const projects = (await getCollection("projects"))
-  .filter(project => !project.data.draft)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0,SITE.NUM_PROJECTS_ON_HOMEPAGE);
-
-const allwork = (await getCollection("work"))
-  .filter(work => !work.data.draft)
-  .sort((a, b) => new Date(b.data.dateStart).valueOf() - new Date(a.data.dateStart).valueOf())
-  .slice(0,SITE.NUM_WORKS_ON_HOMEPAGE);
-
-const work = await Promise.all(
-  allwork.map(async (item) => {
-    const { Content } = await item.render();
-    return { ...item, Content };
-  })
-);
-
+import ExperienceList from "@components/ExperienceList.astro";
 ---
+<PageLayout title="Han Zhang — Computer Vision & Embodied AI" description="Han Zhang, Turing Class at Zhejiang University. Research in 3D/4D representation learning, physical world modeling, and embodied world learning.">
 
-<PageLayout title={HOME.TITLE} description={HOME.DESCRIPTION}>
-  <Container>
-    <h4 class="animate font-semibold text-black dark:text-white">
-      Hi, I'm Han Zhang <span class="text-xl">👋🏻</span> 
-    </h4>
-    <div class="space-y-16">
-      <section>
-        <article class="space-y-4">
-          <p class="animate">
-            I am an undergraduate student in the <b>Turing Class at Zhejiang University</b>. 
-            My core research interests lie heavily in <b>Computer Vision and Embodied AI  🤖</b>.
-          </p>
-          <p class="animate">
-            My research focuses on 3D/4D vision, world models for spatial reasoning, and embodied perception for robotics. I am currently a visiting intern at <b>HKUST</b>, and I am also seeking research opportunities.
-          </p>
-          <p class="animate">
-            🎉 <b>News:</b> One of my co-authored papers has recently been accepted to <b>CVPR 2026</b> (Co-first author)! 
-            
-          </p>
-        </article>
-      </section>
-
-      <section class="animate space-y-6">
-        <div class="flex flex-wrap gap-y-2 items-center justify-between">
-          <h5 class="font-semibold text-black dark:text-white">
-            Latest posts
-          </h5>
-          <Link href="/blog">
-            See all posts
-          </Link>
+    <section class="about" aria-labelledby="name">
+      <div class="name-row"><h1 id="name">Han Zhang</h1><span class="field">3D/4D Learning · Embodied AI</span></div>
+      <div class="bio">
+        <p>I'm a Computer Science undergraduate in the <strong>Turing Class (Honors Program) at <a href="https://www.zju.edu.cn/english/">Zhejiang University</a></strong>, expecting to graduate in June 2027. I'm currently a visiting intern at <strong>HKUST</strong>, advised by Prof. Yuan Liu, and collaborate with <strong>GAP Lab at CUHK-Shenzhen</strong>, advised by Prof. Xiaoguang Han.</p>
+        <p>My research interests span <strong>3D/4D representation learning</strong>, <strong>physical world modeling</strong>, and <strong>embodied world learning</strong>. I'm interested in structured, generalizable representations of geometry, motion, and articulation; how dynamic environments evolve and respond to actions; and how embodied agents acquire and reuse knowledge through perception and interaction.</p>
+        <p class="availability"><span class="dot" aria-hidden="true"></span> I'm looking for PhD and research opportunities, open to work, and always happy to collaborate and connect.</p>
+      </div>
+      <div class="social-links" aria-label="Contact and social links"><a href="mailto:zhanghan1833@outlook.com">Email <span aria-hidden="true">↗</span></a><a href="https://github.com/Zarad0X">GitHub <span aria-hidden="true">↗</span></a><a href="https://www.linkedin.com/in/han-zhang-2068833b2">LinkedIn <span aria-hidden="true">↗</span></a><a href="https://twitter.com/Answer1833">X / Twitter <span aria-hidden="true">↗</span></a></div>
+    </section>
+    <aside class="note" aria-label="Research news"><span class="note-label">News</span><p><a href="https://freeartgs.github.io/">FreeArtGS</a> was accepted to <strong>CVPR 2026</strong>! Co-first author; paper, code, and data are available.</p></aside>
+    <section id="research" class="section" aria-labelledby="research-heading">
+      <div class="section-heading"><h2 id="research-heading">Research</h2><span class="section-meta">Selected work</span></div>
+      <article class="publication">
+        <a class="paper-image" href="https://freeartgs.github.io/" aria-label="View FreeArtGS project"><img src="/assets/freeartgs-teaser.png" alt="FreeArtGS teaser: a freely moving articulated USB drive is reconstructed with its joint axis" width="1826" height="1015"></a>
+        <div class="paper-body">
+          <div class="paper-heading"><h3><a href="https://freeartgs.github.io/">FreeArtGS</a></h3><span class="venue">CVPR 2026</span></div>
+          <p class="paper-title">Articulated Gaussian Splatting Under Free-moving Scenario</p>
+          <p class="authors">Hang Dai*, Hongwei Fan*, <strong>Han Zhang*</strong>, Duojin Wu, Jiyao Zhang, Hao Dong <span class="equal">(* equal contribution)</span></p>
+          <p class="paper-description">Reconstructing articulated objects from monocular RGB-D video under free-moving capture. My contributions include part segmentation, camera pose and joint estimation, and building the FreeArt-21 dataset with reproducible evaluation pipelines.</p>
+          <div class="paper-links"><a href="https://arxiv.org/abs/2603.22102">Paper</a><a href="https://freeartgs.github.io/">Project</a><a href="https://github.com/FreeArtGS/FreeArtGS">Code</a><a href="https://drive.google.com/file/d/1hl6s3C3919gXKvHC0ZfgrxWqFCKM3XXf/view">Data</a></div>
         </div>
-        <ul class="flex flex-col gap-4">
-          {blog.length > 0 ? (
-            blog.map(post => (
-              <li>
-                <ArrowCard entry={post} />
-              </li>
-            ))
-          ) : (
-            <li class="opacity-75">
-              No posts yet. New articles coming soon.
-            </li>
-          )}
-        </ul>
-      </section>
+      </article>
+    </section>
+    <section id="experience" class="section" aria-labelledby="experience-heading">
+      <div class="section-heading"><h2 id="experience-heading">Experience</h2></div>
+      <ExperienceList />
+    </section>
+    <span id="writing" class="anchor-alias" aria-hidden="true"></span>
+    <section id="blog" class="section blog" aria-labelledby="blog-heading">
+      <div class="section-heading"><h2 id="blog-heading">Blog</h2><a class="section-meta" href="/blog/">All posts <span aria-hidden="true">→</span></a></div>
+      <a class="post" href="/blog/everything-everywhere/"><time datetime="2026-10-24">Oct 24, 2026</time><div><h3>Everything Everywhere All at Once <span aria-hidden="true">→</span></h3><p>Notes on research, PhD applications, anxiety, and not postponing life.</p></div></a>
+    </section>
+    <section class="contact" aria-labelledby="contact-heading"><h2 id="contact-heading">Get in touch</h2><p>For research opportunities, collaborations, or a hello:<br class="mobile-break"> <a href="mailto:zhanghan1833@outlook.com">zhanghan1833@outlook.com <span aria-hidden="true">↗</span></a></p></section>
 
-      <section class="animate space-y-6">
-        <div class="flex flex-wrap gap-y-2 items-center justify-between">
-          <h5 class="font-semibold text-black dark:text-white">
-            Work Experience
-          </h5>
-          <Link href="/work">
-            See all work
-          </Link>
-        </div>
-        <ul class="flex flex-col space-y-4">
-          {work.length > 0 ? (
-            work.map(entry => (
-              <li class="space-y-2">
-                <div class="grid gap-1 md:grid-cols-[1fr_auto] md:items-start md:gap-4">
-                  <div>
-                    <div class="font-semibold text-black dark:text-white">
-                      {entry.data.company}
-                    </div>
-                    <div class="text-sm opacity-75">
-                      {entry.data.role}
-                    </div>
-                  </div>
-                  <div class="text-sm opacity-75 md:text-right">
-                    {dateRange(entry.data.dateStart, entry.data.dateEnd)}
-                  </div>
-                </div>
-                <article>
-                  <entry.Content />
-                </article>
-              </li>
-            ))
-          ) : (
-            <li class="opacity-75">
-              No work entries yet. Updates coming soon.
-            </li>
-          )}
-        </ul>
-      </section>
-
-      <section class="animate space-y-6">
-        <div class="flex flex-wrap gap-y-2 items-center justify-between">
-          <h5 class="font-semibold text-black dark:text-white">
-            Recent projects
-          </h5>
-          <Link href="/projects">
-            See all projects
-          </Link>
-        </div>
-        <ul class="flex flex-col gap-4">
-          {projects.length > 0 ? (
-            projects.map(project => (
-              <li>
-                <ArrowCard entry={project} />
-              </li>
-            ))
-          ) : (
-            <li class="opacity-75">
-              No projects yet. Updates coming soon.
-            </li>
-          )}
-        </ul>
-      </section>
-
-      <section class="animate space-y-4">
-        <h5 class="font-semibold text-black dark:text-white">
-          Let's Connect
-        </h5>
-        <article>
-          <p>
-            If you want to get in touch with me about something or just to say hi,
-            reach out on social media or send me an email.
-          </p>
-        </article>
-        <ul class="flex flex-wrap gap-2">
-          {SOCIALS.map(SOCIAL => (
-            <li class="flex gap-x-2 text-nowrap">
-              <Link href={SOCIAL.HREF} external aria-label={`${SITE.NAME} on ${SOCIAL.NAME}`}>
-                {SOCIAL.NAME}
-              </Link>
-              {"/"}
-            </li>
-          ))}
-          <li class="line-clamp-1">
-            <Link href={`mailto:${SITE.EMAIL}`} aria-label={`Email ${SITE.NAME}`}>
-              {SITE.EMAIL}
-            </Link>
-          </li>
-        </ul>
-      </section>
-    </div>
-  </Container>
 </PageLayout>

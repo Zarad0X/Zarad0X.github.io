@@ -1,7 +1,7 @@
 ---
 title: "瞬息全宇宙"
 description: "一个 AI 专业 final-year 本科生，关于科研、PhD、焦虑与生活的一些阶段性想法。"
-date: "Oct 24 2026"
+date: "2026-10-24"
 lang: "zh"
 translationKey: "everything-everywhere"
 ---

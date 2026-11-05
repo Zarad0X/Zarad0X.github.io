@@ -1,0 +1,22 @@
+---
+import { getCollection } from "astro:content";
+const entries = (await getCollection("work"))
+  .filter(entry => !entry.data.draft)
+  .sort((a,b) => b.data.dateStart.valueOf() - a.data.dateStart.valueOf());
+const work = await Promise.all(entries.map(async entry => ({ ...entry, Content: (await entry.render()).Content })));
+function monthYear(date: Date) {
+  return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric", timeZone: "UTC" }).format(date);
+}
+---
+<div class="experience-list">
+  {work.map(entry => (
+    <article class="experience">
+      <div class="experience-heading">
+        <h3>{entry.data.company}{entry.data.unit && <span class="institution-detail"> / {entry.data.unit}</span>}</h3>
+        <span class="date-range">{monthYear(entry.data.dateStart)} — {typeof entry.data.dateEnd === "string" ? entry.data.dateEnd : monthYear(entry.data.dateEnd)}</span>
+      </div>
+      <p class="role">{entry.data.role}{entry.data.advisor && ` · Advisor: ${entry.data.advisor}`}</p>
+      <div class="experience-description"><entry.Content /></div>
+    </article>
+  ))}
+</div>
