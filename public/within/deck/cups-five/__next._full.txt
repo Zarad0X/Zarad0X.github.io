@@ -1,0 +1,35 @@
+1:"$Sreact.fragment"
+2:"/within/_next/static/chunks/20nq2ma3nezt9.js"
+3:"LanguageProvider"
+4:I[29899,["$2"],"$3"]
+5:I[57672,["$2"],"ArtworkProvider"]
+6:I[39756,["$2"],"default"]
+7:I[37457,["$2"],"default"]
+8:"/within/_next/static/chunks/2dl5kqhmrc4du.js"
+9:I[29306,["$2","$8"],"default"]
+a:I[58068,["$2"],"SiteFooter"]
+10:I[97367,["$2"],"OutletBoundary"]
+11:"$Sreact.suspense"
+13:"ViewportBoundary"
+14:I[97367,["$2"],"$13"]
+16:"MetadataBoundary"
+17:I[97367,["$2"],"$16"]
+19:I[68027,["$2"],"default",1]
+:HL["/within/_next/static/chunks/2aq-71kaq1f3f.css","style"]
+:HC["/",""]
+c:X
+e:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":["$Lf",[["$","script","script-0",{"src":"/within/_next/static/chunks/03gbsvm150pbp.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/within/_next/static/chunks/2bl3a4dayuraf.js","async":true,"nonce":"$undefined"}]],["$","$L10",null,{"children":["$","$11",null,{"name":"Next.MetadataOutlet","children":"$@12"}]}]]}],"p":false,"v":null}}]]
+d:[["children",{"s":{"n":"cardId","t":"d","k":"cups-five","s":[]},"h":66048,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qe"}]]
+b:[["children",{"s":"deck","h":131584,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qd"}]]
+0:{"P":null,"c":["","deck","cups-five",""],"q":"","i":false,"t":{"t":{"s":"","h":131600,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/within/_next/static/chunks/20nq2ma3nezt9.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","data-scroll-behavior":"smooth","children":["$","body",null,{"children":["$","$L4",null,{"children":[["$","$L5",null,{"children":["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","$L9",null,{}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}],["$","$La",null,{}]]}]}]}]]}],"p":false,"v":null},"c":"$Qb"},"h":{"r":["$","$1","h",{"children":[null,["$","$L14",null,{"children":"$L15"}],["$","$L17",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$11",null,{"name":"Next.Metadata","children":"$L18"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$19",[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"jx1OLr6gC34WbEX3M3ujv"}
+1a:"/within/_next/static/chunks/03gbsvm150pbp.js"
+1b:"/within/_next/static/chunks/2bl3a4dayuraf.js"
+1c:I[93963,["$2","$1a","$1b"],"Header"]
+1d:I[85190,["$2","$1a","$1b"],"CardDetail"]
+1e:"LinkedCardDetail"
+1f:I[85190,["$2","$1a","$1b"],"$1e"]
+c:C
+f:[["$","$L1c",null,{}],["$","$11",null,{"fallback":["$","$L1d",null,{"card":{"id":"cups-five","arcana":"minor","suit":"cups","rank":"five","numeral":"V","name":"Five of Cups","nameZh":"圣杯五","imagePath":"/cards/cups-five.svg","uprightMeaning":"Disappointment deserves some time before you try to make a lesson out of it. The Five of Cups lets you name what was lost and, when you are ready, notice what can still support you. Give both realities their own place. A small act of care can help you take the next step at your own pace.","traditionalInterpretation":"Waite describes loss alongside what remains. Three cups have fallen and two are still standing. The bridge in the scene gives that contrast a direction to look toward.","symbolism":[{"element":"Three fallen cups","description":"A loss can be named in its own terms."},{"element":"Two standing cups","description":"Some sources of support may still be available."},{"element":"The bridge","description":"A way forward can exist before you feel ready to take it."}],"reflectionPrompts":["What do you need to acknowledge about this loss, and what is still available to you?","What would make the next hour a little kinder?"],"zh":{"uprightMeaning":"先给失望一点时间，再慢慢想能从中学到什么。圣杯五邀请你说清失去了什么，等准备好了，再看看还有什么能支持你。两件事都可以被承认。照顾自己的一个小动作，也能帮你按自己的节奏走下一步。","traditionalInterpretation":"韦特同时写到损失与留下的东西。三只杯子已经倒下，两只仍然立着。画面里的桥让目光还能往前看一点。","symbolism":[{"element":"三只倒下的杯子","description":"可以直接说出这次失去带来的感受。"},{"element":"两只立着的杯子","description":"有些支持仍然在你身边。"},{"element":"桥","description":"还没准备好往前走时，路也可以先在那里。"}],"reflectionPrompts":["这次失去有什么需要承认？此刻还有什么能帮到你？","做什么能让接下来的一个小时好过一点？"]},"reference":"https://en.wikisource.org/wiki/Page:The_Pictorial_Key_to_the_Tarot.pdf/230"},"artwork":"classic"}],"children":["$","$L1f",null,{"card":"$f:1:props:fallback:props:card"}]}]]
+15:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+12:null
+18:[["$","meta","0",{"name":"description","content":"Disappointment deserves some time before you try to make a lesson out of it. The Five of Cups lets you name what was lost and, when you are ready, notice what can still support you. Give both realities their own place. A small act of care can help you take the next step at your own pace."}]]

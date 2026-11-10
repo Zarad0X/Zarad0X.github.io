@@ -1,0 +1,35 @@
+1:"$Sreact.fragment"
+2:"/within/_next/static/chunks/20nq2ma3nezt9.js"
+3:"LanguageProvider"
+4:I[29899,["$2"],"$3"]
+5:I[57672,["$2"],"ArtworkProvider"]
+6:I[39756,["$2"],"default"]
+7:I[37457,["$2"],"default"]
+8:"/within/_next/static/chunks/2dl5kqhmrc4du.js"
+9:I[29306,["$2","$8"],"default"]
+a:I[58068,["$2"],"SiteFooter"]
+10:I[97367,["$2"],"OutletBoundary"]
+11:"$Sreact.suspense"
+13:"ViewportBoundary"
+14:I[97367,["$2"],"$13"]
+16:"MetadataBoundary"
+17:I[97367,["$2"],"$16"]
+19:I[68027,["$2"],"default",1]
+:HL["/within/_next/static/chunks/2aq-71kaq1f3f.css","style"]
+:HC["/",""]
+c:X
+e:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":["$Lf",[["$","script","script-0",{"src":"/within/_next/static/chunks/03gbsvm150pbp.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/within/_next/static/chunks/2bl3a4dayuraf.js","async":true,"nonce":"$undefined"}]],["$","$L10",null,{"children":["$","$11",null,{"name":"Next.MetadataOutlet","children":"$@12"}]}]]}],"p":false,"v":null}}]]
+d:[["children",{"s":{"n":"cardId","t":"d","k":"swords-three","s":[]},"h":66048,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qe"}]]
+b:[["children",{"s":"deck","h":131584,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qd"}]]
+0:{"P":null,"c":["","deck","swords-three",""],"q":"","i":false,"t":{"t":{"s":"","h":131600,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/within/_next/static/chunks/20nq2ma3nezt9.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","data-scroll-behavior":"smooth","children":["$","body",null,{"children":["$","$L4",null,{"children":[["$","$L5",null,{"children":["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","$L9",null,{}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}],["$","$La",null,{}]]}]}]}]]}],"p":false,"v":null},"c":"$Qb"},"h":{"r":["$","$1","h",{"children":[null,["$","$L14",null,{"children":"$L15"}],["$","$L17",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$11",null,{"name":"Next.Metadata","children":"$L18"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$19",[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"jx1OLr6gC34WbEX3M3ujv"}
+1a:"/within/_next/static/chunks/03gbsvm150pbp.js"
+1b:"/within/_next/static/chunks/2bl3a4dayuraf.js"
+1c:I[93963,["$2","$1a","$1b"],"Header"]
+1d:I[85190,["$2","$1a","$1b"],"CardDetail"]
+1e:"LinkedCardDetail"
+1f:I[85190,["$2","$1a","$1b"],"$1e"]
+c:C
+f:[["$","$L1c",null,{}],["$","$11",null,{"fallback":["$","$L1d",null,{"card":{"id":"swords-three","arcana":"minor","suit":"swords","rank":"three","numeral":"III","name":"Three of Swords","nameZh":"宝剑三","imagePath":"/cards/swords-three.svg","uprightMeaning":"A painful change can be difficult to describe while it is still happening. Give yourself time to name what you miss and what you need now. Even one honest sentence may be enough for today.","traditionalInterpretation":"Waite draws attention to the rain and the three blades piercing a heart. The meanings he records include separation and absence.","symbolism":[{"element":"The heart","description":"Something mattered enough to leave a mark."},{"element":"The blades","description":"Several parts of an experience may hurt at once."},{"element":"The rain","description":"Grief can take up space for a while."}],"reflectionPrompts":["Which part of the loss is hardest to put into words?","What would feel gentle and possible today?"],"zh":{"uprightMeaning":"有些改变带来的痛，正在经历时很难说清。给自己一点时间，想想你在怀念什么、眼下又需要什么。今天也许只需要说一句真心话。","traditionalInterpretation":"韦特着重描述了雨幕，以及穿过心形的三柄剑。他记下的牌义包括离别和缺席。","symbolism":[{"element":"心形","description":"有件事足够重要，留下了痕迹。"},{"element":"剑刃","description":"一段经历里，可能有几个地方同时令人难过。"},{"element":"雨幕","description":"难过可以在生活里占据一会儿。"}],"reflectionPrompts":["失去的哪一部分最难用语言说出来？","今天有什么事，做起来温和又可行？"]},"reference":"https://en.wikisource.org/wiki/Page:The_Pictorial_Key_to_the_Tarot.pdf/261"},"artwork":"classic"}],"children":["$","$L1f",null,{"card":"$f:1:props:fallback:props:card"}]}]]
+15:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+12:null
+18:[["$","meta","0",{"name":"description","content":"A painful change can be difficult to describe while it is still happening. Give yourself time to name what you miss and what you need now. Even one honest sentence may be enough for today."}]]

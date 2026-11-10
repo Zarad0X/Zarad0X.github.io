@@ -1,0 +1,35 @@
+1:"$Sreact.fragment"
+2:"/within/_next/static/chunks/20nq2ma3nezt9.js"
+3:"LanguageProvider"
+4:I[29899,["$2"],"$3"]
+5:I[57672,["$2"],"ArtworkProvider"]
+6:I[39756,["$2"],"default"]
+7:I[37457,["$2"],"default"]
+8:"/within/_next/static/chunks/2dl5kqhmrc4du.js"
+9:I[29306,["$2","$8"],"default"]
+a:I[58068,["$2"],"SiteFooter"]
+10:I[97367,["$2"],"OutletBoundary"]
+11:"$Sreact.suspense"
+13:"ViewportBoundary"
+14:I[97367,["$2"],"$13"]
+16:"MetadataBoundary"
+17:I[97367,["$2"],"$16"]
+19:I[68027,["$2"],"default",1]
+:HL["/within/_next/static/chunks/2aq-71kaq1f3f.css","style"]
+:HC["/",""]
+c:X
+e:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":["$Lf",[["$","script","script-0",{"src":"/within/_next/static/chunks/03gbsvm150pbp.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/within/_next/static/chunks/2bl3a4dayuraf.js","async":true,"nonce":"$undefined"}]],["$","$L10",null,{"children":["$","$11",null,{"name":"Next.MetadataOutlet","children":"$@12"}]}]]}],"p":false,"v":null}}]]
+d:[["children",{"s":{"n":"cardId","t":"d","k":"wands-four","s":[]},"h":66048,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qe"}]]
+b:[["children",{"s":"deck","h":131584,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qd"}]]
+0:{"P":null,"c":["","deck","wands-four",""],"q":"","i":false,"t":{"t":{"s":"","h":131600,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/within/_next/static/chunks/20nq2ma3nezt9.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","data-scroll-behavior":"smooth","children":["$","body",null,{"children":["$","$L4",null,{"children":[["$","$L5",null,{"children":["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","$L9",null,{}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}],["$","$La",null,{}]]}]}]}]]}],"p":false,"v":null},"c":"$Qb"},"h":{"r":["$","$1","h",{"children":[null,["$","$L14",null,{"children":"$L15"}],["$","$L17",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$11",null,{"name":"Next.Metadata","children":"$L18"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$19",[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"jx1OLr6gC34WbEX3M3ujv"}
+1a:"/within/_next/static/chunks/03gbsvm150pbp.js"
+1b:"/within/_next/static/chunks/2bl3a4dayuraf.js"
+1c:I[93963,["$2","$1a","$1b"],"Header"]
+1d:I[85190,["$2","$1a","$1b"],"CardDetail"]
+1e:"LinkedCardDetail"
+1f:I[85190,["$2","$1a","$1b"],"$1e"]
+c:C
+f:[["$","$L1c",null,{}],["$","$11",null,{"fallback":["$","$L1d",null,{"card":{"id":"wands-four","arcana":"minor","suit":"wands","rank":"four","numeral":"IV","name":"Four of Wands","nameZh":"权杖四","imagePath":"/cards/wands-four.svg","uprightMeaning":"A pause to mark progress can make the work feel more real. The Four of Wands invites you to notice the people or routines that gave this effort a place to land. Make a small occasion of it. A meal, a message, or a few quiet minutes can give a milestone its own place.","traditionalInterpretation":"Waite describes four wands bearing a garland and associates the scene with refuge, concord, and work brought to completion. The opening beneath the garland reads as a place to gather.","symbolism":[{"element":"Four supports","description":"Several ordinary supports can make a place feel dependable."},{"element":"The garland","description":"A deliberate gesture that marks an occasion."},{"element":"The open threshold","description":"A place where someone else can join the moment."}],"reflectionPrompts":["What small milestone deserves to be marked, and who helped you reach it?","What would make a pause feel restorative for you?"],"zh":{"uprightMeaning":"停下来记下一个进展，能让努力变得更真实。权杖四邀请你留意，是哪些人或习惯让这件事有了落脚的地方。用一顿饭、一条消息，或几分钟的安静，把这个节点单独留出来。","traditionalInterpretation":"韦特描写了四根权杖托起的花环，并将画面与安歇、和谐和一段工作的完成联系起来。花环下方的开口，像一个可以相聚的地方。","symbolism":[{"element":"四根支柱","description":"几件平常的支撑，可以让一个地方变得可靠。"},{"element":"花环","description":"用一个有意的动作记住这个时刻。"},{"element":"敞开的门槛","description":"一个可以邀请别人共同感受的地方。"}],"reflectionPrompts":["哪个小小的节点值得庆祝？谁帮你走到了这里？","怎样停一下，才会让你真正恢复一点力气？"]},"reference":"https://en.wikisource.org/wiki/Page:The_Pictorial_Key_to_the_Tarot.pdf/204"},"artwork":"classic"}],"children":["$","$L1f",null,{"card":"$f:1:props:fallback:props:card"}]}]]
+15:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+12:null
+18:[["$","meta","0",{"name":"description","content":"A pause to mark progress can make the work feel more real. The Four of Wands invites you to notice the people or routines that gave this effort a place to land. Make a small occasion of it. A meal, a message, or a few quiet minutes can give a milestone its own place."}]]
