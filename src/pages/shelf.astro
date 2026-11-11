@@ -73,6 +73,25 @@ const bookW = (i: number) => [46, 38, 42, 50, 40][i % 5];
     );
   })}
 
+  <section class="shelf shelf-lost" data-section="lost" aria-label="Lost and found">
+    <h2 class="shelf-sign">Lost &amp; Found</h2>
+    <div class="rack">
+      <button class="briefcase" id="briefcase" type="button" aria-label="A black briefcase. Open it?" aria-pressed="false">
+        <svg viewBox="0 0 160 112" aria-hidden="true">
+          <defs><radialGradient id="gold" cx="50%" cy="100%" r="100%"><stop offset="0" stop-color="#fff3b0"/><stop offset=".35" stop-color="#ffcf3a"/><stop offset="1" stop-color="#ffcf3a" stop-opacity="0"/></radialGradient></defs>
+          <g class="bc-glow"><path d="M18 46 L-46 -120 L206 -120 L142 46 Z" fill="url(#gold)" opacity=".9"/></g>
+          <rect x="16" y="46" width="128" height="58" rx="5" fill="#141010" stroke="#141010" stroke-width="2"/>
+          <rect x="22" y="52" width="116" height="46" rx="3" fill="#1f1a17"/>
+          <g class="bc-lid"><rect x="16" y="30" width="128" height="18" rx="5" fill="#2a2420" stroke="#141010" stroke-width="2"/>
+            <path d="M62 30 v-10 a6 6 0 0 1 6 -6 h24 a6 6 0 0 1 6 6 v10" fill="none" stroke="#141010" stroke-width="5" stroke-linecap="round"/>
+            <rect x="38" y="40" width="12" height="8" rx="1.5" fill="#c9a46a" stroke="#141010" stroke-width="1.5"/><rect x="110" y="40" width="12" height="8" rx="1.5" fill="#c9a46a" stroke="#141010" stroke-width="1.5"/></g>
+        </svg>
+      </button>
+    </div>
+    <div class="board" aria-hidden="true"></div>
+  </section>
+  <p class="shelf-sub" id="shelfSub" aria-live="polite"></p>
+
   <dialog class="rental" id="rental" aria-labelledby="rentalTitle">
     <div class="rental-card">
       <div class="rental-head"><b>HZ Video &amp; Records</b><span>Rental card</span></div>
@@ -124,6 +143,21 @@ const bookW = (i: number) => [46, 38, 42, 50, 40][i % 5];
     document.getElementById("rentalClose").addEventListener("click", close);
     dlg.addEventListener("click", e => { if (e.target === dlg) close(); });
     dlg.addEventListener("close", () => opener && opener.focus());
+
+    // Pulp Fiction: open the case, never say what's inside
+    const bc = document.getElementById("briefcase"), sub = document.getElementById("shelfSub");
+    let lines = [];
+    const say = (who, text) => { sub.innerHTML = `<b>${who}</b>${text}`; sub.classList.add("on"); };
+    bc.addEventListener("click", () => {
+      lines.forEach(clearTimeout); lines = [];
+      const open = !bc.classList.contains("open");
+      bc.classList.toggle("open", open); bc.setAttribute("aria-pressed", String(open));
+      if (!open) { sub.classList.remove("on"); return; }
+      lines.push(setTimeout(() => say("JULES", "We happy?"), 900));
+      lines.push(setTimeout(() => say("VINCENT", "Yeah, we happy."), 2600));
+      lines.push(setTimeout(() => sub.classList.remove("on"), 4600));
+      lines.push(setTimeout(() => { bc.classList.remove("open"); bc.setAttribute("aria-pressed", "false"); }, 6000));
+    });
   })();
   </script>
 </PageLayout>
@@ -218,6 +252,26 @@ html.night .game-band{background:#000}
 .rental-actions a{font-weight:700;font-size:12px;color:#d3241c;border-bottom:2px solid currentColor}
 .rental-actions button{font:700 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#141010;color:#f6c400;border:2px solid #141010;
   padding:8px 12px;cursor:pointer;box-shadow:3px 3px 0 #d3241c;margin-left:auto}
+
+/* Lost & Found briefcase */
+.shelf-lost .rack{min-height:0;padding:110px 0 0 clamp(40px,22vw,220px)}
+.shelf-lost .briefcase{z-index:1}
+.briefcase{position:relative;width:170px;height:118px;padding:0;border:0;background:none;cursor:pointer;margin-bottom:-2px}
+.briefcase svg{display:block;width:100%;height:100%;overflow:visible}
+.bc-lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+.bc-glow{opacity:0;transition:opacity .5s .15s}
+.briefcase:hover .bc-lid{transform:rotateX(0) translateY(-3px) rotate(-2deg)}
+.briefcase:hover .bc-glow{opacity:.18}
+.briefcase.open .bc-lid{transform:translateY(-16px) rotate(-14deg)}
+.briefcase.open .bc-glow{opacity:1;animation:goldflick 1.6s ease-in-out infinite}
+@keyframes goldflick{0%,100%{opacity:1}50%{opacity:.82}}
+.briefcase:focus-visible{outline:3px solid var(--red);outline-offset:4px}
+.shelf-sub{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 9vh);z-index:30;margin:0;transform:translate(-50%,6px);opacity:0;pointer-events:none;
+  background:rgba(0,0,0,.8);color:#f6c400;font:700 clamp(15px,2vw,19px)/1.3 var(--mono);padding:8px 16px;border-radius:2px;white-space:nowrap;transition:opacity .15s,transform .15s}
+.shelf-sub.on{opacity:1;transform:translate(-50%,0)}
+.shelf-sub b{color:#fff;margin-right:.6em}.shelf-sub b::before{content:"["}.shelf-sub b::after{content:"]"}
+@media(max-width:380px){.rack .vhs{width:33px}.rack .vhs-title{font-size:13px}.rack .vhs-sticker{font-size:6px}}
+@media(prefers-reduced-motion:reduce){.bc-lid,.bc-glow{transition:none}.briefcase.open .bc-glow{animation:none}}
 
 @media(max-width:700px){
   .rewind{position:static;display:inline-block;margin:0 0 14px 10px}

@@ -478,6 +478,7 @@ body.night .sk-green{display:inline;pointer-events:auto;cursor:help;outline:none
   .cast .talk::after{right:auto;left:50%;margin-left:-7px;width:10px;height:10px}
 }
 
+.lantern-hit{fill:transparent;cursor:help}
 /* ===== mobile polish ===== */
 .hint-short{display:none}
 @media (max-width:700px){
@@ -699,6 +700,7 @@ body.night .sk-green{display:inline;pointer-events:auto;cursor:help;outline:none
             <path class="ac" d="M114 107 l1.6 3.8 l4 .3 l-3 2.6 l1 4 l-3.6 -2.2 l-3.6 2.2 l1 -4 l-3 -2.6 l4 -.3 z"/>
             <path class="ln" d="M108 122 h12"/>
           </g>
+          <circle class="lantern-hit" cx="114" cy="112" r="17" data-voice="鲁迅 · 野草|当我沉默着的时候，我觉得充实；我将开口，同时感到空虚。"/>
         </svg>
         <div class="name">The Hermit</div>
         <div class="tag">writing</div>
@@ -747,7 +749,7 @@ body.night .sk-green{display:inline;pointer-events:auto;cursor:help;outline:none
   <div class="status"><i></i>Seeking PhD &amp; research positions</div>
   <p>HAN ZHANG, a CS undergrad in the Turing Class (honors) at <b>Zhejiang University</b>, now a visiting intern at <b>HKUST</b> with Prof. Yuan Liu. I work on <b>3D/4D vision and embodied AI</b>: structured, generalizable representations of geometry, motion and articulation, and how agents learn about a physical world that changes when they touch it.</p>
   <p>The Fool is card zero: a traveler at the cliff's edge, bag over one shoulder, about to step off. That's roughly where I am. I'm <span data-voice="VOLITION|You've read the papers. You've run the ablations. Step off the cliff, kid." tabindex="0">applying for PhDs</span> and open to wherever the road goes next.</p>
-  <p>Off the clock I play tennis, play <span data-voice="ELECTROCHEMISTRY|One more blues lick. Then bed. (It is never one more blues lick.)" tabindex="0">electric guitar</span>, and lose whole weekends to <span data-voice="ENCYCLOPEDIA|Fincher, Tarantino, The Godfather. Balatro, Baldur's Gate 3, GTA. This is not procrastination. It is research." tabindex="0">good films and games</span>.</p>
+  <p>Off the clock I play <span data-voice="COMMENTATOR|Alcaraz and Djokovic. And Roland-Garros 2025: two sets down, three championship points saved, five hours twenty-nine. Alcaraz." tabindex="0">tennis</span>, play <span data-voice="ELECTROCHEMISTRY|One more blues lick. Then bed. (It is never one more blues lick.)" tabindex="0">electric guitar</span>, and lose whole weekends to <span data-voice="ENCYCLOPEDIA|Fincher, Tarantino, The Godfather. Balatro, Baldur's Gate 3, GTA. This is not procrastination. It is research." tabindex="0">good films and games</span>.</p>
   <p class="trans">Cut to:</p>
   <div class="links">
     <a href="mailto:zhanghan1833@outlook.com">Email ↗</a>
@@ -1161,8 +1163,12 @@ cards.forEach(c => {
 const sheet = $('#sheet'), sheetCard = $('#sheetCard'), sheetPanel = $('#sheetPanel'), closeBtn = $('#closeBtn');
 let openCard = null;
 function cardRect(c){ const tr = table.getBoundingClientRect(); return { left: tr.left + c.x, top: tr.top + c.y, width: cw }; }
+const opens = []; let tempoAt = -1e9;
 function openSheet(c){
   if (openCard) return; openCard = c; hideVoice();
+  // Whiplash: four chapters opened inside six seconds is "not quite my tempo"
+  const now = performance.now(); opens.push(now); while (opens.length && now - opens[0] > 6000) opens.shift();
+  if (opens.length >= 4 && now - tempoAt > 30000){ tempoAt = now; opens.length = 0; setTimeout(() => subtitle('FLETCHER', 'Not quite my tempo.', 2600), 450); }
   const face = c.front.cloneNode(true); face.querySelectorAll('.shine').forEach(n => n.remove());
   face.style.setProperty('--fx','30%'); face.style.setProperty('--fy','30%');
   sheetCard.innerHTML = ''; sheetCard.appendChild(face);
