@@ -876,7 +876,7 @@ themeBtn.onclick = () => setTheme(!document.body.classList.contains('night'));
 const facts = $('#facts');
 ['fool','magician','wheel','hermit','world'].forEach(k => { const s = document.createElement('section'); s.appendChild($('#tpl-'+k).content.cloneNode(true)); facts.appendChild(s); });
 const factsBtn = $('#factsBtn');
-factsBtn.onclick = () => { const on = !document.body.classList.contains('factsmode'); document.body.classList.toggle('factsmode',on); factsBtn.setAttribute('aria-pressed',on); factsBtn.textContent = on ? 'Back to the cards' : 'Just the facts'; if(on) scrollTo(0,0); };
+factsBtn.onclick = () => { const on = !document.body.classList.contains('factsmode'); document.body.classList.toggle('factsmode',on); factsBtn.setAttribute('aria-pressed',on); factsBtn.textContent = on ? 'Back to the cards' : 'Just the facts'; scrollTo(0,0); if (!on) requestAnimationFrame(() => window.__hzLayout && window.__hzLayout()); };
 
 /* ---------- now playing ---------- */
 // Apple Music tracks (hk storefront). Previews are refreshed from the iTunes lookup API on first open;
@@ -988,6 +988,7 @@ let cw = 180, ch = 310;
 
 function layout(){
   const W = table.clientWidth, H = table.clientHeight;
+  if (!W || !H) return;   // table hidden (Just the facts): keep the last good layout
   const small = W < 700;
   cw = W >= 1000 ? 196 : W >= 700 ? 160 : Math.max(100, Math.min(150, W*0.34, (H-120)/1.72*0.66));
   ch = cw*1.72; table.style.setProperty('--cw', cw+'px');
@@ -1006,7 +1007,7 @@ function layout(){
   });
   hint.style.top = (H*(small?0.42:0.46) + ch/2 + (small?34:46)) + 'px';
 }
-layout(); addEventListener('resize', layout);
+layout(); addEventListener('resize', layout); window.__hzLayout = layout;
 
 // deal from the deck (off-screen bottom-right)
 {
