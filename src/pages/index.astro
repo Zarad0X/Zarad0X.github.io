@@ -464,6 +464,20 @@ body.night .sk-green{display:inline;pointer-events:auto;cursor:help;outline:none
 @keyframes green{0%,100%{opacity:.35}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){ .sk-green .g-halo,.sk-green .g-ref{animation:none} }
 
+.cast{position:relative}
+.cast .talk{position:absolute;right:-8px;bottom:calc(100% + 16px);white-space:nowrap;background:#fffbe8;color:#141010;border:2px solid #141010;border-radius:14px;
+  font:700 14px/1 var(--mono);padding:9px 13px 8px;box-shadow:3px 3px 0 rgba(20,16,16,.9);pointer-events:none;
+  opacity:0;transform:translateY(8px) scale(.85);transform-origin:80% 100%;transition:opacity .18s,transform .3s cubic-bezier(.34,1.56,.64,1)}
+.cast .talk::after{content:"";position:absolute;right:38px;top:100%;width:14px;height:14px;background:#fffbe8;border-right:2px solid #141010;border-bottom:2px solid #141010;
+  transform:translateY(-6px) rotate(45deg) skew(8deg,8deg)}
+.cast.talking .talk{opacity:1;transform:none}
+@media (max-width:760px){
+  /* phones: the panel clips anything above the card, so the bubble sits over the top of the photo */
+  .cast .talk{white-space:normal;width:96px;text-align:center;line-height:1.2;font-size:11px;padding:6px 7px 5px;right:auto;left:50%;bottom:auto;top:6px;
+    margin-left:-48px;transform-origin:50% 100%}
+  .cast .talk::after{right:auto;left:50%;margin-left:-7px;width:10px;height:10px}
+}
+
 /* ===== mobile polish ===== */
 .hint-short{display:none}
 @media (max-width:700px){
@@ -976,9 +990,13 @@ document.addEventListener('focusin', e => { const el = e.target.closest('[data-v
 document.addEventListener('scroll', hideVoice, true);
 // Taxi Driver: hold your gaze on the cast card (or tap it on a phone)
 let stareTimer = 0;
-const talkin = () => subtitle('HAN ZHANG', "You talkin' to me?", 2600);
+// a speech bubble above the card itself, so it never covers the text or the links below
+function talkin(c){
+  if (!c.querySelector('.talk')) c.insertAdjacentHTML('beforeend', `<span class="talk" role="status">You talkin' to me?</span>`);
+  c.classList.add('talking'); clearTimeout(c._talk); c._talk = setTimeout(() => c.classList.remove('talking'), 2600);
+}
 document.addEventListener('pointerover', e => { const c = e.target.closest('.cast'); clearTimeout(stareTimer); if (!c) return;
-  if (e.pointerType === 'touch') talkin(); else stareTimer = setTimeout(talkin, 3000); });
+  if (e.pointerType === 'touch') talkin(c); else stareTimer = setTimeout(() => talkin(c), 3000); });
 document.addEventListener('pointerout', e => { if (e.target.closest('.cast') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.cast'))) clearTimeout(stareTimer); });
 
 
