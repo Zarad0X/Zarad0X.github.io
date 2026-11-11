@@ -210,6 +210,7 @@ body.night .kicker{color:var(--accent)}
 .facts{position:relative;z-index:3;max-width:720px;margin:0 auto;padding:30px 20px 120px}
 .facts section{padding-top:20px;border-top:1.5px solid var(--line);margin-top:40px}
 body.factsmode .table,body.factsmode .hint{display:none}
+body.factsmode .skyline{opacity:.08;transition:opacity .4s}
 body:not(.factsmode) .facts{display:none}
 
 @media (max-width:760px){
@@ -417,7 +418,20 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
 @keyframes nw-peek{0%,80%,100%{transform:translateY(16px)}84%,95%{transform:translateY(0)}88%{transform:translateY(2px)}91%{transform:translateY(0)}}
 @media (prefers-reduced-motion:reduce){ .sk-naiwa .nw-body{animation:none;transform:translateY(5px)} }
 
-@media (prefers-reduced-motion:reduce){ .deck .stack i{transition:none} body::before,body.night::after,.scratches i{animation:none!important} }
+
+
+/* ===== cast card (halftone portrait) ===== */
+.cast{float:right;width:190px;margin:4px 4px 18px 26px;background:#f7ecd2;border:2px solid var(--ink);box-shadow:6px 6px 0 var(--hard);
+  transform:rotate(3deg);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+body.night .cast{box-shadow:6px 6px 0 var(--red)}
+.cast:hover{transform:rotate(0) scale(1.03)}
+.cast img{display:block;width:100%;height:auto;aspect-ratio:3/4;max-width:100%}
+.cast figcaption{border-top:2px solid var(--ink);background:var(--yellow);color:#141010;text-align:center;padding:5px 4px 4px;line-height:1.05}
+.cast figcaption small{display:block;font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.3em}
+.cast figcaption b{display:block;font-family:var(--fell);font-weight:400;font-size:22px;letter-spacing:.03em}
+@media (max-width:760px){ .cast{width:120px;margin:2px 2px 12px 16px} .cast figcaption b{font-size:15px} .cast figcaption small{font-size:8px} }
+
+@media (prefers-reduced-motion:reduce){ .cast{transition:none} .deck .stack i{transition:none} body::before,body.night::after,.scratches i{animation:none!important} }
 </style>
 </head>
 <body>
@@ -688,6 +702,7 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
 
 <!-- ============ sheet contents ============ -->
 <template id="tpl-fool">
+  <figure class="cast"><img src="/assets/portrait-halftone.jpg" alt="Han Zhang, a halftone-printed portrait" width="480" height="640" loading="lazy"><figcaption><small>STARRING</small><b>HAN ZHANG</b></figcaption></figure>
   <div class="kicker">Chapter Zero</div>
   <h2>The Fool</h2>
   <p class="slug">EXT. A cliff over Victoria Harbour — dawn</p>
