@@ -393,6 +393,21 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
 .jb-foot{display:flex;justify-content:space-between;gap:10px;margin:8px 2px 0;font-family:var(--mono);font-size:11px;opacity:.75}
 .jb-foot a{font-weight:700}
 
+
+
+/* ===== 奶蛙 easter egg ===== */
+.naiwa-peek{position:fixed;right:calc(clamp(16px,3vw,28px) + 1px);bottom:calc(env(safe-area-inset-bottom,0px) + 84px);z-index:5;width:44px;height:28px;
+  overflow:hidden;padding:0;border:0;background:none;cursor:pointer}
+.naiwa-peek svg{display:block;width:44px;height:54px;transform:translateY(100%);animation:nw-peek 16s 7s infinite;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.deck:hover + .naiwa-peek svg,.deck:focus-visible + .naiwa-peek svg,.naiwa-peek:hover svg,.naiwa-peek:focus-visible svg{animation:none;transform:translateY(0)}
+@keyframes nw-peek{0%,82%,100%{transform:translateY(100%)}85%,95%{transform:translateY(0)}88%{transform:translateY(8%)}91%{transform:translateY(0)}}
+.naiwa-stage{position:fixed;left:50%;bottom:0;z-index:30;width:min(240px,52vw);margin-left:calc(min(240px,52vw) / -2);cursor:pointer;
+  filter:drop-shadow(6px 6px 0 rgba(20,16,16,.35));-webkit-tap-highlight-color:transparent}
+.naiwa-stage[hidden]{display:none!important}
+.naiwa-stage svg{display:block;width:100%;height:auto}
+@media (max-width:760px){ .naiwa-peek{bottom:calc(env(safe-area-inset-bottom,0px) + 66px);width:36px;height:24px} .naiwa-peek svg{width:36px;height:44px} }
+@media (prefers-reduced-motion:reduce){ .naiwa-peek svg{animation:none;transform:translateY(0)} }
+
 @media (prefers-reduced-motion:reduce){ .deck .stack i{transition:none} body::before,body.night::after,.scratches i{animation:none!important} }
 </style>
 </head>
@@ -410,6 +425,31 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
       <circle cx="3.7" cy="3.6" r=".55" fill="var(--ink)" opacity=".4"/>
     </pattern>
     <pattern id="halftone" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="2" cy="2" r="1.05" fill="var(--ink)" opacity=".75"/></pattern>
+    <symbol id="naiwa" viewBox="0 0 124 150"><g stroke="#141010" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" filter="url(#rough)">
+    <ellipse cx="66" cy="143" rx="50" ry="4" fill="#141010" opacity=".18" stroke="none"/>
+    <!-- legs: horse stance -->
+    <path fill="#f2c935" d="M46 104 C34 112,25 124,27 137 L39 137 C39 127,47 119,56 114 Z"/>
+    <path fill="#f2c935" d="M94 106 C105 114,111 126,107 137 L95 137 C97 128,92 120,85 116 Z"/>
+    <path fill="#7d6b3a" d="M14 141 C16 135,30 134,40 136 C42 139,40 142,36 142 L16 143 Z"/>
+    <path fill="#7d6b3a" d="M94 136 C104 134,116 135,118 141 L118 143 L98 142 C94 142,92 139,94 136 Z"/>
+    <!-- extended arm (behind body) -->
+    <path fill="#f2c935" d="M52 52 C40 46,28 41,18 38 L15 47 C26 50,38 56,49 64 Z"/>
+    <path fill="#7d6b3a" d="M18 38 C14 31,10 30,8 33 C6 36,8 44,12 48 C14 50,17 49,18 46 Z"/>
+    <path fill="none" stroke-width="1.4" d="M9 36 l4 3 M8 40 l5 2 M9 44 l4 1"/>
+    <!-- body -->
+    <path fill="#f2c935" d="M66 30 C68 13,94 9,99 29 C103 45,113 70,109 96 C107 110,97 117,72 117 C52 117,38 111,36 95 C34 73,44 55,58 44 C62 40,64 36,66 30 Z"/>
+    <path fill="#f6e2bd" stroke-width="1.6" d="M46 88 C46 70,62 62,78 64 C94 66,100 80,96 94 C92 108,76 112,62 108 C52 105,46 98,46 88 Z"/>
+    <!-- fist on belly -->
+    <path fill="#f2c935" d="M104 66 C96 75,87 80,79 82 L79 91 C90 90,99 84,107 76 Z"/>
+    <path fill="#7d6b3a" d="M70 81 C70 77,78 76,81 79 C84 82,83 90,79 92 C74 93,70 89,70 81 Z"/>
+    <path fill="none" stroke-width="1.3" d="M73 82 h5 M73 86 h5"/>
+    <!-- eyes -->
+    <circle cx="73" cy="28" r="6.5" fill="#a6d36c"/><circle cx="71.5" cy="28.5" r="3.4" fill="#141010" stroke="none"/>
+    <circle cx="93" cy="26" r="6.5" fill="#a6d36c"/><circle cx="91.5" cy="26.5" r="3.4" fill="#141010" stroke="none"/>
+    <circle cx="70.6" cy="27.3" r="1" fill="#fff" stroke="none"/><circle cx="90.6" cy="25.3" r="1" fill="#fff" stroke="none"/>
+    <!-- mouth -->
+    <path fill="none" stroke-width="1.6" d="M79 43 q6 1.2 13 -.6"/>
+  </g></symbol>
     <radialGradient id="lglow"><stop offset="0" stop-color="var(--accent)" stop-opacity=".75"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></radialGradient>
   </defs>
 </svg>
@@ -622,6 +662,8 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
   <span class="stack" aria-hidden="true"><i></i><i></i><i></i></span>
   <span class="lbl"><b>INTERMISSION</b><span>Draw your own →</span></span>
 </a>
+<button class="naiwa-peek" id="naiwaPeek" type="button" aria-label="Someone is hiding behind the deck"><svg aria-hidden="true"><use href="#naiwa"/></svg></button>
+<div class="naiwa-stage" id="naiwaStage" hidden aria-live="polite"><svg viewBox="0 0 124 150" role="img" aria-label="Naiwa, in a horse stance"><use href="#naiwa"/></svg></div>
 <div class="jukebox" id="jukebox" hidden role="dialog" aria-label="Soundtrack">
   <div class="jb-head"><b>SOUNDTRACK</b><button class="jb-x" id="jbClose" aria-label="Close the music player">✕</button></div>
   <ol class="jb-list" id="jbList"></ol>
@@ -834,6 +876,41 @@ const hideVoice = () => voice.classList.remove('on');
 document.addEventListener('pointerover', e => { const el = e.target.closest('[data-voice]'); el ? showVoice(el) : hideVoice(); });
 document.addEventListener('focusin', e => { const el = e.target.closest('[data-voice]'); el ? showVoice(el) : hideVoice(); });
 document.addEventListener('scroll', hideVoice, true);
+
+
+/* ---------- 奶蛙 ---------- */
+(() => {
+  const peek = $('#naiwaPeek'), stage = $('#naiwaStage');
+  const lines = ['嘿！哈！', 'You found me. Now go read the paper.', 'Horse stance first. PhD later.', '我只是一只路过的奶蛙。', "Don't tell the reviewers I was here."];
+  let li = Math.floor(Math.random()*lines.length), timer = null, out = false;
+  const say = () => { li = (li + 1) % lines.length; voice.innerHTML = `<b>奶蛙</b>${lines[li]}`; voice.style.bottom = (stage.offsetHeight + 16) + 'px'; voice.classList.add('on'); };
+  function hide(){
+    if (!out) return; out = false; clearTimeout(timer);
+    const done = () => { stage.hidden = true; voice.classList.remove('on'); voice.style.bottom = ''; };
+    if (reduced) return done();
+    stage.animate([{transform:'none'},{transform:'translateY(-14%)',offset:.3},{transform:'translateY(110%)'}], {duration:450, easing:'cubic-bezier(.5,0,.75,0)'}).onfinish = done;
+  }
+  function show(){
+    clearTimeout(timer);
+    if (out){ say(); if (!reduced) stage.animate([{transform:'none'},{transform:'translateY(-10%) rotate(-4deg)'},{transform:'none'}], {duration:380, easing:'cubic-bezier(.34,1.56,.64,1)'}); }
+    else {
+      out = true; stage.hidden = false;
+      if (!reduced) stage.animate([{transform:'translateY(110%)'},{transform:'translateY(-12%) rotate(3deg)',offset:.6},{transform:'none'}], {duration:620, easing:'cubic-bezier(.25,1,.5,1)'});
+      say();
+    }
+    timer = setTimeout(hide, 5000);
+  }
+  peek.addEventListener('click', show);
+  stage.addEventListener('click', show);
+  let typed = '';
+  addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('input,textarea')) return;
+    if (e.key === 'Escape') return hide();
+    if (e.key.length !== 1) return;
+    typed = (typed + e.key.toLowerCase()).slice(-5);
+    if (typed === 'naiwa') show();
+  });
+})();
 
 /* ---------- cards: layout + spring physics ---------- */
 const table = $('#table'), hint = $('.hint');
