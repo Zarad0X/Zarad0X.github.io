@@ -18,6 +18,11 @@ const pageTitle = title.includes(SITE.NAME) ? title : `${title} | ${SITE.NAME}`;
 <html lang={lang}>
   <head>
     <Head title={pageTitle} description={description} lang={lang} type={type} image={image} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" />
+    <link rel="stylesheet" href="/pulp.css" />
+    <script is:inline>try{if(localStorage.getItem("hz-theme-t")==="night")document.documentElement.classList.add("night")}catch(e){}</script>
     <slot name="head" />
   </head>
   <body>
