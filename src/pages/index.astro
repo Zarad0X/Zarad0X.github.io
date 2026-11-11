@@ -438,6 +438,20 @@ body.night .cast{box-shadow:6px 6px 0 var(--red)}
 
 
 
+/* ===== Grindhouse neon sign ===== */
+.who{position:relative}
+body.night .who h1{color:transparent;text-shadow:none;-webkit-text-stroke:1.7px #ffe6ea;
+  filter:drop-shadow(0 0 1.5px #ffc2cd) drop-shadow(0 0 7px #ff2d55) drop-shadow(0 0 20px rgba(255,45,85,.7));animation:hum 5s infinite}
+body.night .who::before{content:"";position:absolute;left:-60px;top:-50px;width:min(720px,110vw);height:240px;pointer-events:none;z-index:-1;
+  background:radial-gradient(ellipse at 35% 50%,rgba(255,45,85,.20),rgba(255,45,85,.06) 45%,transparent 70%)}
+body.night .nl{display:inline-block}
+body.night .nl.flick{animation:buzz 7.3s infinite}
+body.night .neon.igniting .nl{animation:ignite .75s calc(var(--k) * 85ms) both}
+@keyframes ignite{0%{opacity:.08}12%{opacity:1}18%{opacity:.1}34%{opacity:1}40%{opacity:.25}100%{opacity:1}}
+@keyframes buzz{0%,58%{opacity:1}59%{opacity:.12}60%{opacity:1}62%{opacity:.18}64%,84%{opacity:1}85%,88%{opacity:.08}89%,100%{opacity:1}}
+@keyframes hum{0%,100%{opacity:1}47%{opacity:1}48%{opacity:.93}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){ body.night .who h1,body.night .nl.flick,body.night .neon.igniting .nl{animation:none} }
+
 /* ===== mobile polish ===== */
 .hint-short{display:none}
 @media (max-width:700px){
@@ -514,7 +528,7 @@ body.night .cast{box-shadow:6px 6px 0 var(--red)}
 
 <header>
   <div class="who">
-    <h1>Han Zhang</h1>
+    <h1 class="neon" id="neonSign" aria-label="Han Zhang"><span aria-hidden="true"><span class="nl" style="--k:0">H</span><span class="nl" style="--k:1">a</span><span class="nl" style="--k:2">n</span> <span class="nl" style="--k:4">Z</span><span class="nl" style="--k:5">h</span><span class="nl" style="--k:6">a</span><span class="nl" style="--k:7">n</span><span class="nl flick" style="--k:8">g</span></span></h1>
   </div>
   <div class="controls">
     <button class="pill" id="themeBtn" aria-pressed="false">☾ Grindhouse</button>
@@ -870,7 +884,9 @@ for (let i=0;i<34;i++){
 
 /* ---------- theme ---------- */
 const themeBtn = $('#themeBtn');
-function setTheme(n){ document.body.classList.toggle('night',n); themeBtn.textContent = n ? '☀ Pulp' : '☾ Grindhouse'; themeBtn.setAttribute('aria-pressed',n); store.set('hz-theme-t',n?'night':'paper'); }
+function setTheme(n){ const was = document.body.classList.contains('night'); document.body.classList.toggle('night',n);
+  if (n && !was && !reduced){ const sign = $('#neonSign'); sign.classList.remove('igniting'); void sign.offsetWidth; sign.classList.add('igniting'); setTimeout(() => sign.classList.remove('igniting'), 1700); }
+  themeBtn.textContent = n ? '☀ Pulp' : '☾ Grindhouse'; themeBtn.setAttribute('aria-pressed',n); store.set('hz-theme-t',n?'night':'paper'); }
 setTheme(store.get('hz-theme-t') === 'night' || /night/.test(location.search));
 themeBtn.onclick = () => setTheme(!document.body.classList.contains('night'));
 
