@@ -2,7 +2,7 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import { SITE } from "@consts";
-import { chapterLabel, chapterNumber } from "@lib/chapters";
+import { chapterLabel, chapterNumber, runtimeMinutes } from "@lib/chapters";
 export async function getStaticPaths() {
   const posts = (await getCollection("blog")).filter(post => !post.data.draft);
   return posts.map(post => ({
@@ -16,6 +16,7 @@ const { Content, headings } = await post.render();
 const parts = headings.filter(heading => heading.depth === 2);
 const zh = post.data.lang === "zh";
 const back = zh ? "所有文章" : "All posts";
+const runtime = runtimeMinutes(post.body);
 const date = new Intl.DateTimeFormat("en-US", { month:"short", day:"2-digit", year:"numeric", timeZone:"UTC" }).format(post.data.date);
 ---
 <PageLayout title={post.data.title} description={post.data.description} lang={post.data.lang} type="article" reading>
@@ -43,7 +44,7 @@ const date = new Intl.DateTimeFormat("en-US", { month:"short", day:"2-digit", ye
     <header class="article-header">
       <p class="chapter-no">{chapterLabel(chapter, zh ? "zh" : "en")}</p>
       <h1>{post.data.title}</h1><p class="article-description">{post.data.description}</p>
-      <p class="article-date"><time datetime={post.data.date.toISOString().slice(0,10)}>{date}</time></p>
+      <p class="article-date"><time datetime={post.data.date.toISOString().slice(0,10)}>{date}</time> · <span class="runtime">{zh ? `片长 ${runtime} 分钟` : `Runtime ${runtime} min`}</span></p>
     </header>
     {parts.length > 0 && <details class="article-contents"><summary>{zh ? "目录" : "In this essay"}</summary><ol>{parts.map(part => <li><a href={`#${part.slug}`}>{part.text}</a></li>)}</ol></details>}
     <div class="script-page">
@@ -52,5 +53,26 @@ const date = new Intl.DateTimeFormat("en-US", { month:"short", day:"2-digit", ye
       <p class="transition">{zh ? "淡出。" : "Fade out."}</p>
     </div>
   </article>
+  <div class="reel" id="reel" aria-hidden="true" data-runtime={runtime * 60}><div class="reel-fill" id="reelFill"></div><span class="reel-tc" id="reelTc">REEL 1 · 00:00:00</span></div>
+  <script is:inline>
+  (() => {
+    const reel = document.getElementById("reel"), fill = document.getElementById("reelFill"), tc = document.getElementById("reelTc");
+    const art = document.querySelector(".blog-article"), total = +reel.dataset.runtime || 60;
+    const heads = [...document.querySelectorAll(".prose h2")];
+    const pad = n => String(Math.floor(n)).padStart(2, "0");
+    let ticking = false;
+    function update(){
+      ticking = false;
+      const r = art.getBoundingClientRect(), vh = innerHeight;
+      const k = Math.min(1, Math.max(0, (vh * 0.35 - r.top) / Math.max(1, r.height - vh * 0.5)));
+      fill.style.transform = `scaleX(${k})`;
+      const t = k * total, reelNo = 1 + heads.filter(h => h.getBoundingClientRect().top < vh * 0.35).length;
+      tc.textContent = `REEL ${reelNo} · ${pad(t / 3600)}:${pad(t / 60 % 60)}:${pad(t % 60)}`;
+      reel.classList.toggle("on", scrollY > 60);
+    }
+    addEventListener("scroll", () => { if (!ticking){ ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    addEventListener("resize", update); update();
+  })();
+  </script>
   <div class="article-end"><a href="/blog/">← {back}</a><a href={`mailto:${SITE.EMAIL}`}>{zh ? "联系我" : "Get in touch"} ↗</a></div>
 </PageLayout>

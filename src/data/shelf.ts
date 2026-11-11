@@ -26,6 +26,8 @@ export const shelf: ShelfItem[] = [
   { kind: "film", title: "Kill Bill", sub: "Vol. 1 & 2", by: "Quentin Tarantino", year: "2003–04", color: "#f6c400", ink: "#141010" },
   { kind: "film", title: "Whiplash", by: "Damien Chazelle", year: "2014", color: "#141010", ink: "#f2e6cc" },
   { kind: "film", title: "Gone Girl", by: "David Fincher", year: "2014", color: "#f2e6cc", ink: "#141010" },
+  { kind: "film", title: "Roland-Garros", sub: "2025 Final", by: "Alcaraz d. Sinner · Court Philippe-Chatrier", year: "2025", color: "#c4622d", ink: "#fffbe8",
+    note: "4–6 6–7 6–4 7–6 7–6(10–2). Two sets down, three championship points saved, 5 h 29 min. My favourite match." },
 
   // Records — LPs and 7-inch singles
   { kind: "album", title: "Slowhand", by: "Eric Clapton", year: "1977", color: "#c9a46a", ink: "#141010", link: "https://music.apple.com/hk/album/slowhand-35th-anniversary-edition/1440782705" },

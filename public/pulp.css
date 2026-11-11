@@ -22,6 +22,13 @@ h1{font-family:var(--anton);font-weight:400;text-transform:uppercase;letter-spac
 .header{border-bottom:2px solid var(--strong);padding:30px 0 18px;margin-bottom:46px;gap:16px;flex-wrap:wrap}
 .wordmark{font-family:var(--anton);font-style:normal;font-weight:400;font-size:30px;letter-spacing:.02em;text-transform:uppercase;line-height:1;color:var(--strong);text-shadow:3px 3px 0 var(--red)}
 .wordmark:hover{color:var(--strong)}
+.wordmark span{color:inherit}
+html.night .wordmark{color:transparent;text-shadow:none;-webkit-text-stroke:1.2px #ffe6ea;
+  filter:drop-shadow(0 0 1px #ffc2cd) drop-shadow(0 0 5px #ff2d55) drop-shadow(0 0 14px rgba(255,45,85,.65))}
+html.night .wordmark .nl{display:inline-block}
+html.night .wordmark .nl.flick{animation:buzz 7.3s infinite}
+@keyframes buzz{0%,58%{opacity:1}59%{opacity:.12}60%{opacity:1}62%{opacity:.18}64%,84%{opacity:1}85%,88%{opacity:.08}89%,100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){html.night .wordmark .nl.flick{animation:none}}
 .header nav{gap:22px;align-items:center;font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--strong)}
 .header nav a:after{height:2px;background:var(--red)}
 .header nav [aria-current="page"]{color:var(--strong)}
@@ -122,3 +129,14 @@ html.night .standalone-heading h1{text-shadow:4px 4px 0 var(--red)}
   .prose h2{font-size:26px}
 }
 @media(prefers-reduced-motion:reduce){.blog-entry{transition:none}}
+
+/* film-strip reading progress on blog posts */
+.reel{position:fixed;left:0;right:0;top:0;height:20px;z-index:60;background:#141010;opacity:0;transform:translateY(-100%);transition:opacity .25s,transform .25s;pointer-events:none;overflow:hidden}
+.reel.on{opacity:1;transform:none}
+.reel::before,.reel::after{content:"";position:absolute;left:0;right:0;height:4px;background:repeating-linear-gradient(90deg,transparent 0 6px,#efd8a4 6px 11px,transparent 11px 16px);opacity:.75;z-index:2}
+.reel::before{top:2px}.reel::after{bottom:2px}
+.reel-fill{position:absolute;inset:0;background:#d3241c;transform-origin:left;transform:scaleX(0)}
+html.night .reel-fill{background:#f6c400}
+.reel-tc{position:absolute;right:12px;top:50%;transform:translateY(-50%);z-index:3;font:700 9px/1 var(--mono);letter-spacing:.14em;color:#fff;background:#141010;padding:2px 6px}
+.runtime{white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.reel{transition:none}}

@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
-import { chapterLabel, chapterNumber } from "@lib/chapters";
+import { chapterLabel, chapterNumber, runtimeMinutes } from "@lib/chapters";
 const allPosts = (await getCollection("blog")).filter(post => !post.data.draft);
 const posts = allPosts.filter(post => post.data.lang === "en").sort((a,b) => b.data.date.valueOf() - a.data.date.valueOf());
 const years = [...new Set(posts.map(post => post.data.date.getUTCFullYear()))].sort((a,b) => b-a);
@@ -17,7 +17,7 @@ const dateLabel = (date: Date) => new Intl.DateTimeFormat("en-US", { month:"shor
         return (
           <article class="blog-entry">
             <span class="chapter-no">{chapterLabel(chapterNumber(post, allPosts), "en")}</span>
-            <time datetime={post.data.date.toISOString().slice(0,10)}>{dateLabel(post.data.date)}, {year}</time>
+            <time datetime={post.data.date.toISOString().slice(0,10)}>{dateLabel(post.data.date)}, {year} · Runtime {runtimeMinutes(post.body)} min</time>
             <div>
               <h3><a href={`/blog/${post.slug}/`}>{post.data.title}</a></h3>
               <p>{post.data.description}</p>

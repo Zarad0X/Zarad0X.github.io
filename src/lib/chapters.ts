@@ -23,3 +23,11 @@ export function chapterNumber(post: CollectionEntry<"blog">, all: CollectionEntr
     .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf() || a.slug.localeCompare(b.slug));
   return sameLang.findIndex(p => p.slug === post.slug) + 1;
 }
+
+/** Reading time in whole minutes ("runtime"), counting CJK characters separately from words. */
+export function runtimeMinutes(markdown: string): number {
+  const text = markdown.replace(/```[\s\S]*?```/g, " ").replace(/<[^>]+>/g, " ").replace(/[#*_>`\[\]()!-]/g, " ");
+  const cjk = (text.match(/[㐀-鿿豈-﫿]/g) || []).length;
+  const words = text.replace(/[㐀-鿿豈-﫿]/g, " ").split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 230 + cjk / 400));
+}
