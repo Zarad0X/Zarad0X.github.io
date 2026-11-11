@@ -784,7 +784,7 @@ const songs = [
 const np = $('#np'), npText = $('#npText'), jb = $('#jukebox'), jbList = $('#jbList'), jbOpen = $('#jbOpen');
 const jbPlay = $('#jbPlay'), jbBar = $('#jbBar'), jbProg = $('#jbProg'), jbTime = $('#jbTime'), jbVol = $('#jbVol');
 const audio = new Audio(); audio.preload = 'none';
-let si = 0, vol = parseFloat(store.get('hz-vol')); if (!(vol >= 0 && vol <= 1)) vol = 0.25;
+let si = 0, vol = parseFloat(store.get('hz-vol')); if (!(vol >= 0 && vol <= 1)) vol = 0.08;
 jbVol.value = vol; audio.volume = vol;
 const fmt = t => `${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 const showSong = () => { const s = songs[si]; npText.innerHTML = `${s.t} <span>— ${s.a.replace(/ feat\..*/,'')}</span>`; };
