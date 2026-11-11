@@ -15,7 +15,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <meta property="og:url" content={canonicalURL}>
 <meta property="og:title" content="Han Zhang — Computer Vision &amp; Embodied AI">
 <meta property="og:description" content="A picture in five chapters: research in 3D/4D vision and embodied AI.">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://zarad0x.github.io/assets/og-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Han Zhang: a pulp-style title card with The Fool tarot card over a Hong Kong skyline">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Han Zhang — Computer Vision &amp; Embodied AI">
+<meta name="twitter:description" content="A picture in five chapters: research in 3D/4D vision and embodied AI.">
+<meta name="twitter:image" content="https://zarad0x.github.io/assets/og-card.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -393,6 +400,23 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
 .jb-foot{display:flex;justify-content:space-between;gap:10px;margin:8px 2px 0;font-family:var(--mono);font-size:11px;opacity:.75}
 .jb-foot a{font-weight:700}
 
+
+
+/* ===== 奶蛙 easter egg ===== */
+.naiwa-stage{position:fixed;left:50%;bottom:0;z-index:30;width:min(150px,36vw);margin-left:calc(min(150px,36vw) / -2);cursor:pointer;
+  filter:drop-shadow(6px 6px 0 rgba(20,16,16,.35));-webkit-tap-highlight-color:transparent}
+.naiwa-stage[hidden]{display:none!important}
+.naiwa-stage svg{display:block;width:100%;height:auto}
+/* rooftop peek: the only interactive thing in the skyline */
+.table{pointer-events:none}
+.table .card{pointer-events:auto}
+.sk-naiwa{pointer-events:auto;cursor:pointer;outline:none}
+.sk-naiwa .nw-hit{fill:transparent}
+.sk-naiwa .nw-body{transform:translateY(16px);animation:nw-peek 15s 6s infinite;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.sk-naiwa:hover .nw-body,.sk-naiwa:focus-visible .nw-body{animation:none;transform:translateY(0)}
+@keyframes nw-peek{0%,80%,100%{transform:translateY(16px)}84%,95%{transform:translateY(0)}88%{transform:translateY(2px)}91%{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){ .sk-naiwa .nw-body{animation:none;transform:translateY(5px)} }
+
 @media (prefers-reduced-motion:reduce){ .deck .stack i{transition:none} body::before,body.night::after,.scratches i{animation:none!important} }
 </style>
 </head>
@@ -410,6 +434,32 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
       <circle cx="3.7" cy="3.6" r=".55" fill="var(--ink)" opacity=".4"/>
     </pattern>
     <pattern id="halftone" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="2" cy="2" r="1.05" fill="var(--ink)" opacity=".75"/></pattern>
+    <symbol id="naiwa" viewBox="0 0 126 160"><g stroke="#141010" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" filter="url(#rough)">
+    <ellipse cx="66" cy="153" rx="56" ry="3" fill="#141010" opacity=".16" stroke="none"/>
+    <!-- legs (deep horse stance) -->
+    <path fill="#efc23a" d="M44 106 C34 112,24 118,20 126 C17 133,24 140,29 146 L40 146 C38 140,36 133,40 128 C44 124,52 121,60 118 Z"/>
+    <path fill="#efc23a" d="M100 110 C108 115,116 122,115 130 C114 137,108 142,106 146 L96 146 C98 140,101 134,99 129 C96 124,88 121,80 119 Z"/>
+    <path fill="#7a6a40" d="M30 143 C22 143,14 146,9 149 C8 152,12 153,17 153 L41 153 C43 150,42 146,40 143 Z"/>
+    <path fill="#7a6a40" d="M96 143 C104 143,112 146,120 149 C122 152,118 153,113 153 L95 153 C93 150,94 146,96 143 Z"/>
+    <path fill="none" stroke-width="1" d="M13 150 l1.5 3 M18 148 l1.5 5 M115 150 l-1.5 3 M110 148 l-1.5 5"/>
+    <!-- extended arm + open palm -->
+    <path fill="#efc23a" d="M59 49 C48 48,36 46,24 46 L25 57 C33 59,40 64,44 72 Z"/>
+    <path fill="#7a6a40" d="M25 57 C20 58,13 57,10 53 C7 49,6 42,8 38 C9 35,12 35,13 38 C13 34,16 34,17 37 C18 34,21 35,21 38 C22 36,25 37,24 41 L24 46 C26 44,29 44,29 47 C29 50,27 53,25 55 Z"/>
+    <path fill="none" stroke-width=".9" d="M13 38 l.8 7 M17 37 l.4 7.5 M21 38 l-.3 7"/>
+    <!-- body -->
+    <path fill="#efc23a" d="M60 38 C59 27,65 18,73 18 C80 18,85 24,87 32 C90 42,100 50,107 57 C112 64,113 80,111 92 C109 103,107 110,104 114 C98 118,84 119,70 119 C56 119,44 116,40 108 C37 100,37 90,40 80 C43 70,50 60,58 50 C59 46,60 42,60 38 Z"/>
+    <path fill="#e39a32" stroke="none" opacity=".4" d="M40 104 C46 114,58 119,70 119 C84 119,98 118,104 114 C107 110,109 103,111 94 C96 108,66 116,40 104 Z"/>
+    <ellipse cx="66" cy="86" rx="27" ry="21" transform="rotate(-8 66 86)" fill="#f4dfbd" stroke-width="1.1"/>
+    <!-- arm with fist on belly -->
+    <path fill="#efc23a" d="M93 59 C104 65,109 78,103 87 C97 93,87 92,79 89 L78 80 C84 80,90 79,93 76 C95 72,94 66,91 62 Z"/>
+    <path fill="#7a6a40" d="M69 82 C69 77,76 76,79 79 C82 82,81 89,76 90 C71 90,69 87,69 82 Z"/>
+    <path fill="none" stroke-width=".9" d="M71 81 h5 M71 85 h5"/>
+    <!-- eyes + mouth -->
+    <circle cx="62" cy="29" r="4.4" fill="#a8d46a"/><circle cx="61.6" cy="29.3" r="2.6" fill="#141010" stroke="none"/>
+    <circle cx="78" cy="29" r="5" fill="#a8d46a"/><circle cx="77.6" cy="29.3" r="2.9" fill="#141010" stroke="none"/>
+    <circle cx="60.8" cy="28.4" r=".7" fill="#fff" stroke="none"/><circle cx="76.7" cy="28.3" r=".8" fill="#fff" stroke="none"/>
+    <path fill="none" stroke-width="1.2" d="M66 39.5 q5 .6 10 -.2"/>
+  </g></symbol>
     <radialGradient id="lglow"><stop offset="0" stop-color="var(--accent)" stop-opacity=".75"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></radialGradient>
   </defs>
 </svg>
@@ -622,6 +672,7 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
   <span class="stack" aria-hidden="true"><i></i><i></i><i></i></span>
   <span class="lbl"><b>INTERMISSION</b><span>Draw your own →</span></span>
 </a>
+<div class="naiwa-stage" id="naiwaStage" hidden aria-live="polite"><svg viewBox="0 0 126 160" role="img" aria-label="Naiwa, in a horse stance"><use href="#naiwa"/></svg></div>
 <div class="jukebox" id="jukebox" hidden role="dialog" aria-label="Soundtrack">
   <div class="jb-head"><b>SOUNDTRACK</b><button class="jb-x" id="jbClose" aria-label="Close the music player">✕</button></div>
   <ol class="jb-list" id="jbList"></ol>
@@ -643,7 +694,7 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
   <div class="status"><i></i>Seeking PhD &amp; research positions</div>
   <p>HAN ZHANG, a CS undergrad in the Turing Class (honors) at <b>Zhejiang University</b>, now a visiting intern at <b>HKUST</b> with Prof. Yuan Liu. I work on <b>3D/4D vision and embodied AI</b>: structured, generalizable representations of geometry, motion and articulation, and how agents learn about a physical world that changes when they touch it.</p>
   <p>The Fool is card zero: a traveler at the cliff's edge, bag over one shoulder, about to step off. That's roughly where I am. I'm <span data-voice="VOLITION|You've read the papers. You've run the ablations. Step off the cliff, kid." tabindex="0">applying for PhDs</span> and open to wherever the road goes next.</p>
-  <p>Off the clock I play <span data-voice="ELECTROCHEMISTRY|One more blues lick. Then bed. (It is never one more blues lick.)" tabindex="0">electric guitar</span>, play tennis, and lose whole weekends to <span data-voice="ENCYCLOPEDIA|Fincher, Tarantino, The Godfather. Balatro, Baldur's Gate 3, Disco Elysium. This is not procrastination. It is research." tabindex="0">good films and games</span>.</p>
+  <p>Off the clock I play <span data-voice="ELECTROCHEMISTRY|One more blues lick. Then bed. (It is never one more blues lick.)" tabindex="0">electric guitar</span>, play tennis, and lose whole weekends to <span data-voice="ENCYCLOPEDIA|Fincher, Tarantino, The Godfather. Balatro, Baldur's Gate 3, GTA. This is not procrastination. It is research." tabindex="0">good films and games</span>.</p>
   <p class="trans">Cut to:</p>
   <div class="links">
     <a href="mailto:zhanghan1833@outlook.com">Email ↗</a>
@@ -708,7 +759,7 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
   <div class="kicker">Chapter Twenty-One</div>
   <h2>The World</h2>
   <p class="slug">EXT. Somewhere next — to be announced</p>
-  <p>Right now: Hong Kong, under the Victoria Harbour skyline. Next: unwritten. If you're working at the edge of 3D vision and embodied AI, I'd love to talk.</p>
+  <p>Right now: Hong Kong, by Clear Water Bay. Next: unwritten. 3D vision, embodied AI, something else entirely, or nothing to do with research at all: I'm always happy to chat and connect.</p>
   <p><a class="big-mail" href="mailto:zhanghan1833@outlook.com">zhanghan1833@outlook.com</a></p>
   <div class="links">
     <a href="https://github.com/Zarad0X">GitHub ↗</a>
@@ -722,7 +773,6 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
     <div><small>Court</small>Tennis</div>
     <div><small>Screen</small>The Godfather, Fincher, Tarantino</div>
     <div><small>Controller</small>Balatro, Baldur's Gate 3, Disco Elysium, RE4, Sifu, GTA</div>
-    <div><small>Side project</small><a href="/within/">Within</a>, a tarot reading game I built. Draw your own.</div>
   </div>
   <p class="trans">Fade out.</p>
 </template>
@@ -757,6 +807,18 @@ for (let i=0;i<34;i++){
   }
   let water = ''; for (let i=0;i<14;i++){ const y = 184+i*3.2, xs = R()*1600; water += `<path class="sk-water" d="M${xs.toFixed(0)} ${y.toFixed(1)} h${(30+R()*120).toFixed(0)}"/>`; }
   svg.innerHTML = h + wins + water;
+  // 奶蛙: hide behind the roof of a building near the centre (visible on phones too)
+  let best = null;
+  svg.querySelectorAll('.sk-b').forEach(r => { const bx = +r.getAttribute('x'), bw = +r.getAttribute('width');
+    if (bw >= 32 && (!best || Math.abs(bx + bw/2 - 760) < Math.abs(best.x + best.w/2 - 760))) best = { r, x: bx, w: bw, y: +r.getAttribute('y') }; });
+  if (best){
+    const fw = 30, fh = fw*160/126, fx = best.x + (best.w - fw)/2, fy = best.y - 12;
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','sk-naiwa'); g.setAttribute('id','naiwaRoof'); g.setAttribute('tabindex','0'); g.setAttribute('role','button');
+    g.setAttribute('aria-label','Something is peeking over a rooftop');
+    g.innerHTML = `<rect class="nw-hit" x="${fx-6}" y="${fy-4}" width="${fw+12}" height="22"/><g class="nw-body"><use href="#naiwa" x="${fx}" y="${fy}" width="${fw}" height="${fh.toFixed(1)}"/></g>`;
+    svg.insertBefore(g, svg.querySelector('.sk-b'));
+  }
 })();
 
 /* ---------- theme ---------- */
@@ -835,6 +897,41 @@ const hideVoice = () => voice.classList.remove('on');
 document.addEventListener('pointerover', e => { const el = e.target.closest('[data-voice]'); el ? showVoice(el) : hideVoice(); });
 document.addEventListener('focusin', e => { const el = e.target.closest('[data-voice]'); el ? showVoice(el) : hideVoice(); });
 document.addEventListener('scroll', hideVoice, true);
+
+
+/* ---------- 奶蛙 ---------- */
+(() => {
+  const peek = $('#naiwaRoof'), stage = $('#naiwaStage');
+  const lines = ['嘿！哈！', 'You found me. Now go read the paper.', 'Horse stance first. PhD later.', '我只是一只路过的奶蛙。', "Don't tell the reviewers I was here."];
+  let li = Math.floor(Math.random()*lines.length), timer = null, out = false;
+  const say = () => { li = (li + 1) % lines.length; voice.innerHTML = `<b>奶蛙</b>${lines[li]}`; voice.style.bottom = (stage.offsetHeight + 16) + 'px'; voice.classList.add('on'); };
+  function hide(){
+    if (!out) return; out = false; clearTimeout(timer);
+    const done = () => { stage.hidden = true; voice.classList.remove('on'); voice.style.bottom = ''; };
+    if (reduced) return done();
+    stage.animate([{transform:'none'},{transform:'translateY(-14%)',offset:.3},{transform:'translateY(110%)'}], {duration:450, easing:'cubic-bezier(.5,0,.75,0)'}).onfinish = done;
+  }
+  function show(){
+    clearTimeout(timer);
+    if (out){ say(); if (!reduced) stage.animate([{transform:'none'},{transform:'translateY(-10%) rotate(-4deg)'},{transform:'none'}], {duration:380, easing:'cubic-bezier(.34,1.56,.64,1)'}); }
+    else {
+      out = true; stage.hidden = false;
+      if (!reduced) stage.animate([{transform:'translateY(110%)'},{transform:'translateY(-12%) rotate(3deg)',offset:.6},{transform:'none'}], {duration:620, easing:'cubic-bezier(.25,1,.5,1)'});
+      say();
+    }
+    timer = setTimeout(hide, 3000);
+  }
+  if (peek){ peek.addEventListener('click', show); peek.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); show(); } }); }
+  stage.addEventListener('click', show);
+  let typed = '';
+  addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('input,textarea')) return;
+    if (e.key === 'Escape') return hide();
+    if (e.key.length !== 1) return;
+    typed = (typed + e.key.toLowerCase()).slice(-5);
+    if (typed === 'naiwa') show();
+  });
+})();
 
 /* ---------- cards: layout + spring physics ---------- */
 const table = $('#table'), hint = $('.hint');

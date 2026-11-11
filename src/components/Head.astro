@@ -7,7 +7,7 @@ interface Props {
   lang?: "en" | "zh";
   type?: "website" | "article";
 }
-const { title, description, image, lang = "en", type = "website" } = Astro.props;
+const { title, description, image = "/assets/og-card.jpg", lang = "en", type = "website" } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 <meta charset="utf-8" />
@@ -28,8 +28,11 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:locale" content={lang === "zh" ? "zh_CN" : "en_US"} />
-<meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
-{image && <meta property="og:image" content={new URL(image, Astro.site)} />}
+<meta property="og:image" content={new URL(image, Astro.site)} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:image" content={new URL(image, Astro.site)} />
 <slot />
