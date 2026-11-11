@@ -1,6 +1,6 @@
 ---
 const path = Astro.url.pathname;
-const active = path.startsWith("/blog") ? "blog" : path.startsWith("/work") ? "experience" : path.startsWith("/projects") ? "research" : "";
+const active = path.startsWith("/shelf") ? "shelf" : path.startsWith("/blog") ? "blog" : path.startsWith("/work") ? "experience" : path.startsWith("/projects") ? "research" : "";
 ---
 <header class="header">
   <a class="wordmark" href="/" aria-label="Han Zhang home">Han Zhang</a>
@@ -8,6 +8,7 @@ const active = path.startsWith("/blog") ? "blog" : path.startsWith("/work") ? "e
     <a href="/#magician" aria-current={active === "research" ? "page" : undefined}>Research</a>
     <a href="/#wheel" aria-current={active === "experience" ? "page" : undefined}>Journey</a>
     <a href="/blog/" aria-current={active === "blog" ? "page" : undefined}>Blog</a>
+    <a href="/shelf/" aria-current={active === "shelf" ? "page" : undefined}>Shelf</a>
     <button class="theme-toggle" type="button" id="themeToggle">☾ Grindhouse</button>
   </nav>
 </header>
