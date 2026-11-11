@@ -1,0 +1,230 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import { shelf, formatName, type ShelfItem, type ShelfKind } from "@data/shelf";
+
+const sections: { id: string; sign: string; kinds: ShelfKind[] }[] = [
+  { id: "films", sign: "Films · VHS", kinds: ["film"] },
+  { id: "records", sign: "Records", kinds: ["album", "single"] },
+  { id: "books", sign: "Paperbacks", kinds: ["book"] },
+  { id: "games", sign: "Games", kinds: ["game"] },
+];
+const card = (it: ShelfItem) => JSON.stringify({ ...it, format: formatName[it.kind] });
+// deterministic little variations so the shelf doesn't look machine-aligned
+const tilt = (i: number) => [-1.4, 0.6, -0.4, 1.1, -0.8, 0.3, 1.5, -1.1][i % 8];
+const bookH = (i: number) => [258, 214, 240, 222, 248][i % 5];
+const bookW = (i: number) => [46, 38, 42, 50, 40][i % 5];
+---
+<PageLayout title="The Shelf" description="Films, records, books and games Han Zhang keeps coming back to.">
+  <div class="standalone-heading shelf-heading">
+    <span class="kicker">Late fees waived</span>
+    <h1>The Shelf</h1>
+    <p>Films, records, books and games I keep coming back to. Pull one out.</p>
+  </div>
+
+  <nav class="shelf-tabs" aria-label="Filter the shelf">
+    <button type="button" data-filter="all" aria-pressed="true">All</button>
+    {sections.map(s => <button type="button" data-filter={s.id} aria-pressed="false">{s.sign.split(" ·")[0]}</button>)}
+  </nav>
+
+  {sections.map(s => {
+    const items = shelf.filter(it => s.kinds.includes(it.kind));
+    return (
+      <section class={`shelf shelf-${s.id}`} data-section={s.id} aria-label={s.sign}>
+        <h2 class="shelf-sign">{s.sign}</h2>
+        {s.id === "films" && <p class="rewind" aria-hidden="true">Be kind,<br />rewind.</p>}
+        <div class="rack">
+          {items.map((it, i) => {
+            const style = `--c:${it.color};--i:${it.ink};--t:${tilt(i)}deg`;
+            const label = `${it.title}${it.sub ? ` (${it.sub})` : ""}, ${it.by}, ${it.year}`;
+            if (it.kind === "film") return (
+              <button class="item vhs" type="button" style={style} data-card={card(it)} aria-label={label}>
+                <span class="vhs-sticker">HZ VIDEO</span>
+                <span class="vhs-title">{it.title}{it.sub && <small>{it.sub}</small>}</span>
+                <span class="vhs-year">{it.year}</span>
+              </button>
+            );
+            if (it.kind === "album" || it.kind === "single") return (
+              <button class={`item record ${it.kind}`} type="button" style={style} data-card={card(it)} aria-label={label}>
+                <span class="disc" aria-hidden="true"></span>
+                <span class="sleeve">
+                  <span class="rec-title">{it.title}</span>
+                  <span class="rec-by">{it.by}</span>
+                  <span class="rec-year">{it.kind === "single" ? "7\"" : "LP"} · {it.year}</span>
+                </span>
+              </button>
+            );
+            if (it.kind === "book") return (
+              <button class="item book" type="button" style={`${style};--h:${bookH(i)}px;--w:${bookW(i)}px`} data-card={card(it)} aria-label={label}>
+                <span class="book-title">{it.title}</span>
+                <span class="book-by">{it.by.split(" ").slice(-1)[0]}</span>
+              </button>
+            );
+            return (
+              <button class="item game" type="button" style={style} data-card={card(it)} aria-label={label}>
+                <span class="game-band">GAME</span>
+                <span class="game-title">{it.title}{it.sub && <small>{it.sub}</small>}</span>
+                <span class="game-by">{it.by} · {it.year}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div class="board" aria-hidden="true"></div>
+      </section>
+    );
+  })}
+
+  <dialog class="rental" id="rental" aria-labelledby="rentalTitle">
+    <div class="rental-card">
+      <div class="rental-head"><b>HZ Video &amp; Records</b><span>Rental card</span></div>
+      <dl>
+        <dt>Title</dt><dd><span id="rentalTitle"></span><span id="rentalSub" class="rental-sub"></span></dd>
+        <dt>By</dt><dd id="rentalBy"></dd>
+        <dt>Year</dt><dd id="rentalYear"></dd>
+        <dt>Format</dt><dd id="rentalFormat"></dd>
+        <dt>Notes</dt><dd id="rentalNote"></dd>
+      </dl>
+      <table class="due" aria-label="Due dates">
+        <tr><th>Due</th><th>Returned</th></tr>
+        <tr><td>Never</td><td>Never</td></tr>
+        <tr><td></td><td></td></tr>
+      </table>
+      <span class="stamp" aria-hidden="true">Staff pick</span>
+      <div class="rental-actions">
+        <a id="rentalLink" target="_blank" rel="noopener" hidden>Listen on Apple Music ↗</a>
+        <button type="button" id="rentalClose" autofocus>Put it back</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script is:inline>
+  (() => {
+    const tabs = document.querySelectorAll(".shelf-tabs button");
+    const sections = document.querySelectorAll(".shelf");
+    tabs.forEach(t => t.addEventListener("click", () => {
+      const f = t.dataset.filter;
+      tabs.forEach(b => b.setAttribute("aria-pressed", String(b === t)));
+      sections.forEach(s => { s.hidden = f !== "all" && s.dataset.section !== f; });
+    }));
+
+    const dlg = document.getElementById("rental");
+    const set = (id, v) => { document.getElementById(id).textContent = v; };
+    let opener = null;
+    document.querySelectorAll(".item").forEach(el => el.addEventListener("click", () => {
+      const d = JSON.parse(el.dataset.card);
+      set("rentalTitle", d.title); set("rentalSub", d.sub || "");
+      set("rentalBy", d.by); set("rentalYear", d.year); set("rentalFormat", d.format);
+      set("rentalNote", d.note || "No notes. Just a favourite.");
+      const link = document.getElementById("rentalLink");
+      if (d.link) { link.href = d.link; link.hidden = false; } else link.hidden = true;
+      dlg.style.setProperty("--stamp-r", (Math.random() * 16 - 14).toFixed(1) + "deg");
+      opener = el;
+      if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+    }));
+    const close = () => { dlg.close ? dlg.close() : dlg.removeAttribute("open"); };
+    document.getElementById("rentalClose").addEventListener("click", close);
+    dlg.addEventListener("click", e => { if (e.target === dlg) close(); });
+    dlg.addEventListener("close", () => opener && opener.focus());
+  })();
+  </script>
+</PageLayout>
+
+<style is:global>
+.shelf-heading{max-width:none}
+.shelf-tabs{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 34px}
+.shelf-tabs button{font:700 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--strong);background:var(--card);
+  border:2px solid var(--strong);border-radius:2px;padding:8px 13px;cursor:pointer;box-shadow:3px 3px 0 var(--hard)}
+.shelf-tabs button[aria-pressed="true"]{background:var(--strong);color:var(--bg)}
+.shelf-tabs button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--hard)}
+
+.shelf{position:relative;margin:0 0 54px}
+.shelf[hidden]{display:none}
+.shelf-sign{display:inline-block;font-family:var(--anton);font-weight:400;font-size:18px;letter-spacing:.22em;text-transform:uppercase;
+  background:var(--strong);color:var(--yellow);padding:6px 12px 4px;margin:0 0 18px;transform:rotate(-1.5deg);box-shadow:3px 3px 0 var(--red)}
+.rewind{position:absolute;right:4px;top:-6px;margin:0;font:700 13px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--strong);
+  background:#fffbe8;border:1.5px solid var(--strong);padding:8px 12px;transform:rotate(4deg);box-shadow:2px 2px 0 var(--hard)}
+html.night .rewind{background:#2a231d}
+.rewind::before{content:"";position:absolute;left:50%;top:-8px;width:34px;height:14px;margin-left:-17px;background:rgba(246,196,0,.55);transform:rotate(-3deg)}
+.rack{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 6px;padding:0 6px;min-height:120px}
+.board{height:14px;background:var(--strong);border-radius:2px;box-shadow:0 6px 0 var(--hard);margin-top:-2px}
+html.night .board{background:#3a2f27}
+
+.item{position:relative;cursor:pointer;border:2px solid #141010;padding:0;font:inherit;color:var(--i);background:var(--c);
+  transform:rotate(var(--t,0deg));transform-origin:50% 100%;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s;margin-bottom:0}
+.item:hover,.item:focus-visible{transform:translateY(-16px) rotate(calc(var(--t,0deg) * -1));z-index:2;box-shadow:6px 8px 0 rgba(20,16,16,.35)}
+.item:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+
+/* VHS spines */
+.vhs{width:54px;height:262px;border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 0 10px;
+  background:linear-gradient(90deg,rgba(0,0,0,.18),transparent 18%,transparent 82%,rgba(0,0,0,.18)),var(--c)}
+.vhs-sticker{background:#fffbe8;color:#141010;font:700 8px/1 var(--mono);letter-spacing:.08em;padding:3px 3px 2px;border:1px solid #141010;transform:rotate(-90deg) translateX(-14px);white-space:nowrap}
+.vhs-title{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--anton);font-size:21px;letter-spacing:.04em;text-transform:uppercase;line-height:1;white-space:nowrap}
+.vhs-title small{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;margin-top:6px;opacity:.8}
+.vhs-year{font:700 10px/1 var(--mono)}
+
+/* Records */
+.records-gap{width:18px}
+.record{background:none;border:0;width:170px;height:170px;margin-right:16px}
+.record.single{width:118px;height:118px;margin-right:14px}
+.record .sleeve{position:absolute;inset:0;background:var(--c);color:var(--i);border:2px solid #141010;display:flex;flex-direction:column;justify-content:flex-end;
+  text-align:left;padding:12px;box-shadow:inset 0 0 0 6px rgba(255,255,255,.06)}
+.record .disc{position:absolute;top:5%;left:5%;width:90%;height:90%;border-radius:50%;
+  background:radial-gradient(circle,var(--i) 0 13%,#141010 13.5% 15%,#1d1a18 15.5% 30%,#2a2522 31% 32%,#1d1a18 33% 48%,#2a2522 49% 50%,#141010 51%);
+  border:2px solid #141010;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.record:hover .disc,.record:focus-visible .disc{transform:translateX(34%) rotate(40deg)}
+.record:hover,.record:focus-visible{transform:translateY(-10px) rotate(calc(var(--t,0deg) * -1));box-shadow:none}
+.rec-title{font-family:var(--anton);font-size:28px;line-height:.95;text-transform:uppercase;letter-spacing:.01em;word-break:break-word}
+.single .rec-title{font-size:18px}
+.rec-by{font:700 11px/1.3 var(--mono);margin-top:6px}
+.single .rec-by{font-size:9px;margin-top:4px}
+.rec-year{font:700 10px/1 var(--mono);opacity:.75;margin-top:6px;letter-spacing:.08em}
+.single .rec-year{font-size:8px}
+
+/* Paperbacks */
+.book{width:var(--w);height:var(--h);border-radius:2px 2px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:12px 0 10px;
+  background:linear-gradient(90deg,rgba(0,0,0,.14),transparent 25%,transparent 75%,rgba(0,0,0,.14)),var(--c)}
+.book-title{writing-mode:vertical-rl;font-family:var(--serif);font-style:italic;font-weight:600;font-size:18px;line-height:1;white-space:nowrap}
+.book-by{writing-mode:vertical-rl;font:700 9px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;opacity:.8}
+
+/* Games */
+.game{width:142px;height:196px;border-radius:4px;display:flex;flex-direction:column;text-align:left;overflow:hidden}
+.game-band{background:#141010;color:#f2e6cc;font:700 10px/1 var(--mono);letter-spacing:.3em;padding:6px 10px 5px;border-bottom:2px solid #141010}
+html.night .game-band{background:#000}
+.game-title{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;font-family:var(--anton);font-size:24px;line-height:.98;text-transform:uppercase}
+.game-title small{font:700 10px/1.2 var(--mono);letter-spacing:.1em;margin-top:5px;opacity:.85}
+.game-by{font:700 9px/1.3 var(--mono);padding:0 10px 10px;opacity:.8}
+
+/* Rental card */
+.rental{border:0;padding:0;background:none;max-width:min(420px,calc(100vw - 32px));width:100%;overflow:visible}
+.rental::backdrop{background:rgba(20,16,16,.55)}
+.rental[open]{animation:rental-in .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes rental-in{from{opacity:0;transform:translateY(24px) rotate(-3deg)}to{opacity:1;transform:rotate(-1deg)}}
+.rental-card{position:relative;background:#fffbe8;color:#141010;border:2px solid #141010;box-shadow:8px 8px 0 #d3241c;padding:20px 22px 18px;transform:rotate(-1deg);
+  background-image:repeating-linear-gradient(transparent 0 27px,rgba(29,42,74,.18) 27px 28px);font-family:var(--mono)}
+.rental-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px double #141010;padding-bottom:8px;margin-bottom:10px}
+.rental-head b{font-family:var(--anton);font-weight:400;font-size:20px;letter-spacing:.08em;text-transform:uppercase}
+.rental-head span{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#d3241c}
+.rental dl{display:grid;grid-template-columns:72px 1fr;gap:4px 10px;margin:0;font-size:14px;line-height:1.5}
+.rental dt{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(20,16,16,.6);padding-top:2px}
+.rental dd{margin:0;font-family:"Courier Prime",monospace}
+#rentalTitle{display:block;font-family:var(--anton);font-size:22px;line-height:1.1;text-transform:uppercase}
+.rental-sub{display:block;font-size:12px;line-height:1.4;color:rgba(20,16,16,.7)}
+.rental-sub:empty{display:none}
+.due{width:100%;border-collapse:collapse;margin:14px 0 12px;font-size:12px}
+.due th,.due td{border:1.5px solid #141010;padding:4px 8px;text-align:left;height:22px}
+.due th{font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+.stamp{position:absolute;right:22px;bottom:58px;font-family:var(--anton);font-size:24px;letter-spacing:.1em;text-transform:uppercase;color:#d3241c;
+  border:3px solid #d3241c;padding:2px 10px 0;transform:rotate(var(--stamp-r,-12deg));opacity:.85;mix-blend-mode:multiply;pointer-events:none}
+.rental-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.rental-actions a{font-weight:700;font-size:12px;color:#d3241c;border-bottom:2px solid currentColor}
+.rental-actions button{font:700 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#141010;color:#f6c400;border:2px solid #141010;
+  padding:8px 12px;cursor:pointer;box-shadow:3px 3px 0 #d3241c;margin-left:auto}
+
+@media(max-width:700px){
+  .rewind{position:static;display:inline-block;margin:0 0 14px 10px}
+  .vhs{width:44px;height:220px}.vhs-title{font-size:17px}.vhs-title small{display:none}.vhs-year{font-size:8px;white-space:nowrap;letter-spacing:-.02em}
+  .record{width:140px;height:140px;margin-right:18px}.record.single{width:100px;height:100px;margin-right:14px}
+  .rec-title{font-size:21px}.single .rec-title{font-size:15px}
+  .game{width:118px;height:164px}.game-title{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){.item,.record .disc{transition:none}.rental[open]{animation:none}}
+</style>
