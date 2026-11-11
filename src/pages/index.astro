@@ -382,7 +382,14 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
 .jb-list button[aria-current="true"] .n{color:#141010}
 .jb-list .a{display:block;font-size:11px;opacity:.7}
 .jb-list .note{display:block;font-size:10px;letter-spacing:.04em;opacity:.65;font-style:italic}
-.jb-player iframe{display:block;width:100%;height:175px;border:0;border-radius:6px;overflow:hidden;background:transparent}
+.jb-ctrl{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center}
+.jb-play{width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);background:var(--red);color:var(--yellow);font-size:16px;cursor:pointer;box-shadow:3px 3px 0 var(--hard)}
+.jb-play:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--hard)}
+.jb-prog{height:10px;border:2px solid var(--ink);background:var(--bg);cursor:pointer;position:relative}
+.jb-prog i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--yellow)}
+.jb-time{font-family:var(--mono);font-size:11px;font-weight:700;min-width:34px;text-align:right}
+.jb-vol{display:flex;align-items:center;gap:8px;margin-top:10px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em}
+.jb-vol input{flex:1;accent-color:var(--red)}
 .jb-foot{display:flex;justify-content:space-between;gap:10px;margin:8px 2px 0;font-family:var(--mono);font-size:11px;opacity:.75}
 .jb-foot a{font-weight:700}
 
@@ -618,8 +625,13 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
 <div class="jukebox" id="jukebox" hidden role="dialog" aria-label="Soundtrack">
   <div class="jb-head"><b>SOUNDTRACK</b><button class="jb-x" id="jbClose" aria-label="Close the music player">✕</button></div>
   <ol class="jb-list" id="jbList"></ol>
-  <div class="jb-player" id="jbPlayer"></div>
-  <div class="jb-foot"><span>Via Apple Music · previews unless signed in</span><a id="jbOpen" href="#" target="_blank" rel="noopener">Open ↗</a></div>
+  <div class="jb-ctrl">
+    <button class="jb-play" id="jbPlay" type="button" aria-label="Play">▶</button>
+    <div class="jb-prog" id="jbProg" role="progressbar" aria-label="Playback position" aria-valuemin="0" aria-valuemax="100"><i id="jbBar"></i></div>
+    <span class="jb-time" id="jbTime">0:00</span>
+  </div>
+  <label class="jb-vol"><span>VOL</span><input type="range" id="jbVol" min="0" max="1" step="0.01" aria-label="Volume"></label>
+  <div class="jb-foot"><span>30-sec previews via Apple Music</span><a id="jbOpen" href="#" target="_blank" rel="noopener">Full song ↗</a></div>
 </div>
 <div class="voice" id="voice"></div>
 
@@ -760,33 +772,54 @@ const factsBtn = $('#factsBtn');
 factsBtn.onclick = () => { const on = !document.body.classList.contains('factsmode'); document.body.classList.toggle('factsmode',on); factsBtn.setAttribute('aria-pressed',on); factsBtn.textContent = on ? 'Back to the cards' : 'Just the facts'; if(on) scrollTo(0,0); };
 
 /* ---------- now playing ---------- */
-// Apple Music track ids (looked up via the iTunes Search API, hk storefront).
+// Apple Music tracks (hk storefront). Previews are refreshed from the iTunes lookup API on first open;
+// the baked-in URLs are a fallback.
 const songs = [
-  { t:'Hong Kong', a:'The Weeknd feat. Faye Wong', album:'6829122413', id:'6829122414', slug:'hong-kong', note:'Asia storefronts only, for now' },
-  { t:'Gravity', a:'John Mayer', album:'184335550', id:'184335660', slug:'gravity' },
-  { t:'Wonderful Tonight', a:'Eric Clapton', album:'1440782705', id:'1440783103', slug:'wonderful-tonight' },
-  { t:'Slow Dancing in a Burning Room', a:'John Mayer', album:'184335550', id:'184335793', slug:'slow-dancing-in-a-burning-room' },
-  { t:'Layla (Unplugged)', a:'Eric Clapton', album:'1647253516', id:'1647254047', slug:'layla-acoustic-live' },
+  { t:'Hong Kong', a:'The Weeknd feat. Faye Wong', album:'6829122413', id:'6829122414', slug:'hong-kong', p:'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/25/bc/8f/25bc8fa6-d5ce-1bb3-b0dc-6d756c8e0167/mzaf_11986309454262643541.plus.aac.p.m4a' },
+  { t:'Gravity', a:'John Mayer', album:'184335550', id:'184335660', slug:'gravity', p:'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a8/b0/74/a8b0741f-9a44-3e5e-811d-50e1d6675bae/mzaf_7397762488719449835.plus.aac.p.m4a' },
+  { t:'Wonderful Tonight', a:'Eric Clapton', album:'1440782705', id:'1440783103', slug:'wonderful-tonight', p:'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b0/25/88/b0258805-a882-5353-52f6-bc674e6a89dc/mzaf_2298561989738990856.plus.aac.p.m4a' },
+  { t:'Slow Dancing in a Burning Room', a:'John Mayer', album:'184335550', id:'184335793', slug:'slow-dancing-in-a-burning-room', p:'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2a/ab/53/2aab53e6-ed87-1ce8-3b12-01c5a847aa42/mzaf_15151430342496758350.plus.aac.p.m4a' },
+  { t:'Layla (Unplugged)', a:'Eric Clapton', album:'1647253516', id:'1647254047', slug:'layla-acoustic-live', p:'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/47/95/4b/47954bb1-8223-25f7-5fdb-05e9b3e59d20/mzaf_1723066148518064956.plus.aac.p.m4a' },
 ];
-const np = $('#np'), npText = $('#npText'), jb = $('#jukebox'), jbList = $('#jbList'), jbPlayer = $('#jbPlayer'), jbOpen = $('#jbOpen');
-let si = 0;
+const np = $('#np'), npText = $('#npText'), jb = $('#jukebox'), jbList = $('#jbList'), jbOpen = $('#jbOpen');
+const jbPlay = $('#jbPlay'), jbBar = $('#jbBar'), jbProg = $('#jbProg'), jbTime = $('#jbTime'), jbVol = $('#jbVol');
+const audio = new Audio(); audio.preload = 'none';
+let si = 0, vol = parseFloat(store.get('hz-vol')); if (!(vol >= 0 && vol <= 1)) vol = 0.25;
+jbVol.value = vol; audio.volume = vol;
+const fmt = t => `${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 const showSong = () => { const s = songs[si]; npText.innerHTML = `${s.t} <span>— ${s.a.replace(/ feat\..*/,'')}</span>`; };
-jbList.innerHTML = songs.map((s,i) => `<li><button type="button" data-i="${i}"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${s.t}<span class="a">${s.a}</span>${s.note ? `<span class="note">${s.note}</span>` : ''}</span></button></li>`).join('');
-function loadSong(i){
-  si = i; showSong();
+jbList.innerHTML = songs.map((s,i) => `<li><button type="button" data-i="${i}"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${s.t}<span class="a">${s.a}</span></span></button></li>`).join('');
+function mark(){ jbList.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(+b.dataset.i === si))); }
+function fadeIn(){ audio.volume = 0; const t0 = performance.now(); const step = now => { const k = Math.min(1,(now-t0)/600); audio.volume = vol*k; if (k < 1 && !audio.paused) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+function loadSong(i, play){
+  si = i; showSong(); mark();
   const s = songs[i];
-  jbList.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(+b.dataset.i === i)));
-  jbPlayer.innerHTML = `<iframe title="${s.t} by ${s.a} on Apple Music" allow="autoplay *; encrypted-media *; clipboard-write" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/hk/album/${s.slug}/${s.album}?i=${s.id}"></iframe>`;
+  audio.src = s.p; jbBar.style.width = '0'; jbTime.textContent = '0:00';
   jbOpen.href = `https://music.apple.com/hk/album/${s.slug}/${s.album}?i=${s.id}`;
+  if (play) audio.play().then(fadeIn).catch(() => {});
+}
+let refreshed = false;
+function refreshPreviews(){
+  if (refreshed) return; refreshed = true;
+  fetch(`https://itunes.apple.com/lookup?country=hk&id=${songs.map(s => s.id).join(',')}`)
+    .then(r => r.json()).then(d => { (d.results || []).forEach(r => { const s = songs.find(x => x.id === String(r.trackId)); if (s && r.previewUrl) s.p = r.previewUrl; }); })
+    .catch(() => {});
 }
 function setJukebox(open){
-  jb.hidden = !open; np.classList.toggle('on', open); np.setAttribute('aria-expanded', open);
-  if (open && !jbPlayer.firstChild) loadSong(si);
+  jb.hidden = !open; np.setAttribute('aria-expanded', open);
+  if (open){ refreshPreviews(); if (!audio.src) loadSong(si, false); else mark(); }
 }
 showSong();
 np.onclick = () => setJukebox(jb.hidden);
 $('#jbClose').onclick = () => { setJukebox(false); np.focus(); };
-jbList.addEventListener('click', e => { const b = e.target.closest('button'); if (b) loadSong(+b.dataset.i); });
+jbList.addEventListener('click', e => { const b = e.target.closest('button'); if (b) loadSong(+b.dataset.i, true); });
+jbPlay.onclick = () => { if (!audio.src) loadSong(si, false); audio.paused ? audio.play().then(fadeIn).catch(() => {}) : audio.pause(); };
+jbVol.oninput = () => { vol = +jbVol.value; audio.volume = vol; store.set('hz-vol', vol); };
+jbProg.onclick = e => { if (!audio.duration) return; const r = jbProg.getBoundingClientRect(); audio.currentTime = (e.clientX - r.left)/r.width*audio.duration; };
+audio.addEventListener('play', () => { np.classList.add('on'); jbPlay.textContent = '❚❚'; jbPlay.setAttribute('aria-label','Pause'); });
+audio.addEventListener('pause', () => { np.classList.remove('on'); jbPlay.textContent = '▶'; jbPlay.setAttribute('aria-label','Play'); });
+audio.addEventListener('timeupdate', () => { if (!audio.duration) return; const k = audio.currentTime/audio.duration; jbBar.style.width = (k*100)+'%'; jbProg.setAttribute('aria-valuenow', Math.round(k*100)); jbTime.textContent = fmt(audio.currentTime); });
+audio.addEventListener('ended', () => loadSong((si+1) % songs.length, true));
 addEventListener('keydown', e => { if (e.key === 'Escape' && !jb.hidden) setJukebox(false); });
 
 /* ---------- inner voice ---------- */
