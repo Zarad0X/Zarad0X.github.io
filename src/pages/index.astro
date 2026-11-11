@@ -189,9 +189,10 @@ body.night .kicker{color:var(--accent)}
 /* now playing */
 .np{position:fixed;left:clamp(16px,3vw,28px);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:6;display:flex;align-items:center;gap:10px;
   background:var(--card);border:1.5px solid var(--ink);border-radius:999px;padding:6px 14px 6px 6px;cursor:pointer;font-family:var(--mono);font-size:11px;max-width:calc(100vw - 32px)}
-.np .disc{width:28px;height:28px;border-radius:50%;flex:none;background:radial-gradient(circle,var(--accent) 0 18%,#111 19% 30%,#2a2a2a 31% 34%,#111 35% 60%,#2a2a2a 61% 63%,#111 64%);animation:spin 3s linear infinite}
+.np .disc{width:28px;height:28px;border-radius:50%;flex:none;background:radial-gradient(circle,var(--accent) 0 18%,#111 19% 30%,#2a2a2a 31% 34%,#111 35% 60%,#2a2a2a 61% 63%,#111 64%);animation:spin 3s linear infinite;animation-play-state:paused}
 .np .eq{display:flex;gap:2px;align-items:flex-end;height:12px}
-.np .eq i{width:2px;background:var(--ink);animation:eq .9s ease-in-out infinite}
+.np .eq i{width:2px;height:4px;background:var(--ink);animation:eq .9s ease-in-out infinite;animation-play-state:paused}
+.np.on .disc,.np.on .eq i{animation-play-state:running}
 .np .eq i:nth-child(2){animation-delay:-.3s}.np .eq i:nth-child(3){animation-delay:-.6s}
 .np .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .np .t span{color:var(--ink2)}
@@ -359,6 +360,31 @@ body.night .pub{box-shadow:8px 8px 0 var(--red)}
 body.night .deck .lbl span{box-shadow:3px 3px 0 var(--yellow)}
 .deck:hover .lbl span{background:var(--yellow);color:#141010}
 @media (max-width:760px){ .deck .lbl b{display:none} .deck .stack{width:36px;height:56px} .np .t{max-width:34vw} }
+
+
+
+/* ===== jukebox (Apple Music) ===== */
+.jukebox{position:fixed;left:clamp(16px,3vw,28px);bottom:calc(env(safe-area-inset-bottom,0px) + 70px);z-index:9;width:min(380px,calc(100vw - 32px));
+  max-height:calc(100svh - 110px);overflow:auto;background:var(--card);border:2px solid var(--ink);border-radius:2px;box-shadow:6px 6px 0 var(--hard);padding:14px 14px 12px;
+  transform-origin:bottom left;animation:jb-in .35s cubic-bezier(.34,1.56,.64,1)}
+body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
+@keyframes jb-in{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+.jb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.jb-head b{font-family:var(--fell);font-weight:400;font-size:20px;letter-spacing:.16em}
+.jb-x{width:30px;height:30px;border:2px solid var(--ink);background:var(--card);border-radius:2px;cursor:pointer;font-weight:700}
+.jb-x:hover{background:var(--ink);color:var(--bg)}
+.jb-list{list-style:none;margin:0 0 12px;padding:0;border-top:2px solid var(--ink)}
+.jb-list button{width:100%;display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:baseline;text-align:left;background:none;border:0;
+  border-bottom:1px dashed var(--line);padding:8px 4px;cursor:pointer;font-family:var(--mono);font-size:13px;color:var(--ink)}
+.jb-list button:hover{background:var(--tint,rgba(246,196,0,.18))}
+.jb-list button[aria-current="true"]{background:var(--yellow);color:#141010}
+.jb-list .n{font-family:var(--fell);font-size:16px;color:var(--red)}
+.jb-list button[aria-current="true"] .n{color:#141010}
+.jb-list .a{display:block;font-size:11px;opacity:.7}
+.jb-list .note{display:block;font-size:10px;letter-spacing:.04em;opacity:.65;font-style:italic}
+.jb-player iframe{display:block;width:100%;height:175px;border:0;border-radius:6px;overflow:hidden;background:transparent}
+.jb-foot{display:flex;justify-content:space-between;gap:10px;margin:8px 2px 0;font-family:var(--mono);font-size:11px;opacity:.75}
+.jb-foot a{font-weight:700}
 
 @media (prefers-reduced-motion:reduce){ .deck .stack i{transition:none} body::before,body.night::after,.scratches i{animation:none!important} }
 </style>
@@ -580,7 +606,7 @@ body.night .deck .lbl span{box-shadow:3px 3px 0 var(--yellow)}
 </div>
 <button class="close" id="closeBtn" hidden aria-label="Back to the table">✕</button>
 
-<button class="np" id="np" aria-label="Now playing — click for next song">
+<button class="np" id="np" aria-expanded="false" aria-controls="jukebox" aria-label="Soundtrack: open the music player">
   <span class="disc"></span>
   <span class="eq"><i></i><i></i><i></i></span>
   <span class="t" id="npText"></span>
@@ -589,6 +615,12 @@ body.night .deck .lbl span{box-shadow:3px 3px 0 var(--yellow)}
   <span class="stack" aria-hidden="true"><i></i><i></i><i></i></span>
   <span class="lbl"><b>INTERMISSION</b><span>Draw your own →</span></span>
 </a>
+<div class="jukebox" id="jukebox" hidden role="dialog" aria-label="Soundtrack">
+  <div class="jb-head"><b>SOUNDTRACK</b><button class="jb-x" id="jbClose" aria-label="Close the music player">✕</button></div>
+  <ol class="jb-list" id="jbList"></ol>
+  <div class="jb-player" id="jbPlayer"></div>
+  <div class="jb-foot"><span>Via Apple Music · previews unless signed in</span><a id="jbOpen" href="#" target="_blank" rel="noopener">Open ↗</a></div>
+</div>
 <div class="voice" id="voice"></div>
 
 <!-- ============ sheet contents ============ -->
@@ -728,10 +760,34 @@ const factsBtn = $('#factsBtn');
 factsBtn.onclick = () => { const on = !document.body.classList.contains('factsmode'); document.body.classList.toggle('factsmode',on); factsBtn.setAttribute('aria-pressed',on); factsBtn.textContent = on ? 'Back to the cards' : 'Just the facts'; if(on) scrollTo(0,0); };
 
 /* ---------- now playing ---------- */
-const songs = [['Hong Kong','The Weeknd'],['Gravity','John Mayer'],['Wonderful Tonight','Eric Clapton'],['Slow Dancing in a Burning Room','John Mayer'],['Layla (Unplugged)','Eric Clapton']];
-let si = 0; const npText = $('#npText');
-const showSong = () => npText.innerHTML = `${songs[si][0]} <span>— ${songs[si][1]}</span>`;
-showSong(); $('#np').onclick = () => { si = (si+1)%songs.length; showSong(); };
+// Apple Music track ids (looked up via the iTunes Search API, hk storefront).
+const songs = [
+  { t:'Hong Kong', a:'The Weeknd feat. Faye Wong', album:'6829122413', id:'6829122414', slug:'hong-kong', note:'Asia storefronts only, for now' },
+  { t:'Gravity', a:'John Mayer', album:'184335550', id:'184335660', slug:'gravity' },
+  { t:'Wonderful Tonight', a:'Eric Clapton', album:'1440782705', id:'1440783103', slug:'wonderful-tonight' },
+  { t:'Slow Dancing in a Burning Room', a:'John Mayer', album:'184335550', id:'184335793', slug:'slow-dancing-in-a-burning-room' },
+  { t:'Layla (Unplugged)', a:'Eric Clapton', album:'1647253516', id:'1647254047', slug:'layla-acoustic-live' },
+];
+const np = $('#np'), npText = $('#npText'), jb = $('#jukebox'), jbList = $('#jbList'), jbPlayer = $('#jbPlayer'), jbOpen = $('#jbOpen');
+let si = 0;
+const showSong = () => { const s = songs[si]; npText.innerHTML = `${s.t} <span>— ${s.a.replace(/ feat\..*/,'')}</span>`; };
+jbList.innerHTML = songs.map((s,i) => `<li><button type="button" data-i="${i}"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${s.t}<span class="a">${s.a}</span>${s.note ? `<span class="note">${s.note}</span>` : ''}</span></button></li>`).join('');
+function loadSong(i){
+  si = i; showSong();
+  const s = songs[i];
+  jbList.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(+b.dataset.i === i)));
+  jbPlayer.innerHTML = `<iframe title="${s.t} by ${s.a} on Apple Music" allow="autoplay *; encrypted-media *; clipboard-write" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/hk/album/${s.slug}/${s.album}?i=${s.id}"></iframe>`;
+  jbOpen.href = `https://music.apple.com/hk/album/${s.slug}/${s.album}?i=${s.id}`;
+}
+function setJukebox(open){
+  jb.hidden = !open; np.classList.toggle('on', open); np.setAttribute('aria-expanded', open);
+  if (open && !jbPlayer.firstChild) loadSong(si);
+}
+showSong();
+np.onclick = () => setJukebox(jb.hidden);
+$('#jbClose').onclick = () => { setJukebox(false); np.focus(); };
+jbList.addEventListener('click', e => { const b = e.target.closest('button'); if (b) loadSong(+b.dataset.i); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && !jb.hidden) setJukebox(false); });
 
 /* ---------- inner voice ---------- */
 const voice = $('#voice');
