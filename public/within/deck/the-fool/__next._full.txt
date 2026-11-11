@@ -1,0 +1,35 @@
+1:"$Sreact.fragment"
+2:"/within/_next/static/chunks/20nq2ma3nezt9.js"
+3:"LanguageProvider"
+4:I[29899,["$2"],"$3"]
+5:I[57672,["$2"],"ArtworkProvider"]
+6:I[39756,["$2"],"default"]
+7:I[37457,["$2"],"default"]
+8:"/within/_next/static/chunks/2dl5kqhmrc4du.js"
+9:I[29306,["$2","$8"],"default"]
+a:I[58068,["$2"],"SiteFooter"]
+10:I[97367,["$2"],"OutletBoundary"]
+11:"$Sreact.suspense"
+13:"ViewportBoundary"
+14:I[97367,["$2"],"$13"]
+16:"MetadataBoundary"
+17:I[97367,["$2"],"$16"]
+19:I[68027,["$2"],"default",1]
+:HL["/within/_next/static/chunks/2aq-71kaq1f3f.css","style"]
+:HC["/",""]
+c:X
+e:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":["$Lf",[["$","script","script-0",{"src":"/within/_next/static/chunks/03gbsvm150pbp.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/within/_next/static/chunks/2bl3a4dayuraf.js","async":true,"nonce":"$undefined"}]],["$","$L10",null,{"children":["$","$11",null,{"name":"Next.MetadataOutlet","children":"$@12"}]}]]}],"p":false,"v":null}}]]
+d:[["children",{"s":{"n":"cardId","t":"d","k":"the-fool","s":[]},"h":66048,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qe"}]]
+b:[["children",{"s":"deck","h":131584,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qd"}]]
+0:{"P":null,"c":["","deck","the-fool",""],"q":"","i":false,"t":{"t":{"s":"","h":131600,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/within/_next/static/chunks/20nq2ma3nezt9.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","data-scroll-behavior":"smooth","children":["$","body",null,{"children":["$","$L4",null,{"children":[["$","$L5",null,{"children":["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","$L9",null,{}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}],["$","$La",null,{}]]}]}]}]]}],"p":false,"v":null},"c":"$Qb"},"h":{"r":["$","$1","h",{"children":[null,["$","$L14",null,{"children":"$L15"}],["$","$L17",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$11",null,{"name":"Next.Metadata","children":"$L18"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$19",[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"jx1OLr6gC34WbEX3M3ujv"}
+1a:"/within/_next/static/chunks/03gbsvm150pbp.js"
+1b:"/within/_next/static/chunks/2bl3a4dayuraf.js"
+1c:I[93963,["$2","$1a","$1b"],"Header"]
+1d:I[85190,["$2","$1a","$1b"],"CardDetail"]
+1e:"LinkedCardDetail"
+1f:I[85190,["$2","$1a","$1b"],"$1e"]
+c:C
+f:[["$","$L1c",null,{}],["$","$11",null,{"fallback":["$","$L1d",null,{"card":{"id":"the-fool","number":0,"numeral":"0","name":"The Fool","nameZh":"愚者","arcana":"major","imagePath":"/cards/the-fool.svg","keywords":["Beginnings","Openness","Possibility"],"uprightMeaning":"There is a kind of wisdom in beginning before you have every answer. The Fool invites you to notice where curiosity is quietly asking for more room. You can take a small, considered step into something unfamiliar without needing to map the whole journey.","traditionalInterpretation":"Often placed at the beginning of the Major Arcana, the Fool represents a traveler entering the unknown. Traditionally associated with spontaneity, innocence, and risk, the card holds both the joy of possibility and the need to pay attention to the ground beneath your feet.","symbolism":[{"element":"The open horizon","description":"A future that has not yet been defined; possibility rather than a promise."},{"element":"The small traveler","description":"Beginning with what you have, without carrying every old expectation."},{"element":"The cliff","description":"The meeting point of freedom and responsibility. A leap is still a choice."}],"reflectionPrompts":["What would you explore if you did not need to be good at it immediately?","What is one small beginning you could make today?"]},"artwork":"classic"}],"children":["$","$L1f",null,{"card":"$f:1:props:fallback:props:card"}]}]]
+15:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+12:null
+18:[["$","meta","0",{"name":"description","content":"There is a kind of wisdom in beginning before you have every answer. The Fool invites you to notice where curiosity is quietly asking for more room. You can take a small, considered step into something unfamiliar without needing to map the whole journey."}]]

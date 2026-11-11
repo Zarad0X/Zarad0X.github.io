@@ -1,13 +1,14 @@
 ---
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
+import { chapterLabel, chapterNumber } from "@lib/chapters";
 const allPosts = (await getCollection("blog")).filter(post => !post.data.draft);
 const posts = allPosts.filter(post => post.data.lang === "en").sort((a,b) => b.data.date.valueOf() - a.data.date.valueOf());
 const years = [...new Set(posts.map(post => post.data.date.getUTCFullYear()))].sort((a,b) => b-a);
 const dateLabel = (date: Date) => new Intl.DateTimeFormat("en-US", { month:"short", day:"2-digit", timeZone:"UTC" }).format(date);
 ---
 <PageLayout title="Blog" description="Notes on research, PhD applications, and life by Han Zhang." reading>
-  <div class="blog-index-heading"><h1>Blog</h1><p>Notes on research and life.</p></div>
+  <div class="blog-index-heading"><span class="kicker">IX · The Hermit</span><h1>Blog</h1><p>Notes on research and life, written by lantern light.</p></div>
   {years.map(year => (
     <section class="blog-year" aria-labelledby={`year-${year}`}>
       <h2 id={`year-${year}`}>{year}</h2>
@@ -15,7 +16,8 @@ const dateLabel = (date: Date) => new Intl.DateTimeFormat("en-US", { month:"shor
         const zh = allPosts.find(other => post.data.translationKey && other.data.translationKey === post.data.translationKey && other.data.lang === "zh");
         return (
           <article class="blog-entry">
-            <time datetime={post.data.date.toISOString().slice(0,10)}>{dateLabel(post.data.date)}</time>
+            <span class="chapter-no">{chapterLabel(chapterNumber(post, allPosts), "en")}</span>
+            <time datetime={post.data.date.toISOString().slice(0,10)}>{dateLabel(post.data.date)}, {year}</time>
             <div>
               <h3><a href={`/blog/${post.slug}/`}>{post.data.title}</a></h3>
               <p>{post.data.description}</p>

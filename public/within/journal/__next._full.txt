@@ -1,0 +1,31 @@
+1:"$Sreact.fragment"
+2:"/within/_next/static/chunks/20nq2ma3nezt9.js"
+3:"LanguageProvider"
+4:I[29899,["$2"],"$3"]
+5:I[57672,["$2"],"ArtworkProvider"]
+6:I[39756,["$2"],"default"]
+7:I[37457,["$2"],"default"]
+8:"/within/_next/static/chunks/2dl5kqhmrc4du.js"
+9:I[29306,["$2","$8"],"default"]
+a:I[58068,["$2"],"SiteFooter"]
+e:"/within/_next/static/chunks/2rv9v2a-9l-1_.js"
+f:"/within/_next/static/chunks/2bl3a4dayuraf.js"
+10:I[93963,["$2","$e","$f"],"Header"]
+11:I[32187,["$2","$e","$f"],"Journal"]
+12:I[97367,["$2"],"OutletBoundary"]
+13:"$Sreact.suspense"
+15:"ViewportBoundary"
+16:I[97367,["$2"],"$15"]
+18:"MetadataBoundary"
+19:I[97367,["$2"],"$18"]
+1b:I[68027,["$2"],"default",1]
+:HL["/within/_next/static/chunks/2aq-71kaq1f3f.css","style"]
+:HC["/",""]
+c:X
+d:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":[[["$","$L10",null,{}],["$","$L11",null,{}]],[["$","script","script-0",{"src":"/within/_next/static/chunks/2rv9v2a-9l-1_.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/within/_next/static/chunks/2bl3a4dayuraf.js","async":true,"nonce":"$undefined"}]],["$","$L12",null,{"children":["$","$13",null,{"name":"Next.MetadataOutlet","children":"$@14"}]}]]}],"p":false,"v":null}}]]
+b:[["children",{"s":"journal","h":512,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qd"}]]
+0:{"P":null,"c":["","journal",""],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/within/_next/static/chunks/20nq2ma3nezt9.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","data-scroll-behavior":"smooth","children":["$","body",null,{"children":["$","$L4",null,{"children":[["$","$L5",null,{"children":["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","$L9",null,{}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}],["$","$La",null,{}]]}]}]}]]}],"p":false,"v":null},"c":"$Qb"},"h":{"r":["$","$1","h",{"children":[null,["$","$L16",null,{"children":"$L17"}],["$","$L19",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$13",null,{"name":"Next.Metadata","children":"$L1a"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$1b",[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"jx1OLr6gC34WbEX3M3ujv"}
+c:C
+17:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+14:null
+1a:[["$","meta","0",{"name":"description","content":"An unhurried tarot experience. Explore symbols, welcome another perspective, and find a little room to reflect."}]]

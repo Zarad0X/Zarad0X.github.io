@@ -1,13 +1,21 @@
 ---
-const home = Astro.url.pathname === "/";
 const path = Astro.url.pathname;
 const active = path.startsWith("/blog") ? "blog" : path.startsWith("/work") ? "experience" : path.startsWith("/projects") ? "research" : "";
 ---
 <header class="header">
-  <a class="wordmark" href="/" aria-label="Han Zhang home">hz<span>.</span></a>
+  <a class="wordmark" href="/" aria-label="Han Zhang home">Han Zhang</a>
   <nav aria-label="Main navigation">
-    <a href={home ? "#research" : "/#research"} aria-current={active === "research" ? "page" : undefined}>Research</a>
-    <a href={home ? "#experience" : "/#experience"} aria-current={active === "experience" ? "page" : undefined}>Experience</a>
-    <a href={home ? "#blog" : "/blog/"} aria-current={active === "blog" ? "page" : undefined}>Blog</a>
+    <a href="/#magician" aria-current={active === "research" ? "page" : undefined}>Research</a>
+    <a href="/#wheel" aria-current={active === "experience" ? "page" : undefined}>Journey</a>
+    <a href="/blog/" aria-current={active === "blog" ? "page" : undefined}>Blog</a>
+    <button class="theme-toggle" type="button" id="themeToggle">☾ Grindhouse</button>
   </nav>
 </header>
+<script is:inline>
+(() => {
+  const btn = document.getElementById("themeToggle"), root = document.documentElement;
+  const label = () => { const n = root.classList.contains("night"); btn.textContent = n ? "☀ Pulp" : "☾ Grindhouse"; btn.setAttribute("aria-pressed", n); };
+  label();
+  btn.addEventListener("click", () => { const n = root.classList.toggle("night"); try { localStorage.setItem("hz-theme-t", n ? "night" : "paper"); } catch (e) {} label(); });
+})();
+</script>

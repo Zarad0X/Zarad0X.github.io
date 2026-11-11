@@ -1,0 +1,35 @@
+1:"$Sreact.fragment"
+2:"/within/_next/static/chunks/20nq2ma3nezt9.js"
+3:"LanguageProvider"
+4:I[29899,["$2"],"$3"]
+5:I[57672,["$2"],"ArtworkProvider"]
+6:I[39756,["$2"],"default"]
+7:I[37457,["$2"],"default"]
+8:"/within/_next/static/chunks/2dl5kqhmrc4du.js"
+9:I[29306,["$2","$8"],"default"]
+a:I[58068,["$2"],"SiteFooter"]
+10:I[97367,["$2"],"OutletBoundary"]
+11:"$Sreact.suspense"
+13:"ViewportBoundary"
+14:I[97367,["$2"],"$13"]
+16:"MetadataBoundary"
+17:I[97367,["$2"],"$16"]
+19:I[68027,["$2"],"default",1]
+:HL["/within/_next/static/chunks/2aq-71kaq1f3f.css","style"]
+:HC["/",""]
+c:X
+e:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":["$Lf",[["$","script","script-0",{"src":"/within/_next/static/chunks/03gbsvm150pbp.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/within/_next/static/chunks/2bl3a4dayuraf.js","async":true,"nonce":"$undefined"}]],["$","$L10",null,{"children":["$","$11",null,{"name":"Next.MetadataOutlet","children":"$@12"}]}]]}],"p":false,"v":null}}]]
+d:[["children",{"s":{"n":"cardId","t":"d","k":"pentacles-king","s":[]},"h":66048,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qe"}]]
+b:[["children",{"s":"deck","h":131584,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qd"}]]
+0:{"P":null,"c":["","deck","pentacles-king",""],"q":"","i":false,"t":{"t":{"s":"","h":131600,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/within/_next/static/chunks/20nq2ma3nezt9.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","data-scroll-behavior":"smooth","children":["$","body",null,{"children":["$","$L4",null,{"children":[["$","$L5",null,{"children":["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","$L9",null,{}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}],["$","$La",null,{}]]}]}]}]]}],"p":false,"v":null},"c":"$Qb"},"h":{"r":["$","$1","h",{"children":[null,["$","$L14",null,{"children":"$L15"}],["$","$L17",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$11",null,{"name":"Next.Metadata","children":"$L18"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$19",[["$","link","0",{"rel":"stylesheet","href":"/within/_next/static/chunks/2aq-71kaq1f3f.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"jx1OLr6gC34WbEX3M3ujv"}
+1a:"/within/_next/static/chunks/03gbsvm150pbp.js"
+1b:"/within/_next/static/chunks/2bl3a4dayuraf.js"
+1c:I[93963,["$2","$1a","$1b"],"Header"]
+1d:I[85190,["$2","$1a","$1b"],"CardDetail"]
+1e:"LinkedCardDetail"
+1f:I[85190,["$2","$1a","$1b"],"$1e"]
+c:C
+f:[["$","$L1c",null,{}],["$","$11",null,{"fallback":["$","$L1d",null,{"card":{"id":"pentacles-king","arcana":"minor","suit":"pentacles","rank":"king","numeral":"KING","name":"King of Pentacles","nameZh":"星币国王","imagePath":"/cards/pentacles-king.svg","uprightMeaning":"When you look after shared resources, ask who can use them and how decisions get made. A simple routine or a clear record can make stewardship easier for the next person to carry.","traditionalInterpretation":"Waite notes the bull heads on the throne and the pentagram on the suit’s emblem. He connects the card with practical judgment and capability.","symbolism":[{"element":"The bull heads","description":"The patient strength behind a lasting structure."},{"element":"The cultivated vines","description":"Resources grow through continuing attention."},{"element":"The coin at the center","description":"Something held in trust for more than one use."}],"reflectionPrompts":["What resource are you responsible for making easier to use?","What would help another person take over its care?"],"zh":{"uprightMeaning":"照管共享资源时，可以问问谁能使用它、决定又是怎么作出的。一套简单的流程或一份清楚的记录，能让下一个人更容易接手。","traditionalInterpretation":"韦特提到王座上的牛首，以及这组牌徽记上的五芒星。他把这张牌和务实的判断与能力联系起来。","symbolism":[{"element":"牛首纹样","description":"能让一个结构持久的耐心和力量。"},{"element":"栽培的藤蔓","description":"资源需要持续照看才能积累。"},{"element":"中央的星币","description":"手里照管着、可以用于多处的一份资源。"}],"reflectionPrompts":["你负责让哪项资源变得更好用？","什么能帮别人接手照管它？"]},"reference":"https://en.wikisource.org/wiki/Page:The_Pictorial_Key_to_the_Tarot.pdf/267"},"artwork":"classic"}],"children":["$","$L1f",null,{"card":"$f:1:props:fallback:props:card"}]}]]
+15:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+12:null
+18:[["$","meta","0",{"name":"description","content":"When you look after shared resources, ask who can use them and how decisions get made. A simple routine or a clear record can make stewardship easier for the next person to carry."}]]

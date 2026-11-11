@@ -2,15 +2,16 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import { SITE } from "@consts";
+import { chapterLabel, chapterNumber } from "@lib/chapters";
 export async function getStaticPaths() {
   const posts = (await getCollection("blog")).filter(post => !post.data.draft);
   return posts.map(post => ({
     params: { slug: post.slug },
-    props: { post, translations: posts.filter(other => post.data.translationKey && other.data.translationKey === post.data.translationKey).sort((a,b) => a.data.lang.localeCompare(b.data.lang)) },
+    props: { post, chapter: chapterNumber(post, posts), translations: posts.filter(other => post.data.translationKey && other.data.translationKey === post.data.translationKey).sort((a,b) => a.data.lang.localeCompare(b.data.lang)) },
   }));
 }
-interface Props { post: CollectionEntry<"blog">; translations: CollectionEntry<"blog">[]; }
-const { post, translations } = Astro.props;
+interface Props { post: CollectionEntry<"blog">; chapter: number; translations: CollectionEntry<"blog">[]; }
+const { post, chapter, translations } = Astro.props;
 const { Content, headings } = await post.render();
 const parts = headings.filter(heading => heading.depth === 2);
 const zh = post.data.lang === "zh";
@@ -32,11 +33,16 @@ const date = new Intl.DateTimeFormat("en-US", { month:"short", day:"2-digit", ye
   </div>
   <article class="blog-article">
     <header class="article-header">
-      <p class="article-date"><time datetime={post.data.date.toISOString().slice(0,10)}>{date}</time></p>
+      <p class="chapter-no">{chapterLabel(chapter, zh ? "zh" : "en")}</p>
       <h1>{post.data.title}</h1><p class="article-description">{post.data.description}</p>
+      <p class="article-date"><time datetime={post.data.date.toISOString().slice(0,10)}>{date}</time></p>
     </header>
     {parts.length > 0 && <details class="article-contents"><summary>{zh ? "目录" : "In this essay"}</summary><ol>{parts.map(part => <li><a href={`#${part.slug}`}>{part.text}</a></li>)}</ol></details>}
-    <div class="prose"><Content /></div>
+    <div class="script-page">
+      <p class="transition">{zh ? "淡入：" : "Fade in:"}</p>
+      <div class="prose"><Content /></div>
+      <p class="transition">{zh ? "淡出。" : "Fade out."}</p>
+    </div>
   </article>
   <div class="article-end"><a href="/blog/">← {back}</a><a href={`mailto:${SITE.EMAIL}`}>{zh ? "联系我" : "Get in touch"} ↗</a></div>
 </PageLayout>

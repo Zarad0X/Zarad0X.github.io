@@ -1,0 +1,8 @@
+Soimoi Tarot by Mike Koz (https://koz.tv/), licensed under CC BY 4.0
+(https://creativecommons.org/licenses/by/4.0/).
+
+Original release and license:
+https://github.com/mixvlad/TarotCards/tree/840b84d012c6b74dc1634fa2d00d1b21f5b28093/tarot/soimoi
+
+Within resized the images and encoded them as WebP. The original license
+notice is included as LICENSE.txt.
