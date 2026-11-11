@@ -452,6 +452,18 @@ body.night .neon.igniting .nl{animation:ignite .75s calc(var(--k) * 85ms) both}
 @keyframes hum{0%,100%{opacity:1}47%{opacity:1}48%{opacity:.93}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){ body.night .who h1,body.night .nl.flick,body.night .neon.igniting .nl{animation:none} }
 
+/* ===== easter eggs ===== */
+.leader .splice{position:absolute;z-index:3;width:min(40vmin,260px);height:auto;opacity:0;pointer-events:none;transform:translate(6%,-4%) rotate(-3deg)}
+.leader .splice.on{opacity:1}
+.sk-green{display:none}
+body.night .sk-green{display:inline;pointer-events:auto;cursor:help;outline:none}
+.sk-green .g-hit{fill:transparent}
+.sk-green .g-halo{fill:rgba(70,255,140,.28);animation:green 3.2s ease-in-out infinite}
+.sk-green .g-dot{fill:#7dffb0;filter:drop-shadow(0 0 3px #3dff8a)}
+.sk-green .g-ref{stroke:rgba(90,255,150,.45);stroke-width:1.2;stroke-linecap:round;animation:green 3.2s ease-in-out infinite}
+@keyframes green{0%,100%{opacity:.35}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){ .sk-green .g-halo,.sk-green .g-ref{animation:none} }
+
 /* ===== mobile polish ===== */
 .hint-short{display:none}
 @media (max-width:700px){
@@ -522,7 +534,7 @@ body.night .neon.igniting .nl{animation:ignite .75s calc(var(--k) * 85ms) both}
 </svg>
 
 <div class="scratches" aria-hidden="true"><i></i><i></i><i></i></div>
-<div class="leader" id="leader" aria-hidden="true"><span class="x"></span><span class="y"></span><div class="ring"><span class="n" id="leaderN">3</span></div><span class="skip" id="leaderSkip">CLICK TO SKIP</span></div>
+<div class="leader" id="leader" aria-hidden="true"><span class="x"></span><span class="y"></span><div class="ring"><span class="n" id="leaderN">3</span></div><svg class="splice" id="splice" viewBox="0 0 126 160" aria-hidden="true"><use href="#naiwa"/></svg><span class="skip" id="leaderSkip">CLICK TO SKIP</span></div>
 <script is:inline>(function(){var l=document.getElementById('leader');if(location.hash||/noleader/.test(location.search)||matchMedia('(prefers-reduced-motion: reduce)').matches)l.hidden=true;})();</script>
 <div class="skyline" aria-hidden="true"><svg id="sky" viewBox="0 0 1600 220" preserveAspectRatio="xMidYMax slice"></svg></div>
 
@@ -868,6 +880,7 @@ for (let i=0;i<34;i++){
   }
   let water = ''; for (let i=0;i<14;i++){ const y = 184+i*3.2, xs = R()*1600; water += `<path class="sk-water" d="M${xs.toFixed(0)} ${y.toFixed(1)} h${(30+R()*120).toFixed(0)}"/>`; }
   svg.innerHTML = h + wins + water;
+  svg.insertAdjacentHTML('beforeend', `<g class="sk-green" tabindex="0" role="img" aria-label="A green light across the water" data-voice="F. SCOTT FITZGERALD|So we beat on, boats against the current, borne back ceaselessly into the past."><circle class="g-hit" cx="936" cy="196" r="16"/><circle class="g-halo" cx="936" cy="196" r="7"/><circle class="g-dot" cx="936" cy="196" r="2.2"/><path class="g-ref" d="M933 201 h6 M934.5 205 h3"/></g>`);
   // 奶蛙: hide behind the roof of a building near the centre (visible on phones too)
   let best = null;
   svg.querySelectorAll('.sk-b').forEach(r => { const bx = +r.getAttribute('x'), bw = +r.getAttribute('width');
@@ -955,10 +968,18 @@ function showVoice(el){ const [who,txt] = el.dataset.voice.split('|'); voice.inn
   const vw = voice.offsetWidth, vh = voice.offsetHeight;
   voice.style.left = Math.max(12, Math.min(innerWidth - vw - 12, r.left)) + 'px';
   voice.style.top = (r.top - vh - 10 < 8 ? r.bottom + 10 : r.top - vh - 10) + 'px'; }
-const hideVoice = () => voice.classList.remove('on');
+let voiceSticky = 0, voiceTimer = 0;
+const hideVoice = () => { if (performance.now() < voiceSticky) return; voice.classList.remove('on'); };
+function subtitle(who, text, ms){ clearTimeout(voiceTimer); voice.style.bottom = ''; voice.innerHTML = `<b>${who}</b>${text}`; voice.classList.add('on'); voiceSticky = performance.now() + ms; voiceTimer = setTimeout(() => { voiceSticky = 0; voice.classList.remove('on'); }, ms); }
 document.addEventListener('pointerover', e => { const el = e.target.closest('[data-voice]'); el ? showVoice(el) : hideVoice(); });
 document.addEventListener('focusin', e => { const el = e.target.closest('[data-voice]'); el ? showVoice(el) : hideVoice(); });
 document.addEventListener('scroll', hideVoice, true);
+// Taxi Driver: hold your gaze on the cast card (or tap it on a phone)
+let stareTimer = 0;
+const talkin = () => subtitle('HAN ZHANG', "You talkin' to me?", 2600);
+document.addEventListener('pointerover', e => { const c = e.target.closest('.cast'); clearTimeout(stareTimer); if (!c) return;
+  if (e.pointerType === 'touch') talkin(); else stareTimer = setTimeout(talkin, 3000); });
+document.addEventListener('pointerout', e => { if (e.target.closest('.cast') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.cast'))) clearTimeout(stareTimer); });
 
 
 /* ---------- 奶蛙 ---------- */
@@ -1042,7 +1063,9 @@ if (!leader.hidden){
   START = 1750; let n = 3, t0 = performance.now(), dead = false;
   const finish = () => { if (dead) return; dead = true; leader.animate([{opacity:1},{opacity:0}],{duration:250}).onfinish = () => leader.hidden = true; };
   const spin = now => { if (dead) return; const e = (now - t0)/550; const k = Math.floor(e); leader.style.setProperty('--sweep', ((e%1)*360)+'deg');
-    if (3-k !== n){ n = 3-k; if (n <= 0) return finish(); leaderN.textContent = n; } requestAnimationFrame(spin); };
+    if (3-k !== n){ n = 3-k; if (n <= 0) return finish(); leaderN.textContent = n;
+      if (n === 1){ const sp = $('#splice'); sp.classList.add('on'); setTimeout(() => sp.classList.remove('on'), 42); } }  // one frame. blink and you miss it.
+    requestAnimationFrame(spin); };
   requestAnimationFrame(spin); setTimeout(finish, 1900);
   leader.addEventListener('click', () => { finish(); dealNow(); });
 }

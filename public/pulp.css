@@ -129,3 +129,14 @@ html.night .standalone-heading h1{text-shadow:4px 4px 0 var(--red)}
   .prose h2{font-size:26px}
 }
 @media(prefers-reduced-motion:reduce){.blog-entry{transition:none}}
+
+/* film-strip reading progress on blog posts */
+.reel{position:fixed;left:0;right:0;top:0;height:20px;z-index:60;background:#141010;opacity:0;transform:translateY(-100%);transition:opacity .25s,transform .25s;pointer-events:none;overflow:hidden}
+.reel.on{opacity:1;transform:none}
+.reel::before,.reel::after{content:"";position:absolute;left:0;right:0;height:4px;background:repeating-linear-gradient(90deg,transparent 0 6px,#efd8a4 6px 11px,transparent 11px 16px);opacity:.75;z-index:2}
+.reel::before{top:2px}.reel::after{bottom:2px}
+.reel-fill{position:absolute;inset:0;background:#d3241c;transform-origin:left;transform:scaleX(0)}
+html.night .reel-fill{background:#f6c400}
+.reel-tc{position:absolute;right:12px;top:50%;transform:translateY(-50%);z-index:3;font:700 9px/1 var(--mono);letter-spacing:.14em;color:#fff;background:#141010;padding:2px 6px}
+.runtime{white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.reel{transition:none}}
