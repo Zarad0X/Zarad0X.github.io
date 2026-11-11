@@ -396,7 +396,7 @@ body.night .jukebox{box-shadow:6px 6px 0 var(--yellow)}
 
 
 /* ===== 奶蛙 easter egg ===== */
-.naiwa-stage{position:fixed;left:50%;bottom:0;z-index:30;width:min(240px,52vw);margin-left:calc(min(240px,52vw) / -2);cursor:pointer;
+.naiwa-stage{position:fixed;left:50%;bottom:0;z-index:30;width:min(150px,36vw);margin-left:calc(min(150px,36vw) / -2);cursor:pointer;
   filter:drop-shadow(6px 6px 0 rgba(20,16,16,.35));-webkit-tap-highlight-color:transparent}
 .naiwa-stage[hidden]{display:none!important}
 .naiwa-stage svg{display:block;width:100%;height:auto}
@@ -912,7 +912,7 @@ document.addEventListener('scroll', hideVoice, true);
       if (!reduced) stage.animate([{transform:'translateY(110%)'},{transform:'translateY(-12%) rotate(3deg)',offset:.6},{transform:'none'}], {duration:620, easing:'cubic-bezier(.25,1,.5,1)'});
       say();
     }
-    timer = setTimeout(hide, 5000);
+    timer = setTimeout(hide, 3000);
   }
   if (peek){ peek.addEventListener('click', show); peek.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); show(); } }); }
   stage.addEventListener('click', show);
