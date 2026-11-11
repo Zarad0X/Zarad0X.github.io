@@ -21,6 +21,14 @@ const date = new Intl.DateTimeFormat("en-US", { month:"short", day:"2-digit", ye
 <PageLayout title={post.data.title} description={post.data.description} lang={post.data.lang} type="article" reading>
   <Fragment slot="head">
     {translations.map(translation => <link rel="alternate" hreflang={translation.data.lang} href={new URL(`/blog/${translation.slug}/`, Astro.site)} />)}
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org", "@type": "BlogPosting",
+      headline: post.data.title, description: post.data.description,
+      datePublished: post.data.date.toISOString().slice(0,10), inLanguage: post.data.lang === "zh" ? "zh-CN" : "en",
+      url: new URL(`/blog/${post.slug}/`, Astro.site).href, mainEntityOfPage: new URL(`/blog/${post.slug}/`, Astro.site).href,
+      image: new URL("/assets/og-card.jpg", Astro.site).href,
+      author: { "@type": "Person", "@id": new URL("/#person", Astro.site).href, name: "Han Zhang", url: new URL("/", Astro.site).href },
+    })} />
   </Fragment>
   <div class="article-toolbar">
     <a class="back-link" href="/blog/">← {back}</a>

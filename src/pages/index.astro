@@ -20,13 +20,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Han Zhang: a pulp-style title card with The Fool tarot card over a Hong Kong skyline">
 <meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json" is:inline set:html={"{\"@context\": \"https://schema.org\", \"@graph\": [{\"@type\": \"WebSite\", \"@id\": \"https://zarad0x.github.io/#website\", \"url\": \"https://zarad0x.github.io/\", \"name\": \"Han Zhang\", \"inLanguage\": [\"en\", \"zh\"], \"publisher\": {\"@id\": \"https://zarad0x.github.io/#person\"}}, {\"@type\": \"ProfilePage\", \"@id\": \"https://zarad0x.github.io/#profile\", \"url\": \"https://zarad0x.github.io/\", \"name\": \"Han Zhang \u2014 Computer Vision & Embodied AI\", \"isPartOf\": {\"@id\": \"https://zarad0x.github.io/#website\"}, \"mainEntity\": {\"@id\": \"https://zarad0x.github.io/#person\"}, \"about\": {\"@id\": \"https://zarad0x.github.io/#person\"}}, {\"@type\": \"Person\", \"@id\": \"https://zarad0x.github.io/#person\", \"name\": \"Han Zhang\", \"url\": \"https://zarad0x.github.io/\", \"image\": \"https://zarad0x.github.io/assets/portrait-halftone.jpg\", \"description\": \"Computer science undergraduate in the Turing Class (honors) at Zhejiang University and visiting intern at HKUST, working on 3D/4D vision and embodied AI. Seeking PhD and research positions.\", \"jobTitle\": \"Undergraduate researcher, computer vision and embodied AI\", \"affiliation\": [{\"@type\": \"CollegeOrUniversity\", \"name\": \"Zhejiang University\", \"url\": \"https://www.zju.edu.cn/english/\"}, {\"@type\": \"CollegeOrUniversity\", \"name\": \"The Hong Kong University of Science and Technology\", \"alternateName\": \"HKUST\", \"url\": \"https://hkust.edu.hk/\"}], \"alumniOf\": {\"@type\": \"CollegeOrUniversity\", \"name\": \"Zhejiang University\"}, \"knowsAbout\": [\"Computer vision\", \"3D/4D representation learning\", \"Articulated object reconstruction\", \"Gaussian splatting\", \"Physical world modeling\", \"Embodied AI\", \"Robot learning\"], \"sameAs\": [\"https://github.com/Zarad0X\", \"https://www.linkedin.com/in/han-zhang-2068833b2\", \"https://twitter.com/Answer1833\"]}, {\"@type\": \"ScholarlyArticle\", \"@id\": \"https://zarad0x.github.io/#freeartgs\", \"headline\": \"FreeArtGS: Articulated Gaussian Splatting Under Free-moving Scenario\", \"description\": \"Reconstructing articulated objects from monocular RGB-D video under free-moving capture.\", \"author\": [{\"@type\": \"Person\", \"name\": \"Hang Dai\"}, {\"@type\": \"Person\", \"name\": \"Hongwei Fan\"}, {\"@id\": \"https://zarad0x.github.io/#person\"}, {\"@type\": \"Person\", \"name\": \"Duojin Wu\"}, {\"@type\": \"Person\", \"name\": \"Jiyao Zhang\"}, {\"@type\": \"Person\", \"name\": \"Hao Dong\"}], \"datePublished\": \"2026\", \"url\": \"https://freeartgs.github.io/\", \"sameAs\": [\"https://arxiv.org/abs/2603.22102\", \"https://github.com/FreeArtGS/FreeArtGS\"], \"isPartOf\": {\"@type\": \"PublicationEvent\", \"name\": \"IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) 2026\"}}]}"} />
 <meta name="twitter:title" content="Han Zhang — Computer Vision &amp; Embodied AI">
 <meta name="twitter:description" content="A picture in five chapters: research in 3D/4D vision and embodied AI.">
 <meta name="twitter:image" content="https://zarad0x.github.io/assets/og-card.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Space+Mono:wght@400;700&display=swap"><style>.leader{display:none!important}</style></noscript>
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Space+Mono:wght@400;700&display=swap"><style>.leader{display:none!important}</style><style>.facts{display:block!important}.table,.hint{display:none!important}</style></noscript>
 <style is:global>
 :root{
   --bg:#ece5d6; --bg2:#e4dcca; --card:#f8f3e8; --ink:#1b2340; --ink2:rgba(27,35,64,.62); --line:rgba(27,35,64,.16);
@@ -697,7 +698,95 @@ body.night .cast{box-shadow:6px 6px 0 var(--red)}
   <div class="hint"><span class="hint-long">pick a chapter · they're out of order, on purpose</span><span class="hint-short">tap a chapter · out of order, on purpose</span></div>
 </div>
 
-<div class="facts" id="facts"></div>
+<div class="facts" id="facts">
+<section class="fact" id="fact-fool" data-key="fool">
+  <figure class="cast"><img src="/assets/portrait-halftone.jpg" alt="Han Zhang, a halftone-printed portrait" width="480" height="640" loading="lazy"><figcaption><small>STARRING</small><b>HAN ZHANG</b></figcaption></figure>
+  <div class="kicker">Chapter Zero</div>
+  <h2>The Fool</h2>
+  <p class="slug">EXT. A cliff over Victoria Harbour — dawn</p>
+  <div class="status"><i></i>Seeking PhD &amp; research positions</div>
+  <p>HAN ZHANG, a CS undergrad in the Turing Class (honors) at <b>Zhejiang University</b>, now a visiting intern at <b>HKUST</b> with Prof. Yuan Liu. I work on <b>3D/4D vision and embodied AI</b>: structured, generalizable representations of geometry, motion and articulation, and how agents learn about a physical world that changes when they touch it.</p>
+  <p>The Fool is card zero: a traveler at the cliff's edge, bag over one shoulder, about to step off. That's roughly where I am. I'm <span data-voice="VOLITION|You've read the papers. You've run the ablations. Step off the cliff, kid." tabindex="0">applying for PhDs</span> and open to wherever the road goes next.</p>
+  <p>Off the clock I play tennis, play <span data-voice="ELECTROCHEMISTRY|One more blues lick. Then bed. (It is never one more blues lick.)" tabindex="0">electric guitar</span>, and lose whole weekends to <span data-voice="ENCYCLOPEDIA|Fincher, Tarantino, The Godfather. Balatro, Baldur's Gate 3, GTA. This is not procrastination. It is research." tabindex="0">good films and games</span>.</p>
+  <p class="trans">Cut to:</p>
+  <div class="links">
+    <a href="mailto:zhanghan1833@outlook.com">Email ↗</a>
+    <a href="https://github.com/Zarad0X">GitHub ↗</a>
+    <a href="https://www.linkedin.com/in/han-zhang-2068833b2">LinkedIn ↗</a>
+    <a href="https://twitter.com/Answer1833">X ↗</a>
+  </div>
+</section>
+<section class="fact" id="fact-magician" data-key="magician">
+  <div class="kicker">Chapter One</div>
+  <h2>The Magician</h2>
+  <p class="slug">INT. A lab, too many GPUs — night</p>
+  <p>The Magician takes what's on the table and makes something real out of it. I try to do the same with video: recover <b>geometry, motion and articulation</b> from what a camera sees, and learn <span data-voice="LOGIC|A drawer is a prismatic joint. A door is a revolute joint. The world is a URDF waiting to be written." tabindex="0">representations</span> an embodied agent can actually reuse.</p>
+  <h3>Feature presentation</h3>
+  <div class="pub">
+    <img src="/assets/freeartgs-teaser.png" alt="FreeArtGS teaser" loading="lazy">
+    <div class="in">
+      <b class="t">FreeArtGS</b><span class="venue">CVPR 2026</span>
+      <p style="margin:.2em 0;font-weight:700">Articulated Gaussian Splatting Under Free-moving Scenario</p>
+      <div class="authors">Hang Dai*, Hongwei Fan*, <b>Han Zhang*</b>, Duojin Wu, Jiyao Zhang, Hao Dong <i>(* equal contribution)</i></div>
+      <p style="margin:.4em 0">Reconstructing articulated objects from monocular RGB-D video under free-moving capture. My part: part segmentation, camera pose and joint estimation, and the FreeArt-21 dataset with reproducible evaluation.</p>
+      <div class="links">
+        <a href="https://arxiv.org/abs/2603.22102">Paper ↗</a>
+        <a href="https://freeartgs.github.io/">Project ↗</a>
+        <a href="https://github.com/FreeArtGS/FreeArtGS">Code ↗</a>
+        <a href="https://drive.google.com/file/d/1hl6s3C3919gXKvHC0ZfgrxWqFCKM3XXf/view">Data ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="fact" id="fact-wheel" data-key="wheel">
+  <div class="kicker">Chapter Ten</div>
+  <h2>Wheel of Fortune</h2>
+  <p class="slug">Montage — four cities, three years</p>
+  <h3>News</h3>
+  <p><span class="venue" style="margin:0 8px 0 0">2026</span>FreeArtGS accepted to <b>CVPR 2026</b>.</p>
+  <h3>Previously on</h3>
+  <ul class="tl">
+    <li class="now"><div class="when">Sep 2026 – now</div><b>HKUST · ISD</b>, Visiting Intern<br>Advisor: Prof. Yuan Liu. Leading work on structured latent representations for articulated objects.</li>
+    <li class="now"><div class="when">May 2026 – now</div><b>CUHK-Shenzhen · GAP Lab</b>, Research Intern<br>Advisor: Prof. Xiaoguang Han. Articulated 3D representations, disassembly/assembly datasets, VLM-based physical-property reasoning with VLA policies.</li>
+    <li><div class="when">Jul – Nov 2025</div><b>PKU–Agibot Lab</b>, Research Intern<br>Advisor: Prof. Hao Dong. Co-developed FreeArtGS.</li>
+    <li><div class="when">– Jun 2027 (expected)</div><b>Zhejiang University</b>, B.Eng. Computer Science, Turing Class (Honors)</li>
+  </ul>
+</section>
+<section class="fact" id="fact-hermit" data-key="hermit">
+  <div class="kicker">Chapter Nine</div>
+  <h2>The Hermit</h2>
+  <p class="slug">INT. A small room, one lamp — 3 a.m.</p>
+  <a class="chapter" href="/blog/everything-everywhere/">
+    <div class="c1">CHAPTER ONE</div>
+    <div class="c2">Everything Everywhere All at Once</div>
+    <div class="c3">On research, PhD applications, anxiety, and not postponing life.</div>
+    <div class="c4">OCT 24, 2026 · READ →</div>
+  </a>
+  <p style="margin-top:1.4em"><a href="/blog/" style="font-family:var(--mono);font-size:13px">All chapters →</a></p>
+</section>
+<section class="fact" id="fact-world" data-key="world">
+  <div class="kicker">Chapter Twenty-One</div>
+  <h2>The World</h2>
+  <p class="slug">EXT. Somewhere next — to be announced</p>
+  <p>Right now: Hong Kong, by Clear Water Bay. Next: unwritten. 3D vision, embodied AI, something else entirely, or nothing to do with research at all: I'm always happy to chat and connect.</p>
+  <p><a class="big-mail" href="mailto:zhanghan1833@outlook.com">zhanghan1833@outlook.com</a></p>
+  <div class="links">
+    <a href="https://github.com/Zarad0X">GitHub ↗</a>
+    <a href="https://www.linkedin.com/in/han-zhang-2068833b2">LinkedIn ↗</a>
+    <a href="https://twitter.com/Answer1833">X ↗</a>
+    <a href="/rss.xml">RSS ↗</a>
+  </div>
+  <h3>Soundtrack &amp; reel</h3>
+  <div class="offclock">
+    <div><small>Strings</small>Electric guitar, chasing Mayer &amp; Clapton tone</div>
+    <div><small>Court</small>Tennis</div>
+    <div><small>Screen</small>The Godfather, Fincher, Tarantino</div>
+    <div><small>Controller</small>Balatro, Baldur's Gate 3, Disco Elysium, RE4, Sifu, GTA</div>
+  </div>
+  <p style="margin-top:1em"><a class="shelf-link" href="/shelf/">Browse the shelf →</a></p>
+  <p class="trans">Fade out.</p>
+</section>
+</div>
 </main>
 
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true">
@@ -730,97 +819,10 @@ body.night .cast{box-shadow:6px 6px 0 var(--red)}
 <div class="voice" id="voice"></div>
 
 <!-- ============ sheet contents ============ -->
-<template id="tpl-fool">
-  <figure class="cast"><img src="/assets/portrait-halftone.jpg" alt="Han Zhang, a halftone-printed portrait" width="480" height="640" loading="lazy"><figcaption><small>STARRING</small><b>HAN ZHANG</b></figcaption></figure>
-  <div class="kicker">Chapter Zero</div>
-  <h2>The Fool</h2>
-  <p class="slug">EXT. A cliff over Victoria Harbour — dawn</p>
-  <div class="status"><i></i>Seeking PhD &amp; research positions</div>
-  <p>HAN ZHANG, a CS undergrad in the Turing Class (honors) at <b>Zhejiang University</b>, now a visiting intern at <b>HKUST</b> with Prof. Yuan Liu. I work on <b>3D/4D vision and embodied AI</b>: structured, generalizable representations of geometry, motion and articulation, and how agents learn about a physical world that changes when they touch it.</p>
-  <p>The Fool is card zero: a traveler at the cliff's edge, bag over one shoulder, about to step off. That's roughly where I am. I'm <span data-voice="VOLITION|You've read the papers. You've run the ablations. Step off the cliff, kid." tabindex="0">applying for PhDs</span> and open to wherever the road goes next.</p>
-  <p>Off the clock I play tennis, play <span data-voice="ELECTROCHEMISTRY|One more blues lick. Then bed. (It is never one more blues lick.)" tabindex="0">electric guitar</span>, and lose whole weekends to <span data-voice="ENCYCLOPEDIA|Fincher, Tarantino, The Godfather. Balatro, Baldur's Gate 3, GTA. This is not procrastination. It is research." tabindex="0">good films and games</span>.</p>
-  <p class="trans">Cut to:</p>
-  <div class="links">
-    <a href="mailto:zhanghan1833@outlook.com">Email ↗</a>
-    <a href="https://github.com/Zarad0X">GitHub ↗</a>
-    <a href="https://www.linkedin.com/in/han-zhang-2068833b2">LinkedIn ↗</a>
-    <a href="https://twitter.com/Answer1833">X ↗</a>
-  </div>
-</template>
 
-<template id="tpl-magician">
-  <div class="kicker">Chapter One</div>
-  <h2>The Magician</h2>
-  <p class="slug">INT. A lab, too many GPUs — night</p>
-  <p>The Magician takes what's on the table and makes something real out of it. I try to do the same with video: recover <b>geometry, motion and articulation</b> from what a camera sees, and learn <span data-voice="LOGIC|A drawer is a prismatic joint. A door is a revolute joint. The world is a URDF waiting to be written." tabindex="0">representations</span> an embodied agent can actually reuse.</p>
-  <h3>Feature presentation</h3>
-  <div class="pub">
-    <img src="/assets/freeartgs-teaser.png" alt="FreeArtGS teaser" loading="lazy">
-    <div class="in">
-      <b class="t">FreeArtGS</b><span class="venue">CVPR 2026</span>
-      <p style="margin:.2em 0;font-weight:700">Articulated Gaussian Splatting Under Free-moving Scenario</p>
-      <div class="authors">Hang Dai*, Hongwei Fan*, <b>Han Zhang*</b>, Duojin Wu, Jiyao Zhang, Hao Dong <i>(* equal contribution)</i></div>
-      <p style="margin:.4em 0">Reconstructing articulated objects from monocular RGB-D video under free-moving capture. My part: part segmentation, camera pose and joint estimation, and the FreeArt-21 dataset with reproducible evaluation.</p>
-      <div class="links">
-        <a href="https://arxiv.org/abs/2603.22102">Paper ↗</a>
-        <a href="https://freeartgs.github.io/">Project ↗</a>
-        <a href="https://github.com/FreeArtGS/FreeArtGS">Code ↗</a>
-        <a href="https://drive.google.com/file/d/1hl6s3C3919gXKvHC0ZfgrxWqFCKM3XXf/view">Data ↗</a>
-      </div>
-    </div>
-  </div>
-</template>
 
-<template id="tpl-wheel">
-  <div class="kicker">Chapter Ten</div>
-  <h2>Wheel of Fortune</h2>
-  <p class="slug">Montage — four cities, three years</p>
-  <h3>News</h3>
-  <p><span class="venue" style="margin:0 8px 0 0">2026</span>FreeArtGS accepted to <b>CVPR 2026</b>.</p>
-  <h3>Previously on</h3>
-  <ul class="tl">
-    <li class="now"><div class="when">Sep 2026 – now</div><b>HKUST · ISD</b>, Visiting Intern<br>Advisor: Prof. Yuan Liu. Leading work on structured latent representations for articulated objects.</li>
-    <li class="now"><div class="when">May 2026 – now</div><b>CUHK-Shenzhen · GAP Lab</b>, Research Intern<br>Advisor: Prof. Xiaoguang Han. Articulated 3D representations, disassembly/assembly datasets, VLM-based physical-property reasoning with VLA policies.</li>
-    <li><div class="when">Jul – Nov 2025</div><b>PKU–Agibot Lab</b>, Research Intern<br>Advisor: Prof. Hao Dong. Co-developed FreeArtGS.</li>
-    <li><div class="when">– Jun 2027 (expected)</div><b>Zhejiang University</b>, B.Eng. Computer Science, Turing Class (Honors)</li>
-  </ul>
-</template>
 
-<template id="tpl-hermit">
-  <div class="kicker">Chapter Nine</div>
-  <h2>The Hermit</h2>
-  <p class="slug">INT. A small room, one lamp — 3 a.m.</p>
-  <a class="chapter" href="/blog/everything-everywhere/">
-    <div class="c1">CHAPTER ONE</div>
-    <div class="c2">Everything Everywhere All at Once</div>
-    <div class="c3">On research, PhD applications, anxiety, and not postponing life.</div>
-    <div class="c4">OCT 24, 2026 · READ →</div>
-  </a>
-  <p style="margin-top:1.4em"><a href="/blog/" style="font-family:var(--mono);font-size:13px">All chapters →</a></p>
-</template>
 
-<template id="tpl-world">
-  <div class="kicker">Chapter Twenty-One</div>
-  <h2>The World</h2>
-  <p class="slug">EXT. Somewhere next — to be announced</p>
-  <p>Right now: Hong Kong, by Clear Water Bay. Next: unwritten. 3D vision, embodied AI, something else entirely, or nothing to do with research at all: I'm always happy to chat and connect.</p>
-  <p><a class="big-mail" href="mailto:zhanghan1833@outlook.com">zhanghan1833@outlook.com</a></p>
-  <div class="links">
-    <a href="https://github.com/Zarad0X">GitHub ↗</a>
-    <a href="https://www.linkedin.com/in/han-zhang-2068833b2">LinkedIn ↗</a>
-    <a href="https://twitter.com/Answer1833">X ↗</a>
-    <a href="/rss.xml">RSS ↗</a>
-  </div>
-  <h3>Soundtrack &amp; reel</h3>
-  <div class="offclock">
-    <div><small>Strings</small>Electric guitar, chasing Mayer &amp; Clapton tone</div>
-    <div><small>Court</small>Tennis</div>
-    <div><small>Screen</small>The Godfather, Fincher, Tarantino</div>
-    <div><small>Controller</small>Balatro, Baldur's Gate 3, Disco Elysium, RE4, Sifu, GTA</div>
-  </div>
-  <p style="margin-top:1em"><a class="shelf-link" href="/shelf/">Browse the shelf →</a></p>
-  <p class="trans">Fade out.</p>
-</template>
 
 <script is:inline>
 (() => {
@@ -874,7 +876,6 @@ themeBtn.onclick = () => setTheme(!document.body.classList.contains('night'));
 
 /* ---------- facts mode ---------- */
 const facts = $('#facts');
-['fool','magician','wheel','hermit','world'].forEach(k => { const s = document.createElement('section'); s.appendChild($('#tpl-'+k).content.cloneNode(true)); facts.appendChild(s); });
 const factsBtn = $('#factsBtn');
 factsBtn.onclick = () => { const on = !document.body.classList.contains('factsmode'); document.body.classList.toggle('factsmode',on); factsBtn.setAttribute('aria-pressed',on); factsBtn.textContent = on ? 'Back to the cards' : 'Just the facts'; scrollTo(0,0); if (!on) requestAnimationFrame(() => window.__hzLayout && window.__hzLayout()); };
 
@@ -1108,7 +1109,7 @@ function openSheet(c){
   const face = c.front.cloneNode(true); face.querySelectorAll('.shine').forEach(n => n.remove());
   face.style.setProperty('--fx','30%'); face.style.setProperty('--fy','30%');
   sheetCard.innerHTML = ''; sheetCard.appendChild(face);
-  sheetPanel.innerHTML = '<div></div>'; sheetPanel.firstChild.appendChild($('#tpl-'+c.el.dataset.key).content.cloneNode(true));
+  sheetPanel.innerHTML = '<div></div>'; $('#fact-'+c.el.dataset.key).childNodes.forEach(n => sheetPanel.firstChild.appendChild(n.cloneNode(true)));
   sheetPanel.scrollTop = 0;
   sheet.hidden = false; closeBtn.hidden = false; document.body.style.overflow = 'hidden';
   c.el.style.visibility = 'hidden';

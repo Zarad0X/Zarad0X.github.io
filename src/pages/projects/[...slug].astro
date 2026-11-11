@@ -10,6 +10,15 @@ const { Content } = await project.render();
 const date = new Intl.DateTimeFormat("en-US", { month:"short", day:"2-digit", year:"numeric", timeZone:"UTC" }).format(project.data.date);
 ---
 <PageLayout title={project.data.title} description={project.data.description} type="article" reading>
+  {project.slug === "freeartgs" && <Fragment slot="head">
+    <meta name="citation_title" content="FreeArtGS: Articulated Gaussian Splatting Under Free-moving Scenario" />
+    {["Dai, Hang", "Fan, Hongwei", "Zhang, Han", "Wu, Duojin", "Zhang, Jiyao", "Dong, Hao"].map(a => <meta name="citation_author" content={a} />)}
+    <meta name="citation_publication_date" content="2026" />
+    <meta name="citation_conference_title" content="IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)" />
+    <meta name="citation_arxiv_id" content="2603.22102" />
+    <meta name="citation_pdf_url" content="https://arxiv.org/pdf/2603.22102" />
+    <meta name="citation_abstract_html_url" content="https://freeartgs.github.io/" />
+  </Fragment>}
   <div class="article-toolbar"><a href="/projects/">← All research</a></div>
   <article class="blog-article">
     <header class="article-header"><p class="article-date"><time datetime={project.data.date.toISOString().slice(0,10)}>{date}</time></p><h1>{project.data.title}</h1><p class="article-description">{project.data.description}</p></header>
