@@ -784,13 +784,15 @@ const songs = [
 const np = $('#np'), npText = $('#npText'), jb = $('#jukebox'), jbList = $('#jbList'), jbOpen = $('#jbOpen');
 const jbPlay = $('#jbPlay'), jbBar = $('#jbBar'), jbProg = $('#jbProg'), jbTime = $('#jbTime'), jbVol = $('#jbVol');
 const audio = new Audio(); audio.preload = 'none';
-let si = 0, vol = parseFloat(store.get('hz-vol')); if (!(vol >= 0 && vol <= 1)) vol = 0.08;
-jbVol.value = vol; audio.volume = vol;
+// The slider runs 0–100%, but 100% is capped at half of the browser's full volume.
+const MAX_GAIN = 0.5;
+let si = 0, vol = parseFloat(store.get('hz-vol2')); if (!(vol >= 0 && vol <= 1)) vol = 1;
+jbVol.value = vol; audio.volume = vol * MAX_GAIN;
 const fmt = t => `${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 const showSong = () => { const s = songs[si]; npText.innerHTML = `${s.t} <span>— ${s.a.replace(/ feat\..*/,'')}</span>`; };
 jbList.innerHTML = songs.map((s,i) => `<li><button type="button" data-i="${i}"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${s.t}<span class="a">${s.a}</span></span></button></li>`).join('');
 function mark(){ jbList.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(+b.dataset.i === si))); }
-function fadeIn(){ audio.volume = 0; const t0 = performance.now(); const step = now => { const k = Math.min(1,(now-t0)/600); audio.volume = vol*k; if (k < 1 && !audio.paused) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+function fadeIn(){ audio.volume = 0; const t0 = performance.now(); const step = now => { const k = Math.min(1,(now-t0)/600); audio.volume = vol*MAX_GAIN*k; if (k < 1 && !audio.paused) requestAnimationFrame(step); }; requestAnimationFrame(step); }
 function loadSong(i, play){
   si = i; showSong(); mark();
   const s = songs[i];
@@ -814,7 +816,7 @@ np.onclick = () => setJukebox(jb.hidden);
 $('#jbClose').onclick = () => { setJukebox(false); np.focus(); };
 jbList.addEventListener('click', e => { const b = e.target.closest('button'); if (b) loadSong(+b.dataset.i, true); });
 jbPlay.onclick = () => { if (!audio.src) loadSong(si, false); audio.paused ? audio.play().then(fadeIn).catch(() => {}) : audio.pause(); };
-jbVol.oninput = () => { vol = +jbVol.value; audio.volume = vol; store.set('hz-vol', vol); };
+jbVol.oninput = () => { vol = +jbVol.value; audio.volume = vol * MAX_GAIN; store.set('hz-vol2', vol); };
 jbProg.onclick = e => { if (!audio.duration) return; const r = jbProg.getBoundingClientRect(); audio.currentTime = (e.clientX - r.left)/r.width*audio.duration; };
 audio.addEventListener('play', () => { np.classList.add('on'); jbPlay.textContent = '❚❚'; jbPlay.setAttribute('aria-label','Pause'); });
 audio.addEventListener('pause', () => { np.classList.remove('on'); jbPlay.textContent = '▶'; jbPlay.setAttribute('aria-label','Play'); });
