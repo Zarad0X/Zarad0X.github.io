@@ -1,6 +1,6 @@
 ---
 const path = Astro.url.pathname;
-const active = path.startsWith("/shelf") ? "shelf" : path.startsWith("/blog") ? "blog" : path.startsWith("/work") ? "experience" : path.startsWith("/projects") ? "research" : "";
+const active = path.startsWith("/hongkong") ? "hk" : path.startsWith("/shelf") ? "shelf" : path.startsWith("/blog") ? "blog" : path.startsWith("/work") ? "experience" : path.startsWith("/projects") ? "research" : "";
 ---
 <header class="header">
   <a class="wordmark" href="/" aria-label="Han Zhang home"><span aria-hidden="true"><span class="nl" style="--k:0">H</span><span class="nl" style="--k:1">a</span><span class="nl" style="--k:2">n</span> <span class="nl" style="--k:4">Z</span><span class="nl" style="--k:5">h</span><span class="nl" style="--k:6">a</span><span class="nl" style="--k:7">n</span><span class="nl flick" style="--k:8">g</span></span></a>
@@ -9,6 +9,7 @@ const active = path.startsWith("/shelf") ? "shelf" : path.startsWith("/blog") ? 
     <a href="/#wheel" aria-current={active === "experience" ? "page" : undefined}>Journey</a>
     <a href="/blog/" aria-current={active === "blog" ? "page" : undefined}>Blog</a>
     <a href="/shelf/" aria-current={active === "shelf" ? "page" : undefined}>Shelf</a>
+    <a href="/hongkong/" aria-current={active === "hk" ? "page" : undefined}>HK</a>
     <button class="theme-toggle" type="button" id="themeToggle">☾ Grindhouse</button>
   </nav>
 </header>

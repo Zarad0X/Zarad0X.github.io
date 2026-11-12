@@ -40,3 +40,4 @@
 - [Experience](https://zarad0x.github.io/work/)
 - [Blog](https://zarad0x.github.io/blog/)
 - [Shelf](https://zarad0x.github.io/shelf/): favourite films, records, books and games
+- [Hong Kong](https://zarad0x.github.io/hongkong/): a hand-drawn map of favourite places in Hong Kong
