@@ -20,6 +20,29 @@ const water = [
   { zh: "清水灣", en: "Clear Water Bay", lon: 114.2850, lat: 22.3200 },
 ].map(w => ({ ...w, xy: toXY(w.lon, w.lat) }));
 const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p.kind] }));
+
+// ---- the living layer: ferries, trams, a junk, landmarks, the night's events ----
+const XY = (lon: number, lat: number) => toXY(lon, lat).map(v => +v.toFixed(1));
+const line = (pts: number[][]) => "M" + pts.map(([lon, lat]) => XY(lon, lat).join(" ")).join(" L");
+const [fa, fb] = [XY(114.1608, 22.2873), XY(114.1686, 22.2937)];                   // Central Pier 7 ↔ TST Star Ferry Pier
+const ferryRoute = `M${fa[0]} ${fa[1]} Q${(fa[0] + fb[0]) / 2 + 14} ${(fa[1] + fb[1]) / 2 + 10} ${fb[0]} ${fb[1]}`;
+const tramRoute = line([[114.1545, 22.2830], [114.1600, 22.2810], [114.1650, 22.2790], [114.1700, 22.2776], [114.1760, 22.2772],
+  [114.1810, 22.2784], [114.1860, 22.2800], [114.1900, 22.2814]]);                     // Kennedy Town-ish → Causeway Bay
+const [ja, jm, jb] = [XY(114.1500, 22.2915), XY(114.1720, 22.2893), XY(114.1915, 22.2900)];
+const junkRoute = `M${ja[0]} ${ja[1]} Q${jm[0]} ${jm[1] + 4} ${jb[0]} ${jb[1]}`;
+const ifc = XY(114.1590, 22.2856), icc = XY(114.1604, 22.3040);
+const pumpkin = XY(114.1522, 22.2793), fireworks = XY(114.1766, 22.2884);
+const peak = XY(114.1500, 22.2712);                                                      // Peak Tower, Victoria Peak
+const peakTram = line([[114.1592, 22.2778], [114.1560, 22.2752], [114.1528, 22.2730], [114.1503, 22.2716]]);
+const cruise = XY(114.2155, 22.3045);                                                    // Kai Tak Cruise Terminal
+const [pa, pb] = [XY(114.1380, 22.3420), XY(114.2050, 22.3110)];                        // a jet coming in over Kowloon City
+const planeRoute = `M${pa[0]} ${pa[1]} Q${(pa[0] + pb[0]) / 2} ${(pa[1] + pb[1]) / 2 - 18} ${pb[0]} ${pb[1]}`;
+const signs = [{ xy: XY(114.1712, 22.3150), t: ["押"], c: "#ff2d55", bat: true }, { xy: XY(114.1738, 22.3122), t: ["茶", "餐", "廳"], c: "#5ce1ff" },
+  { xy: XY(114.1690, 22.3112), t: ["酒", "家"], c: "#ffcf3a" }];
+const burst = (r0: number, r1: number) => Array.from({ length: 12 }, (_, k) => {
+  const a = (k / 12) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+  return `M${(c * r0).toFixed(1)} ${(s * r0).toFixed(1)} L${(c * r1).toFixed(1)} ${(s * r1).toFixed(1)}`;
+}).join(" ");
 ---
 <PageLayout title="Location Scout · Hong Kong" description="Places in Hong Kong Han Zhang keeps going back to, pinned on a hand-drawn map and strung together in red.">
   <div class="standalone-heading scout-heading">
@@ -32,6 +55,7 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
     <div class="board" id="board">
       <span class="tape t1" aria-hidden="true"></span><span class="tape t2" aria-hidden="true"></span>
       <div class="case-label" aria-hidden="true"><b>CASE FILE</b>香港 · {places.length} locations</div>
+      <div class="hk-now" id="hkNow"><b>HKT</b> <span id="hkTime">--:--</span><span id="hkWx"></span></div>
       <div class="viewport" id="viewport">
         <div class="stage" id="stage">
           <svg class="hkmap" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label="Hand-drawn map of Hong Kong from Central to Clear Water Bay">
@@ -50,12 +74,91 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
               {districts.map(d => <path d={d.d} />)}
             </g>
             <g class="labels" aria-hidden="true">
-              {districts.filter(d => labelled.has(d.zh)).map(d => (
-                <text x={d.c[0]} y={d.c[1]} class="dist"><tspan class="dz">{d.zh.replace(/區$/, "")}</tspan><tspan class="de" x={d.c[0]} dy="13">{d.en}</tspan></text>
-              ))}
+              {districts.filter(d => labelled.has(d.zh)).map(d => {
+                const [x, y] = d.zh === "中西區" ? [d.c[0] - 38, d.c[1] + 46] : d.c;   // keep clear of the Peak doodle
+                return <text x={x} y={y} class="dist"><tspan class="dz">{d.zh.replace(/區$/, "")}</tspan><tspan class="de" x={x} dy="13">{d.en}</tspan></text>;
+              })}
               {water.map(w => (
                 <text x={w.xy[0]} y={w.xy[1]} class="water"><tspan>{w.zh}</tspan><tspan x={w.xy[0]} dy="14">{w.en.toUpperCase()}</tspan></text>
               ))}
+            </g>
+            <g class="life" aria-hidden="true">
+              <path id="ferryRoute" d={ferryRoute} class="route" />
+              <path id="tramRoute" d={tramRoute} class="route tram-track" />
+              <path id="junkRoute" d={junkRoute} fill="none" stroke="none" />
+              <g class="lm" transform={`translate(${ifc[0]} ${ifc[1]})`}>
+                <path d="M-5 0 V-44 L-3.5 -49 V-55 L-1.5 -59 L0 -66 L1.5 -59 L3.5 -55 V-49 L5 -44 V0 Z" class="tower" />
+                <path d="M-5 -8 h10 M-5 -16 h10 M-5 -24 h10 M-5 -32 h10 M-5 -40 h10" class="floors" />
+                <text y="9" class="lm-t">IFC</text>
+              </g>
+              <g class="lm" transform={`translate(${icc[0]} ${icc[1]})`}>
+                <path d="M-5.5 0 V-64 L-4 -69 L4 -69 L5.5 -64 V0 Z" class="tower" />
+                <path d="M-5.5 -9 h11 M-5.5 -18 h11 M-5.5 -27 h11 M-5.5 -36 h11 M-5.5 -45 h11 M-5.5 -54 h11" class="floors" />
+                <text y="9" class="lm-t">ICC</text>
+              </g>
+              <g class="pumpkin" transform={`translate(${pumpkin[0]} ${pumpkin[1]}) scale(1.5)`}>
+                <path d="M0 -6.5 q1 -3 3 -3.5" class="stem" />
+                <ellipse cx="0" cy="0" rx="8" ry="6.5" class="gourd" />
+                <path d="M-3 -6 q-2 6 0 12.5 M3 -6 q2 6 0 12.5" class="ribs" />
+                <path d="M-4.5 -2 l2 -2 l1 2.5 z M4.5 -2 l-2 -2 l-1 2.5 z M-4 2 q4 3 8 0 l-2 1.2 l-1 -1 l-1 1 l-1 -1 l-1 1 z" class="face" />
+              </g>
+              <g class="fireworks" transform={`translate(${fireworks[0]} ${fireworks[1]})`}>
+                <g transform="translate(-16 -6)"><path d={burst(3, 15)} class="burst b1" /></g>
+                <g transform="translate(14 -14)"><path d={burst(2, 11)} class="burst b2" /></g>
+                <g transform="translate(2 4)"><path d={burst(2.5, 13)} class="burst b3" /></g>
+              </g>
+              <path d={peakTram} class="route peak-tram" />
+              <g class="lm peak" transform={`translate(${peak[0]} ${peak[1]})`}>
+                <path d="M-16 -4 Q0 -14 16 -4 L12 -2 L-12 -2 Z" class="tower" />
+                <path d="M-6 -2 V6 M6 -2 V6 M-10 6 h20" class="floors" style="opacity:.9" />
+                <text y="16" class="lm-t">THE PEAK</text>
+              </g>
+              <g class="cruise" transform={`translate(${cruise[0]} ${cruise[1]}) rotate(-38) scale(1.4)`}>
+                <path d="M-20 2 L18 2 L22 -2 L-22 -2 Z" class="hull-w" />
+                <path d="M-16 -2 V-6 H12 V-2 M-12 -6 V-9 H6 V-6" class="deck-w" />
+                <path d="M-14 -4 h24" class="portholes" />
+              </g>
+              <g class="signs">
+                {signs.map(sg => (
+                  <g transform={`translate(${sg.xy[0]} ${sg.xy[1]})`} style={`--c:${sg.c}`} class="sign">
+                    <rect x="-7" y="-4" width="14" height={sg.t.length * 13 + 6} rx="2" class="sign-box" />
+                    {sg.bat && <path d="M-11 -9 q4 -4 11 0 q7 -4 11 0 q-4 0 -5 3 q-6 -3 -12 0 q-1 -3 -5 -3 z" class="sign-bat" />}
+                    {sg.t.map((ch, k) => <text x="0" y={k * 13 + 7} class="sign-t">{ch}</text>)}
+                  </g>
+                ))}
+              </g>
+              <path id="planeRoute" d={planeRoute} fill="none" stroke="none" />
+              <g class="plane">
+                <g transform="scale(1.7)">
+                  <path d="M-12 0 Q-12 -2 -9 -2 L9 -2 Q13 -2 14 0 Q13 2 9 2 L-9 2 Q-12 2 -12 0 Z" class="fuselage" />
+                  <path d="M-2 -1.5 L-7 -10 L-4 -10 L4 -1.5 Z M-2 1.5 L-7 10 L-4 10 L4 1.5 Z M-10 -1.5 L-13 -6 L-11 -6 L-7 -1.5 Z M-10 1.5 L-13 6 L-11 6 L-7 1.5 Z" class="wing" />
+                </g>
+                <animateMotion dur="48s" repeatCount="indefinite" rotate="auto" keyPoints="0;1;1" keyTimes="0;0.35;1" calcMode="linear"><mpath href="#planeRoute" /></animateMotion>
+                <animate attributeName="opacity" dur="48s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.02;0.32;0.35;1" />
+              </g>
+              <g class="ferry"><g transform="scale(1.6)">
+                <path d="M-13 2 L13 2 L10.5 6.5 L-10.5 6.5 Z" class="hull" />
+                <rect x="-9.5" y="-4" width="19" height="6" class="deck" />
+                <path d="M-8 -1 h16" class="windows" />
+                <rect x="-2.2" y="-8" width="4.4" height="4" class="deck" />
+              </g>
+                <animateMotion dur="26s" repeatCount="indefinite" rotate="0" keyPoints="0;1;1;0;0" keyTimes="0;0.42;0.5;0.92;1" calcMode="linear"><mpath href="#ferryRoute" /></animateMotion>
+              </g>
+              <g class="tram"><g transform="scale(1.6)">
+                <rect x="-8" y="-11" width="16" height="13" rx="1.5" class="tram-body" />
+                <path d="M-6 -8 h12 M-6 -3 h12" class="tram-win" />
+                <circle cx="-4.5" cy="3.2" r="1.5" class="wheel" /><circle cx="4.5" cy="3.2" r="1.5" class="wheel" />
+              </g>
+                <animateMotion dur="44s" repeatCount="indefinite" rotate="0" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="linear"><mpath href="#tramRoute" /></animateMotion>
+              </g>
+              <g class="junk"><g transform="scale(1.6)">
+                <path d="M-12 3 Q0 8 12 3 L14 0 L-14 0 Z" class="junk-hull" />
+                <path d="M-6 0 L-6 -15 Q-12 -8 -11 0 Z" class="sail" />
+                <path d="M4 0 L4 -19 Q-4 -10 -3 0 Z" class="sail" />
+                <path d="M-10.5 -4 h4.5 M-11 -9 h5 M-3 -6 h7 M-2 -12 h6" class="batten" />
+              </g>
+                <animateMotion dur="80s" repeatCount="indefinite" rotate="0" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="linear"><mpath href="#junkRoute" /></animateMotion>
+              </g>
             </g>
           </svg>
           <svg class="overlay" id="overlay" aria-hidden="true"><g id="leaders"></g><path id="string" class="string" /></svg>
@@ -67,6 +170,7 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
             </button>
           ))}
         </div>
+        <div class="wx" id="wx" aria-hidden="true"></div>
       </div>
       <svg class="inset" viewBox={`0 0 ${inset.w} ${inset.h}`} aria-hidden="true">
         <rect width={inset.w} height={inset.h} class="inset-bg" />
@@ -169,10 +273,11 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
       set("subZh", c.note?.zh); set("subEn", c.note?.en);
       document.getElementById("screen").classList.toggle("empty", !(c.note?.zh || c.note?.en));
       scene.hidden = false;
+      scout.classList.toggle("fw-on", i === fwScene);
       camera(i);
     }
     function close() {
-      active = -1; scene.hidden = true; pins.forEach(p => p.classList.remove("on")); frames.forEach(f => { f.classList.remove("on"); f.setAttribute("aria-current", "false"); }); camera(-1);
+      active = -1; scene.hidden = true; scout.classList.remove("fw-on"); pins.forEach(p => p.classList.remove("on")); frames.forEach(f => { f.classList.remove("on"); f.setAttribute("aria-current", "false"); }); camera(-1);
     }
     pins.forEach((el, i) => el.addEventListener("click", () => (active === i ? close() : open(i))));
     const frames = [...document.querySelectorAll("#strip .frame")];
@@ -188,6 +293,27 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
       if (e.key === "ArrowLeft") open((active - 1 + cards.length) % cards.length);
     });
     addEventListener("resize", () => camera(active));
+    // Wan Chai fireworks also go off (by day) while that scene is open
+    const fwScene = cards.findIndex(c => /Wan Chai/.test(c.en));
+
+    // Hong Kong right now: local time + live weather (Open-Meteo, no key, no visitor data sent)
+    const tEl = document.getElementById("hkTime"), wEl = document.getElementById("hkWx"), wx = document.getElementById("wx");
+    const hkt = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Hong_Kong", hour: "2-digit", minute: "2-digit" });
+    const tick = () => { tEl.textContent = hkt.format(new Date()); };
+    tick(); setInterval(tick, 20000);
+    const WX = c => c === 0 ? ["晴", "CLEAR"] : c <= 2 ? ["天晴", "FAIR"] : c === 3 ? ["多雲", "CLOUDY"] : (c === 45 || c === 48) ? ["有霧", "FOG", "fog"]
+      : c <= 57 ? ["毛毛雨", "DRIZZLE", "rain"] : c <= 67 ? ["雨", "RAIN", "rain"] : c <= 77 ? ["冷", "COLD"] : c <= 82 ? ["驟雨", "SHOWERS", "rain"]
+      : c >= 95 ? ["雷暴", "THUNDER", "storm"] : ["", ""];
+    const setWx = (code, temp) => {
+      const [zh, en, fx] = WX(code);
+      wEl.textContent = `${temp != null ? Math.round(temp) + "°C " : ""}${zh} ${en}`.trim();
+      wx.className = "wx" + (fx === "storm" ? " rain storm" : fx ? " " + fx : "");
+    };
+    const force = new URLSearchParams(location.search).get("wx");     // ?wx=rain|fog|storm to preview
+    if (force) setWx(force === "fog" ? 45 : force === "storm" ? 95 : 63, null);
+    else fetch("https://api.open-meteo.com/v1/forecast?latitude=22.30&longitude=114.21&current=temperature_2m,weather_code&timezone=Asia%2FHong_Kong")
+      .then(r => r.json()).then(d => d.current && setWx(d.current.weather_code, d.current.temperature_2m)).catch(() => {});
+    if (reduced) document.querySelector(".hkmap").pauseAnimations();
     layout();
     // draw the string in once, the first time the board scrolls into view
     if (!reduced && "IntersectionObserver" in window) {
@@ -251,7 +377,7 @@ html.night .pin .head{border-color:#ffd0da;box-shadow:0 0 10px #ff2d55,0 0 22px 
 .pin:hover .placard,.pin:focus-visible .placard,.pin.on .placard{opacity:1;transform:none}
 html.night .placard{box-shadow:0 0 0 2px #000,0 0 14px rgba(255,255,255,.25)}
 
-.inset{position:absolute;left:18px;bottom:18px;width:150px;height:auto;z-index:3;border:1.5px solid #141010;box-shadow:3px 3px 0 rgba(20,16,16,.8);background:#fffbe8}
+.inset{position:absolute;right:18px;bottom:18px;width:150px;height:auto;z-index:3;border:1.5px solid #141010;box-shadow:3px 3px 0 rgba(20,16,16,.8);background:#fffbe8}
 .inset-bg{fill:#e6dcc3}.inset-land{fill:#fffbe8;stroke:#141010;stroke-width:.5}.inset-frame{fill:rgba(211,36,28,.12);stroke:#d3241c;stroke-width:1.4}
 .inset-t{font:700 7px "Courier Prime",monospace;letter-spacing:.12em;fill:#141010}
 html.night .inset{background:#0e131d;border-color:#2a3550}html.night .inset-bg{fill:#06090f}html.night .inset-land{fill:#121826;stroke:#5ce1ff}html.night .inset-t{fill:#9fe8ff}
@@ -301,6 +427,73 @@ html.night .frame.on{background:#ff2d55;color:#fff}
 .f-zh{font-family:"Noto Serif SC","Songti SC",serif;font-weight:700;font-size:14px;line-height:1.1;white-space:nowrap}
 .sr{position:absolute;left:0;top:0;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
 .credits{font:11px/1.6 var(--mono);color:var(--quiet);margin:0 0 10px}
+
+
+/* ===== the living layer ===== */
+.route{fill:none;stroke:var(--ink);stroke-width:.9;stroke-dasharray:2 3;opacity:.35}
+.tram-track{stroke-dasharray:1 2.2;opacity:.45}
+.lm .tower{fill:#fffbe8;stroke:#141010;stroke-width:1.1;stroke-linejoin:round}
+.lm .floors{stroke:#141010;stroke-width:.5;opacity:.6}
+.lm-t{font:700 7px "Courier Prime",monospace;letter-spacing:.12em;text-anchor:middle;fill:var(--label)}
+html.night .lm .tower{fill:#141a28;stroke:#5ce1ff;filter:drop-shadow(0 0 2px rgba(92,225,255,.8))}
+html.night .lm .floors{stroke:#ffcf3a;stroke-width:1.1;opacity:.85;stroke-dasharray:1.5 1.2;animation:winflick 7s infinite}
+@keyframes winflick{0%,100%{opacity:.85}46%{opacity:.85}48%{opacity:.4}52%{opacity:.85}}
+.pumpkin .gourd{fill:#e3741c;stroke:#141010;stroke-width:1}
+.pumpkin .ribs,.pumpkin .stem{fill:none;stroke:#141010;stroke-width:.8}
+.pumpkin .face{fill:#141010}
+html.night .pumpkin .face{fill:#ffd23a;filter:drop-shadow(0 0 3px #ffb000);animation:candle 1.8s infinite}
+@keyframes candle{0%,100%{opacity:1}30%{opacity:.7}55%{opacity:.95}75%{opacity:.6}}
+.fireworks{opacity:0;transition:opacity .4s}
+html.night .fireworks,.scout.fw-on .fireworks{opacity:1}
+.burst{fill:none;stroke-width:1.6;stroke-linecap:round;transform-box:fill-box;transform-origin:center;animation:burst 4.2s infinite}
+.b1{stroke:#ffcf3a}.b2{stroke:#ff4d6d;animation-delay:1.3s}.b3{stroke:#5ce1ff;animation-delay:2.6s}
+html.night .burst{filter:drop-shadow(0 0 3px currentColor)}
+@keyframes burst{0%{transform:scale(.05);opacity:0}6%{opacity:1}38%{transform:scale(1);opacity:.95}62%,100%{transform:scale(1.12);opacity:0}}
+.ferry .hull{fill:#0b7a3b;stroke:#141010;stroke-width:.9}
+.ferry .deck{fill:#fffbe8;stroke:#141010;stroke-width:.9}
+.ferry .windows{stroke:#141010;stroke-width:1.4;stroke-dasharray:1.6 1.2}
+.tram .tram-body{fill:#0b7a3b;stroke:#141010;stroke-width:.9}
+.tram .tram-win{stroke:#fffbe8;stroke-width:2.4;stroke-dasharray:2.4 1.1}
+.tram .wheel{fill:#141010}
+.junk .junk-hull{fill:#5a3a22;stroke:#141010;stroke-width:.9}
+.junk .sail{fill:#c8102e;stroke:#141010;stroke-width:.9}
+.junk .batten{stroke:#141010;stroke-width:.6}
+html.night .ferry .windows,html.night .tram .tram-win{stroke:#ffcf3a;filter:drop-shadow(0 0 2px #ffb000)}
+html.night .junk .sail{filter:drop-shadow(0 0 3px rgba(255,45,85,.7))}
+
+.peak-tram{stroke-dasharray:3 2;opacity:.55}
+.cruise .hull-w,.cruise .deck-w{fill:#fffbe8;stroke:#141010;stroke-width:.8}
+.cruise .portholes{stroke:#141010;stroke-width:1;stroke-dasharray:1 1.6}
+html.night .cruise .portholes{stroke:#ffcf3a;filter:drop-shadow(0 0 2px #ffb000)}
+.plane .fuselage,.plane .wing{fill:#fffbe8;stroke:#141010;stroke-width:.7;stroke-linejoin:round}
+html.night .plane .fuselage,html.night .plane .wing{fill:#1b2233;stroke:#cfe9ff}
+/* neon signs: switched off by day, on (and buzzing) at night */
+.sign-box{fill:none;stroke:var(--ink);stroke-width:.8;opacity:.35}
+.sign-t{font-family:"Noto Serif SC","Songti SC",serif;font-weight:900;font-size:11px;text-anchor:middle;dominant-baseline:middle;fill:none;stroke:var(--ink);stroke-width:.5;opacity:.35}
+.sign-bat{fill:none;stroke:var(--ink);stroke-width:.7;opacity:.35}
+html.night .sign-box,html.night .sign-t,html.night .sign-bat{stroke:var(--c);opacity:1;filter:drop-shadow(0 0 2.5px var(--c));animation:signbuzz 6s infinite}
+html.night .sign-t{stroke-width:.9}
+html.night .sign:nth-child(2) *{animation-delay:-2.1s}html.night .sign:nth-child(3) *{animation-delay:-4.3s}
+@keyframes signbuzz{0%,100%{opacity:1}61%{opacity:1}62%{opacity:.25}63%{opacity:1}65%{opacity:.4}66%{opacity:1}}
+
+/* Hong Kong right now: time + weather */
+.hk-now{position:absolute;right:22px;top:20px;z-index:4;background:#141010;color:#f2e6cc;font:700 11px/1 var(--mono);letter-spacing:.06em;
+  padding:7px 10px 6px;box-shadow:3px 3px 0 #d3241c;transform:rotate(1deg)}
+.hk-now b{color:#f6c400;font-weight:700}
+#hkWx:not(:empty)::before{content:" · "}
+.wx{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;transition:opacity 1.2s}
+.wx.rain{opacity:1;background:repeating-linear-gradient(106deg,transparent 0 9px,rgba(29,42,74,.28) 9px 10px,transparent 10px 23px);
+  background-size:120px 120px;animation:rain .5s linear infinite}
+html.night .wx.rain{background:repeating-linear-gradient(106deg,transparent 0 9px,rgba(92,225,255,.28) 9px 10px,transparent 10px 23px);background-size:120px 120px}
+@keyframes rain{to{background-position:-34px 120px}}
+.wx.fog{opacity:1;background:radial-gradient(120% 70% at 30% 40%,rgba(255,255,255,.55),transparent 70%),radial-gradient(90% 60% at 80% 70%,rgba(255,255,255,.45),transparent 70%);
+  animation:fog 18s ease-in-out infinite alternate}
+html.night .wx.fog{background:radial-gradient(120% 70% at 30% 40%,rgba(160,190,220,.22),transparent 70%),radial-gradient(90% 60% at 80% 70%,rgba(160,190,220,.18),transparent 70%)}
+@keyframes fog{to{transform:translateX(4%)}}
+.wx.storm{animation:rain .45s linear infinite,flash 9s infinite}
+@keyframes flash{0%,93%,100%{filter:none}94%{filter:brightness(2.2)}95%{filter:none}96%{filter:brightness(1.8)}}
+@media(max-width:760px){ .hk-now{right:auto;left:auto;top:auto;bottom:10px;right:10px;font-size:9px;padding:5px 7px 4px} }
+@media(prefers-reduced-motion:reduce){ .burst,.wx,.pumpkin .face,.lm .floors,.sign *{animation:none!important} }
 
 @media(max-width:760px){
   .board{padding:6px}

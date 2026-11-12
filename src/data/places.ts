@@ -37,7 +37,7 @@ export const places: Place[] = [
   { zh: "銅鑼灣 · DON DON DONKI", en: "DON DON DONKI · Causeway Bay", slug: "INT. DON DON DONKI, CAUSEWAY BAY — LATE NIGHT", kind: "shopping", lon: 114.1838, lat: 22.2798 },
   { zh: "維多利亞公園網球場", en: "Victoria Park Tennis Centre", slug: "EXT. VICTORIA PARK TENNIS CENTRE — DAY", kind: "tennis", lon: 114.1912, lat: 22.2826,
     note: { zh: "香港網球公開賽", en: "Hong Kong Tennis Open (WTA 250)." } },
-  { zh: "將軍澳 · OOLAA", en: "OOLAA · Tseung Kwan O", slug: "INT. OOLAA, TSEUNG KWAN O — NIGHT", kind: "food", lon: 114.2600, lat: 22.3075 },
+  { zh: "將軍澳海濱 · OOLAA", en: "OOLAA · Tseung Kwan O waterfront", slug: "INT. OOLAA, TSEUNG KWAN O WATERFRONT — NIGHT", kind: "food", lon: 114.2572, lat: 22.3027 },
   { zh: "坑口", en: "Hang Hau", slug: "INT. HANG HAU — HOME BASE", kind: "home", lon: 114.262, lat: 22.317, approx: true,
     note: { en: "Home base. Marked as an area on purpose." } },
   { zh: "清水灣 · 香港科技大學", en: "Clear Water Bay · HKUST", slug: "EXT. CLEAR WATER BAY — HKUST — DAY", kind: "campus", lon: 114.2655, lat: 22.3363,
