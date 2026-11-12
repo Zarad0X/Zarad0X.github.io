@@ -134,7 +134,12 @@ const bookW = (i: number) => [46, 38, 42, 50, 40][i % 5];
       set("rentalBy", d.by); set("rentalYear", d.year); set("rentalFormat", d.format);
       set("rentalNote", d.note || "No notes. Just a favourite.");
       const link = document.getElementById("rentalLink");
-      if (d.link) { link.href = d.link; link.hidden = false; } else link.hidden = true;
+      if (d.link) {
+        const local = d.link.startsWith("/");
+        link.href = d.link; link.hidden = false;
+        link.textContent = local ? "Play a set →" : "Listen on Apple Music ↗";
+        if (local) link.removeAttribute("target"); else link.setAttribute("target", "_blank");
+      } else link.hidden = true;
       dlg.style.setProperty("--stamp-r", (Math.random() * 16 - 14).toFixed(1) + "deg");
       opener = el;
       if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
