@@ -41,5 +41,5 @@ export const places: Place[] = [
   { zh: "坑口", en: "Hang Hau", slug: "INT. HANG HAU — HOME BASE", kind: "home", lon: 114.262, lat: 22.317, approx: true,
     note: { en: "Home base. Marked as an area on purpose." } },
   { zh: "清水灣 · 香港科技大學", en: "Clear Water Bay · HKUST", slug: "EXT. CLEAR WATER BAY — HKUST — DAY", kind: "campus", lon: 114.2655, lat: 22.3363,
-    note: { en: "Visiting intern since Sep 2026." } },
+    note: { zh: "由坑口坐綠色小巴上山", en: "Visiting intern since Sep 2026. Usually the green minibus up from Hang Hau." } },
 ];

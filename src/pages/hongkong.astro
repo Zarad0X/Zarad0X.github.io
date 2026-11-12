@@ -2,6 +2,7 @@
 import PageLayout from "@layouts/PageLayout.astro";
 import map from "@data/hkmap.json";
 import { places, kindName } from "@data/places";
+import minibus from "@data/minibus.json";
 
 const { proj, crop, districts, inset } = map;
 // same equirectangular projection as the map build, in crop units (0..1000 wide)
@@ -32,6 +33,8 @@ const [ja, jm, jb] = [XY(114.1500, 22.2915), XY(114.1720, 22.2893), XY(114.1915,
 const junkRoute = `M${ja[0]} ${ja[1]} Q${jm[0]} ${jm[1] + 4} ${jb[0]} ${jb[1]}`;
 const ifc = XY(114.1590, 22.2856), icc = XY(114.1604, 22.3040);
 const pumpkin = XY(114.1522, 22.2793), fireworks = XY(114.1766, 22.2884);
+const landD = districts.map(d => d.d).join("");
+const minibusRoute = line(minibus as number[][]);
 const peak = XY(114.1500, 22.2712);                                                      // Peak Tower, Victoria Peak
 const peakTram = line([[114.1592, 22.2778], [114.1560, 22.2752], [114.1528, 22.2730], [114.1503, 22.2716]]);
 const cruise = XY(114.2155, 22.3045);                                                    // Kai Tak Cruise Terminal
@@ -60,19 +63,25 @@ const burst = (r0: number, r1: number) => Array.from({ length: 12 }, (_, k) => {
         <div class="stage" id="stage">
           <svg class="hkmap" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label="Hand-drawn map of Hong Kong from Central to Clear Water Bay">
             <defs>
-              <pattern id="sea" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <circle cx="4.5" cy="4.5" r="1.25" class="sea-dot" />
-              </pattern>
-              <filter id="mapRough" x="-2%" y="-2%" width="104%" height="104%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="11" />
-                <feDisplacementMap in="SourceGraphic" scale="2.2" />
-              </filter>
+              <path id="landPath" d={landD} />
+              <clipPath id="landClip"><use href="#landPath" /></clipPath>
+              <filter id="liftShadow" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.4" /></filter>
+              <radialGradient id="seaGlow" cx="45%" cy="45%" r="75%"><stop offset="0" class="sea-hi" /><stop offset="1" class="sea-lo" /></radialGradient>
             </defs>
-            <rect class="sea" width={W} height={H} />
-            <rect class="sea-dots" width={W} height={H} fill="url(#sea)" />
-            <g class="land" filter="url(#mapRough)">
-              {districts.map(d => <path d={d.d} />)}
+            <rect class="sea" width={W} height={H} fill="url(#seaGlow)" />
+            <!-- engraved water lines rippling out from the coast -->
+            <g class="ripples">
+              <use href="#landPath" class="rp r1" /><use href="#landPath" class="rp r1g" />
+              <use href="#landPath" class="rp r2" /><use href="#landPath" class="rp r2g" />
+              <use href="#landPath" class="rp r3" /><use href="#landPath" class="rp r3g" />
             </g>
+            <!-- the land sits slightly above the sea -->
+            <use href="#landPath" class="lift" transform="translate(2.2 3.2)" filter="url(#liftShadow)" />
+            <use href="#landPath" class="coast" />
+            <use href="#landPath" class="land-fill" />
+            <image href="/assets/hk-relief.jpg" x="0" y="0" width={W} height={H} preserveAspectRatio="none" clip-path="url(#landClip)" class="relief" />
+            <g class="borders">{districts.map(d => <path d={d.d} />)}</g>
+            <path d={minibusRoute} class="mb-route" id="mbRoute" />
             <g class="labels" aria-hidden="true">
               {districts.filter(d => labelled.has(d.zh)).map(d => {
                 const [x, y] = d.zh === "中西區" ? [d.c[0] - 38, d.c[1] + 46] : d.c;   // keep clear of the Peak doodle
@@ -150,6 +159,15 @@ const burst = (r0: number, r1: number) => Array.from({ length: 12 }, (_, k) => {
                 <circle cx="-4.5" cy="3.2" r="1.5" class="wheel" /><circle cx="4.5" cy="3.2" r="1.5" class="wheel" />
               </g>
                 <animateMotion dur="44s" repeatCount="indefinite" rotate="0" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="linear"><mpath href="#tramRoute" /></animateMotion>
+              </g>
+              <g class="minibus"><g transform="scale(1.5)">
+                <rect x="-9" y="-7" width="18" height="10" rx="3" class="mb-body" />
+                <path d="M-9 -3.5 h18 V-5 a2 2 0 0 0 -2 -2 h-14 a2 2 0 0 0 -2 2 Z" class="mb-roof" />
+                <rect x="-4.5" y="-10.5" width="9" height="3.6" rx=".8" class="mb-sign" /><text y="-7.7" class="mb-no">11M</text>
+                <path d="M-7 -1 h14" class="mb-win" />
+                <circle cx="-5" cy="3.4" r="1.6" class="wheel" /><circle cx="5" cy="3.4" r="1.6" class="wheel" />
+              </g>
+                <animateMotion dur="30s" repeatCount="indefinite" rotate="0" keyPoints="0;1;1;0;0" keyTimes="0;0.42;0.5;0.92;1" calcMode="linear"><mpath href="#mbRoute" /></animateMotion>
               </g>
               <g class="junk"><g transform="scale(1.6)">
                 <path d="M-12 3 Q0 8 12 3 L14 0 L-14 0 Z" class="junk-hull" />
@@ -342,9 +360,32 @@ html.night .board{border-color:#2a3550;box-shadow:8px 8px 0 #ff2d55}
 .viewport{position:relative;overflow:hidden;aspect-ratio:1000/610;background:var(--sea)}
 .stage{position:absolute;inset:0;transform-origin:0 0;transition:transform .9s cubic-bezier(.65,0,.25,1)}
 .hkmap,.overlay{position:absolute;inset:0;width:100%;height:100%;display:block}
-.sea{fill:var(--sea)}.sea-dot{fill:var(--dot)}
-.land path{fill:var(--paper);stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
-html.night .land path{fill:#121826;stroke-width:1.3;filter:drop-shadow(0 0 2.5px rgba(92,225,255,.85))}
+.sea-hi{stop-color:#e9dfc6}.sea-lo{stop-color:#d6c9a8}
+html.night .sea-hi{stop-color:#0b1220}html.night .sea-lo{stop-color:#04070d}
+.rp{fill:none;stroke-linejoin:round}
+.r1{stroke:rgba(29,42,74,.16);stroke-width:30}.r1g{stroke:#ddd2b4;stroke-width:28.6}
+.r2{stroke:rgba(29,42,74,.2);stroke-width:19}.r2g{stroke:#e0d5b8;stroke-width:17.6}
+.r3{stroke:rgba(29,42,74,.26);stroke-width:9.5}.r3g{stroke:#e3d9bd;stroke-width:8.1}
+html.night .r1{stroke:rgba(92,225,255,.10)}html.night .r2{stroke:rgba(92,225,255,.14)}html.night .r3{stroke:rgba(92,225,255,.2)}
+html.night .r1g,html.night .r2g,html.night .r3g{stroke:#070b13}
+.lift{fill:rgba(20,16,16,.35)}
+html.night .lift{fill:rgba(0,0,0,.8)}
+.coast{fill:none;stroke:#141010;stroke-width:2.6;stroke-linejoin:round}
+html.night .coast{stroke:#5ce1ff;stroke-width:2.4;filter:drop-shadow(0 0 3px rgba(92,225,255,.9))}
+.land-fill{fill:#f6ecd3}
+html.night .land-fill{fill:#111725}
+.relief{mix-blend-mode:soft-light;opacity:1}
+html.night .relief{mix-blend-mode:overlay;opacity:.55}
+.borders path{fill:none;stroke:rgba(20,16,16,.4);stroke-width:.8;stroke-dasharray:3 2.5}
+html.night .borders path{stroke:rgba(92,225,255,.25)}
+.mb-route{fill:none;stroke:#0b7a3b;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:1 4.5;opacity:.85}
+html.night .mb-route{stroke:#3dff8a;filter:drop-shadow(0 0 2px #3dff8a)}
+.minibus .mb-body{fill:#fffbe8;stroke:#141010;stroke-width:.8}
+.minibus .mb-roof{fill:#0b7a3b;stroke:#141010;stroke-width:.6}
+.minibus .mb-sign{fill:#141010}
+.minibus .mb-no{font:700 3px "Courier Prime",monospace;fill:#ffcf3a;text-anchor:middle}
+.minibus .mb-win{stroke:#141010;stroke-width:2;stroke-dasharray:2.4 1}
+html.night .minibus .mb-win{stroke:#ffcf3a;filter:drop-shadow(0 0 2px #ffb000)}
 .labels text{font-family:"Courier Prime",monospace;fill:var(--label);text-anchor:middle;pointer-events:none}
 .labels .dz{font-family:"Noto Serif SC","Songti SC",serif;font-weight:700;font-size:15px;letter-spacing:.15em}
 .labels .de{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase}
