@@ -1,0 +1,552 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import map from "@data/hkmap.json";
+import { places, kindName } from "@data/places";
+import minibus from "@data/minibus.json";
+
+const { proj, crop, districts, inset } = map;
+// same equirectangular projection as the map build, in crop units (0..1000 wide)
+const toXY = (lon: number, lat: number) => [
+  ((lon - proj.LON0) * proj.K * proj.SCALE - proj.x0) * proj.S,
+  ((proj.LAT0 - lat) * proj.SCALE - proj.y0) * proj.S,
+];
+const W = crop.w, H = crop.h;
+const pts = places.map(p => toXY(p.lon, p.lat));
+const pct = pts.map(([x, y]) => [((x / W) * 100).toFixed(3), ((y / H) * 100).toFixed(3)]);
+const pad = (n: number) => String(n).padStart(2, "0");
+const labelled = new Set(["中西區", "灣仔區", "東區", "油尖旺區", "深水埗區", "九龍城區", "觀塘區", "西貢區", "黃大仙區"]);
+const water = [
+  { zh: "維多利亞港", en: "Victoria Harbour", lon: 114.1660, lat: 22.2895 },
+  { zh: "將軍澳", en: "Junk Bay", lon: 114.2465, lat: 22.2930 },
+  { zh: "清水灣", en: "Clear Water Bay", lon: 114.2850, lat: 22.3200 },
+].map(w => ({ ...w, xy: toXY(w.lon, w.lat) }));
+const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p.kind] }));
+
+// ---- the living layer: ferries, trams, a junk, landmarks, the night's events ----
+const XY = (lon: number, lat: number) => toXY(lon, lat).map(v => +v.toFixed(1));
+const line = (pts: number[][]) => "M" + pts.map(([lon, lat]) => XY(lon, lat).join(" ")).join(" L");
+const [fa, fb] = [XY(114.1608, 22.2873), XY(114.1686, 22.2937)];                   // Central Pier 7 ↔ TST Star Ferry Pier
+const ferryRoute = `M${fa[0]} ${fa[1]} Q${(fa[0] + fb[0]) / 2 + 14} ${(fa[1] + fb[1]) / 2 + 10} ${fb[0]} ${fb[1]}`;
+const tramRoute = line([[114.1545, 22.2830], [114.1600, 22.2810], [114.1650, 22.2790], [114.1700, 22.2776], [114.1760, 22.2772],
+  [114.1810, 22.2784], [114.1860, 22.2800], [114.1900, 22.2814]]);                     // Kennedy Town-ish → Causeway Bay
+const [ja, jm, jb] = [XY(114.1500, 22.2915), XY(114.1720, 22.2893), XY(114.1915, 22.2900)];
+const junkRoute = `M${ja[0]} ${ja[1]} Q${jm[0]} ${jm[1] + 4} ${jb[0]} ${jb[1]}`;
+const ifc = XY(114.1590, 22.2856), icc = XY(114.1604, 22.3040);
+const pumpkin = XY(114.1522, 22.2793), fireworks = XY(114.1766, 22.2884);
+const landD = districts.map(d => d.d).join("");
+const minibusRoute = line(minibus as number[][]);
+const peak = XY(114.1500, 22.2712);                                                      // Peak Tower, Victoria Peak
+const peakTram = line([[114.1592, 22.2778], [114.1560, 22.2752], [114.1528, 22.2730], [114.1503, 22.2716]]);
+const cruise = XY(114.2155, 22.3045);                                                    // Kai Tak Cruise Terminal
+const [pa, pb] = [XY(114.1380, 22.3420), XY(114.2050, 22.3110)];                        // a jet coming in over Kowloon City
+const planeRoute = `M${pa[0]} ${pa[1]} Q${(pa[0] + pb[0]) / 2} ${(pa[1] + pb[1]) / 2 - 18} ${pb[0]} ${pb[1]}`;
+const signs = [{ xy: XY(114.1712, 22.3150), t: ["押"], c: "#ff2d55", bat: true }, { xy: XY(114.1738, 22.3122), t: ["茶", "餐", "廳"], c: "#5ce1ff" },
+  { xy: XY(114.1690, 22.3112), t: ["酒", "家"], c: "#ffcf3a" }];
+const burst = (r0: number, r1: number) => Array.from({ length: 12 }, (_, k) => {
+  const a = (k / 12) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+  return `M${(c * r0).toFixed(1)} ${(s * r0).toFixed(1)} L${(c * r1).toFixed(1)} ${(s * r1).toFixed(1)}`;
+}).join(" ");
+---
+<PageLayout title="Location Scout · Hong Kong" description="Places in Hong Kong Han Zhang keeps going back to, pinned on a hand-drawn map and strung together in red.">
+  <div class="standalone-heading scout-heading">
+    <span class="kicker">港 · Location scout</span>
+    <h1>Hong Kong</h1>
+    <p>Places in this city I keep going back to, pinned to the map and strung together, west to east.</p>
+  </div>
+
+  <div class="scout" id="scout">
+    <div class="board" id="board">
+      <span class="tape t1" aria-hidden="true"></span><span class="tape t2" aria-hidden="true"></span>
+      <div class="case-label" aria-hidden="true"><b>CASE FILE</b>香港 · {places.length} locations</div>
+      <div class="hk-now" id="hkNow"><b>HKT</b> <span id="hkTime">--:--</span><span id="hkWx"></span></div>
+      <div class="viewport" id="viewport">
+        <div class="stage" id="stage">
+          <svg class="hkmap" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label="Hand-drawn map of Hong Kong from Central to Clear Water Bay">
+            <defs>
+              <path id="landPath" d={landD} />
+              <clipPath id="landClip"><use href="#landPath" /></clipPath>
+              <filter id="liftShadow" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.4" /></filter>
+              <radialGradient id="seaGlow" cx="45%" cy="45%" r="75%"><stop offset="0" class="sea-hi" /><stop offset="1" class="sea-lo" /></radialGradient>
+            </defs>
+            <rect class="sea" width={W} height={H} fill="url(#seaGlow)" />
+            <!-- engraved water lines rippling out from the coast -->
+            <g class="ripples">
+              <use href="#landPath" class="rp r1" /><use href="#landPath" class="rp r1g" />
+              <use href="#landPath" class="rp r2" /><use href="#landPath" class="rp r2g" />
+              <use href="#landPath" class="rp r3" /><use href="#landPath" class="rp r3g" />
+            </g>
+            <!-- the land sits slightly above the sea -->
+            <use href="#landPath" class="lift" transform="translate(2.2 3.2)" filter="url(#liftShadow)" />
+            <use href="#landPath" class="coast" />
+            <use href="#landPath" class="land-fill" />
+            <image href="/assets/hk-relief.jpg" x="0" y="0" width={W} height={H} preserveAspectRatio="none" clip-path="url(#landClip)" class="relief" />
+            <g class="borders">{districts.map(d => <path d={d.d} />)}</g>
+            <path d={minibusRoute} class="mb-route" id="mbRoute" />
+            <g class="labels" aria-hidden="true">
+              {districts.filter(d => labelled.has(d.zh)).map(d => {
+                const [x, y] = d.zh === "中西區" ? [d.c[0] - 38, d.c[1] + 46] : d.c;   // keep clear of the Peak doodle
+                return <text x={x} y={y} class="dist"><tspan class="dz">{d.zh.replace(/區$/, "")}</tspan><tspan class="de" x={x} dy="13">{d.en}</tspan></text>;
+              })}
+              {water.map(w => (
+                <text x={w.xy[0]} y={w.xy[1]} class="water"><tspan>{w.zh}</tspan><tspan x={w.xy[0]} dy="14">{w.en.toUpperCase()}</tspan></text>
+              ))}
+            </g>
+            <g class="life" aria-hidden="true">
+              <path id="ferryRoute" d={ferryRoute} class="route" />
+              <path id="tramRoute" d={tramRoute} class="route tram-track" />
+              <path id="junkRoute" d={junkRoute} fill="none" stroke="none" />
+              <g class="lm" transform={`translate(${ifc[0]} ${ifc[1]})`}>
+                <path d="M-5 0 V-44 L-3.5 -49 V-55 L-1.5 -59 L0 -66 L1.5 -59 L3.5 -55 V-49 L5 -44 V0 Z" class="tower" />
+                <path d="M-5 -8 h10 M-5 -16 h10 M-5 -24 h10 M-5 -32 h10 M-5 -40 h10" class="floors" />
+                <text y="9" class="lm-t">IFC</text>
+              </g>
+              <g class="lm" transform={`translate(${icc[0]} ${icc[1]})`}>
+                <path d="M-5.5 0 V-64 L-4 -69 L4 -69 L5.5 -64 V0 Z" class="tower" />
+                <path d="M-5.5 -9 h11 M-5.5 -18 h11 M-5.5 -27 h11 M-5.5 -36 h11 M-5.5 -45 h11 M-5.5 -54 h11" class="floors" />
+                <text y="9" class="lm-t">ICC</text>
+              </g>
+              <g class="pumpkin" transform={`translate(${pumpkin[0]} ${pumpkin[1]}) scale(1.5)`}>
+                <path d="M0 -6.5 q1 -3 3 -3.5" class="stem" />
+                <ellipse cx="0" cy="0" rx="8" ry="6.5" class="gourd" />
+                <path d="M-3 -6 q-2 6 0 12.5 M3 -6 q2 6 0 12.5" class="ribs" />
+                <path d="M-4.5 -2 l2 -2 l1 2.5 z M4.5 -2 l-2 -2 l-1 2.5 z M-4 2 q4 3 8 0 l-2 1.2 l-1 -1 l-1 1 l-1 -1 l-1 1 z" class="face" />
+              </g>
+              <g class="fireworks" transform={`translate(${fireworks[0]} ${fireworks[1]})`}>
+                <g transform="translate(-16 -6)"><path d={burst(3, 15)} class="burst b1" /></g>
+                <g transform="translate(14 -14)"><path d={burst(2, 11)} class="burst b2" /></g>
+                <g transform="translate(2 4)"><path d={burst(2.5, 13)} class="burst b3" /></g>
+              </g>
+              <path d={peakTram} class="route peak-tram" />
+              <g class="lm peak" transform={`translate(${peak[0]} ${peak[1]})`}>
+                <path d="M-16 -4 Q0 -14 16 -4 L12 -2 L-12 -2 Z" class="tower" />
+                <path d="M-6 -2 V6 M6 -2 V6 M-10 6 h20" class="floors" style="opacity:.9" />
+                <text y="16" class="lm-t">THE PEAK</text>
+              </g>
+              <g class="cruise" transform={`translate(${cruise[0]} ${cruise[1]}) rotate(-38) scale(1.4)`}>
+                <path d="M-20 2 L18 2 L22 -2 L-22 -2 Z" class="hull-w" />
+                <path d="M-16 -2 V-6 H12 V-2 M-12 -6 V-9 H6 V-6" class="deck-w" />
+                <path d="M-14 -4 h24" class="portholes" />
+              </g>
+              <g class="signs">
+                {signs.map(sg => (
+                  <g transform={`translate(${sg.xy[0]} ${sg.xy[1]})`} style={`--c:${sg.c}`} class="sign">
+                    <rect x="-7" y="-4" width="14" height={sg.t.length * 13 + 6} rx="2" class="sign-box" />
+                    {sg.bat && <path d="M-11 -9 q4 -4 11 0 q7 -4 11 0 q-4 0 -5 3 q-6 -3 -12 0 q-1 -3 -5 -3 z" class="sign-bat" />}
+                    {sg.t.map((ch, k) => <text x="0" y={k * 13 + 7} class="sign-t">{ch}</text>)}
+                  </g>
+                ))}
+              </g>
+              <path id="planeRoute" d={planeRoute} fill="none" stroke="none" />
+              <g class="plane">
+                <g transform="scale(1.7)">
+                  <path d="M-12 0 Q-12 -2 -9 -2 L9 -2 Q13 -2 14 0 Q13 2 9 2 L-9 2 Q-12 2 -12 0 Z" class="fuselage" />
+                  <path d="M-2 -1.5 L-7 -10 L-4 -10 L4 -1.5 Z M-2 1.5 L-7 10 L-4 10 L4 1.5 Z M-10 -1.5 L-13 -6 L-11 -6 L-7 -1.5 Z M-10 1.5 L-13 6 L-11 6 L-7 1.5 Z" class="wing" />
+                </g>
+                <animateMotion dur="48s" repeatCount="indefinite" rotate="auto" keyPoints="0;1;1" keyTimes="0;0.35;1" calcMode="linear"><mpath href="#planeRoute" /></animateMotion>
+                <animate attributeName="opacity" dur="48s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.02;0.32;0.35;1" />
+              </g>
+              <g class="ferry"><g transform="scale(1.6)">
+                <path d="M-13 2 L13 2 L10.5 6.5 L-10.5 6.5 Z" class="hull" />
+                <rect x="-9.5" y="-4" width="19" height="6" class="deck" />
+                <path d="M-8 -1 h16" class="windows" />
+                <rect x="-2.2" y="-8" width="4.4" height="4" class="deck" />
+              </g>
+                <animateMotion dur="26s" repeatCount="indefinite" rotate="0" keyPoints="0;1;1;0;0" keyTimes="0;0.42;0.5;0.92;1" calcMode="linear"><mpath href="#ferryRoute" /></animateMotion>
+              </g>
+              <g class="tram"><g transform="scale(1.6)">
+                <rect x="-8" y="-11" width="16" height="13" rx="1.5" class="tram-body" />
+                <path d="M-6 -8 h12 M-6 -3 h12" class="tram-win" />
+                <circle cx="-4.5" cy="3.2" r="1.5" class="wheel" /><circle cx="4.5" cy="3.2" r="1.5" class="wheel" />
+              </g>
+                <animateMotion dur="44s" repeatCount="indefinite" rotate="0" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="linear"><mpath href="#tramRoute" /></animateMotion>
+              </g>
+              <g class="minibus"><g transform="scale(1.5)">
+                <rect x="-9" y="-7" width="18" height="10" rx="3" class="mb-body" />
+                <path d="M-9 -3.5 h18 V-5 a2 2 0 0 0 -2 -2 h-14 a2 2 0 0 0 -2 2 Z" class="mb-roof" />
+                <rect x="-4.5" y="-10.5" width="9" height="3.6" rx=".8" class="mb-sign" /><text y="-7.7" class="mb-no">11M</text>
+                <path d="M-7 -1 h14" class="mb-win" />
+                <circle cx="-5" cy="3.4" r="1.6" class="wheel" /><circle cx="5" cy="3.4" r="1.6" class="wheel" />
+              </g>
+                <animateMotion dur="30s" repeatCount="indefinite" rotate="0" keyPoints="0;1;1;0;0" keyTimes="0;0.42;0.5;0.92;1" calcMode="linear"><mpath href="#mbRoute" /></animateMotion>
+              </g>
+              <g class="junk"><g transform="scale(1.6)">
+                <path d="M-12 3 Q0 8 12 3 L14 0 L-14 0 Z" class="junk-hull" />
+                <path d="M-6 0 L-6 -15 Q-12 -8 -11 0 Z" class="sail" />
+                <path d="M4 0 L4 -19 Q-4 -10 -3 0 Z" class="sail" />
+                <path d="M-10.5 -4 h4.5 M-11 -9 h5 M-3 -6 h7 M-2 -12 h6" class="batten" />
+              </g>
+                <animateMotion dur="80s" repeatCount="indefinite" rotate="0" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="linear"><mpath href="#junkRoute" /></animateMotion>
+              </g>
+            </g>
+          </svg>
+          <svg class="overlay" id="overlay" aria-hidden="true"><g id="leaders"></g><path id="string" class="string" /></svg>
+          {cards.map((p, i) => (
+            <button class={`pin${p.approx ? " approx" : ""}`} type="button" data-i={i} style={`left:${pct[i][0]}%;top:${pct[i][1]}%`}
+              aria-label={`Scene ${p.n}: ${p.en}`}>
+              <span class="head"><span class="num">{p.n}</span></span>
+              <span class={`placard k-${p.kind}`}><b>{p.zh}</b><small>{p.en}</small></span>
+            </button>
+          ))}
+        </div>
+        <div class="wx" id="wx" aria-hidden="true"></div>
+      </div>
+      <svg class="inset" viewBox={`0 0 ${inset.w} ${inset.h}`} aria-hidden="true">
+        <rect width={inset.w} height={inset.h} class="inset-bg" />
+        <path d={inset.d} class="inset-land" />
+        <rect x={inset.frame[0]} y={inset.frame[1]} width={inset.frame[2]} height={inset.frame[3]} class="inset-frame" />
+        <text x="6" y="12" class="inset-t">HONG KONG · 香港</text>
+      </svg>
+      <button class="zoom-out" id="zoomOut" type="button" hidden>← Wide shot</button>
+    </div>
+
+    <nav class="strip" id="strip" aria-label="Scenes">
+      <ol>
+        {cards.map((p, i) => (
+          <li><button class="frame" type="button" data-i={i}>
+            <span class="f-n">{p.n}</span><span class="f-zh">{p.zh.split(" · ")[0]}</span>
+            <span class="sr">{p.slug}. {p.en}.{p.note?.zh ? ` ${p.note.zh}.` : ""}{p.note?.en ? ` ${p.note.en}` : ""}</span>
+          </button></li>
+        ))}
+      </ol>
+    </nav>
+
+    <aside class="scene" id="scene" hidden aria-live="polite">
+      <button class="scene-x" id="sceneClose" type="button" aria-label="Close scene">✕</button>
+      <p class="scene-no" id="sceneNo"></p>
+      <p class="scene-slug" id="sceneSlug"></p>
+      <h2 class="scene-zh" id="sceneZh"></h2>
+      <p class="scene-en" id="sceneEn"></p>
+      <p class="scene-meta" id="sceneMeta"></p>
+      <div class="screen" id="screen"><p class="sub-zh" id="subZh"></p><p class="sub-en" id="subEn"></p></div>
+      <div class="scene-nav"><button type="button" id="prevScene">← Prev</button><button type="button" id="nextScene">Next →</button></div>
+    </aside>
+  </div>
+
+  <p class="credits">Coastline and roads © OpenStreetMap contributors (ODbL). District boundaries: Home Affairs Department, HKSAR, via DATA.GOV.HK. Elevation: Terrain Tiles on AWS Open Data (SRTM and others). Weather: Open-Meteo. Drawn and simplified for this page; not for navigation.</p>
+
+  <script is:inline define:vars={{ cards, pts, W, H }}>
+  (() => {
+    const scout = document.getElementById("scout"), viewport = document.getElementById("viewport"), stage = document.getElementById("stage");
+    const overlay = document.getElementById("overlay"), stringPath = document.getElementById("string"), leaders = document.getElementById("leaders");
+    const pins = [...stage.querySelectorAll(".pin")], scene = document.getElementById("scene"), zoomOut = document.getElementById("zoomOut");
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let active = -1, zoom = 1, pos = [];
+
+    // pin heads stay a constant on-screen size; nudge apart any that would overlap and draw a leader to the true spot
+    function layout() {
+      const w = viewport.clientWidth, h = viewport.clientHeight;
+      overlay.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      const truth = pts.map(([x, y]) => [x / W * w, y / H * h]);
+      pos = truth.map(p => p.slice());
+      const min = (w < 520 ? 22 : 28) / zoom;
+      for (let it = 0; it < 80; it++) {
+        for (let i = 0; i < pos.length; i++) for (let j = i + 1; j < pos.length; j++) {
+          let dx = pos[j][0] - pos[i][0], dy = pos[j][1] - pos[i][1], d = Math.hypot(dx, dy) || 0.01;
+          if (d < min) { const push = (min - d) / 2; dx /= d; dy /= d; pos[i][0] -= dx * push; pos[i][1] -= dy * push; pos[j][0] += dx * push; pos[j][1] += dy * push; }
+        }
+        pos.forEach((p, i) => { p[0] += (truth[i][0] - p[0]) * 0.04; p[1] += (truth[i][1] - p[1]) * 0.04; });
+      }
+      pins.forEach((el, i) => {
+        el.style.left = pos[i][0] + "px"; el.style.top = pos[i][1] + "px";
+        el.style.setProperty("--z", zoom);
+      });
+      leaders.innerHTML = truth.map((t, i) => Math.hypot(t[0] - pos[i][0], t[1] - pos[i][1]) > 3
+        ? `<line x1="${t[0]}" y1="${t[1]}" x2="${pos[i][0]}" y2="${pos[i][1]}" class="leader"/><circle cx="${t[0]}" cy="${t[1]}" r="${2.2 / zoom}" class="leader-dot"/>` : "").join("");
+      // red string, sagging a little between pins
+      let d = `M${pos[0][0]} ${pos[0][1]}`;
+      for (let i = 1; i < pos.length; i++) {
+        const [ax, ay] = pos[i - 1], [bx, by] = pos[i], sag = Math.min(40, Math.hypot(bx - ax, by - ay) * 0.12) / zoom;
+        d += ` Q${(ax + bx) / 2} ${(ay + by) / 2 + sag} ${bx} ${by}`;
+      }
+      stringPath.setAttribute("d", d);
+      stringPath.style.strokeWidth = (2 / zoom) + "px";
+    }
+
+    function camera(i) {
+      const w = viewport.clientWidth, h = viewport.clientHeight;
+      if (i < 0) { zoom = 1; stage.style.transform = "none"; }
+      else {
+        zoom = w < 520 ? 2.6 : 2.2;
+        const [x, y] = pos[i];
+        const tx = Math.min(0, Math.max(w - w * zoom, w / 2 - x * zoom)), ty = Math.min(0, Math.max(h - h * zoom, h / 2 - y * zoom));
+        stage.style.transform = `translate(${tx}px, ${ty}px) scale(${zoom})`;
+      }
+      scout.classList.toggle("zoomed", i >= 0);
+      zoomOut.hidden = i < 0;
+      layout();
+    }
+
+    const set = (id, v) => { document.getElementById(id).textContent = v || ""; };
+    function open(i) {
+      if (active === i) return;
+      active = i;
+      const c = cards[i];
+      pins.forEach((p, j) => p.classList.toggle("on", j === i));
+      frames.forEach((f, j) => { f.classList.toggle("on", j === i); f.setAttribute("aria-current", j === i ? "true" : "false"); });
+      frames[i].scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest", inline: "center" });
+      set("sceneNo", `Scene ${c.n} / ${String(cards.length).padStart(2, "0")}`);
+      set("sceneSlug", c.slug);
+      set("sceneZh", c.zh); set("sceneEn", c.en === c.zh ? "" : c.en);
+      set("sceneMeta", [c.kindLabel, c.when, c.approx ? "approximate area" : ""].filter(Boolean).join(" · "));
+      set("subZh", c.note?.zh); set("subEn", c.note?.en);
+      document.getElementById("screen").classList.toggle("empty", !(c.note?.zh || c.note?.en));
+      scene.hidden = false;
+      scout.classList.toggle("fw-on", i === fwScene);
+      camera(i);
+    }
+    function close() {
+      active = -1; scene.hidden = true; scout.classList.remove("fw-on"); pins.forEach(p => p.classList.remove("on")); frames.forEach(f => { f.classList.remove("on"); f.setAttribute("aria-current", "false"); }); camera(-1);
+    }
+    pins.forEach((el, i) => el.addEventListener("click", () => (active === i ? close() : open(i))));
+    const frames = [...document.querySelectorAll("#strip .frame")];
+    frames.forEach(b => b.addEventListener("click", () => (active === +b.dataset.i ? close() : open(+b.dataset.i))));
+    document.getElementById("sceneClose").addEventListener("click", close);
+    zoomOut.addEventListener("click", close);
+    document.getElementById("prevScene").addEventListener("click", () => open((active - 1 + cards.length) % cards.length));
+    document.getElementById("nextScene").addEventListener("click", () => open((active + 1) % cards.length));
+    addEventListener("keydown", e => {
+      if (scene.hidden) return;
+      if (e.key === "Escape") close();
+      if (e.key === "ArrowRight") open((active + 1) % cards.length);
+      if (e.key === "ArrowLeft") open((active - 1 + cards.length) % cards.length);
+    });
+    addEventListener("resize", () => camera(active));
+    // Wan Chai fireworks also go off (by day) while that scene is open
+    const fwScene = cards.findIndex(c => /Wan Chai/.test(c.en));
+
+    // Hong Kong right now: local time + live weather (Open-Meteo, no key, no visitor data sent)
+    const tEl = document.getElementById("hkTime"), wEl = document.getElementById("hkWx"), wx = document.getElementById("wx");
+    const hkt = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Hong_Kong", hour: "2-digit", minute: "2-digit" });
+    const tick = () => { tEl.textContent = hkt.format(new Date()); };
+    tick(); setInterval(tick, 20000);
+    const WX = c => c === 0 ? ["晴", "CLEAR"] : c <= 2 ? ["天晴", "FAIR"] : c === 3 ? ["多雲", "CLOUDY"] : (c === 45 || c === 48) ? ["有霧", "FOG", "fog"]
+      : c <= 57 ? ["毛毛雨", "DRIZZLE", "rain"] : c <= 67 ? ["雨", "RAIN", "rain"] : c <= 77 ? ["冷", "COLD"] : c <= 82 ? ["驟雨", "SHOWERS", "rain"]
+      : c >= 95 ? ["雷暴", "THUNDER", "storm"] : ["", ""];
+    const setWx = (code, temp) => {
+      const [zh, en, fx] = WX(code);
+      wEl.textContent = `${temp != null ? Math.round(temp) + "°C " : ""}${zh} ${en}`.trim();
+      wx.className = "wx" + (fx === "storm" ? " rain storm" : fx ? " " + fx : "");
+    };
+    const force = new URLSearchParams(location.search).get("wx");     // ?wx=rain|fog|storm to preview
+    if (force) setWx(force === "fog" ? 45 : force === "storm" ? 95 : 63, null);
+    else fetch("https://api.open-meteo.com/v1/forecast?latitude=22.30&longitude=114.21&current=temperature_2m,weather_code&timezone=Asia%2FHong_Kong")
+      .then(r => r.json()).then(d => d.current && setWx(d.current.weather_code, d.current.temperature_2m)).catch(() => {});
+    if (reduced) document.querySelector(".hkmap").pauseAnimations();
+    layout();
+    // draw the string in once, the first time the board scrolls into view
+    if (!reduced && "IntersectionObserver" in window) {
+      const len = stringPath.getTotalLength();
+      stringPath.style.strokeDasharray = len; stringPath.style.strokeDashoffset = len;
+      new IntersectionObserver((es, ob) => { if (es[0].isIntersecting) { stringPath.classList.add("draw"); ob.disconnect(); setTimeout(() => { stringPath.style.strokeDasharray = ""; stringPath.style.strokeDashoffset = ""; }, 2600); } }, { threshold: 0.3 }).observe(viewport);
+    }
+  })();
+  </script>
+</PageLayout>
+
+<style is:global>
+.scout-heading{max-width:none}
+.scout{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:18px;margin:6px 0 40px;
+  --paper:#f7ecd2;--sea:#d8cfb6;--dot:rgba(29,42,74,.32);--ink:#141010;--pin:#d3241c;--string:#c8102e;--label:rgba(20,16,16,.55)}
+html.night .scout{--paper:#0e131d;--sea:#06090f;--dot:rgba(92,225,255,.16);--ink:#5ce1ff;--pin:#ff2d55;--string:#ff2d55;--label:rgba(160,230,255,.55)}
+
+/* evidence board */
+.board{position:relative;background:var(--paper);border:2px solid #141010;box-shadow:8px 8px 0 var(--hard);padding:10px}
+html.night .board{border-color:#2a3550;box-shadow:8px 8px 0 #ff2d55}
+.tape{position:absolute;width:86px;height:24px;background:rgba(246,196,0,.55);z-index:5;box-shadow:0 1px 0 rgba(0,0,0,.08)}
+.tape.t1{left:-18px;top:14px;transform:rotate(-38deg)}.tape.t2{right:-18px;top:14px;transform:rotate(38deg)}
+.case-label{position:absolute;left:22px;top:20px;z-index:4;background:#fffbe8;border:1.5px solid #141010;padding:5px 10px 4px;font:700 11px/1.3 var(--mono);color:#141010;
+  transform:rotate(-1.5deg);box-shadow:2px 2px 0 rgba(20,16,16,.85)}
+.case-label b{display:block;font-family:var(--anton);font-weight:400;font-size:15px;letter-spacing:.18em;color:#d3241c}
+.viewport{position:relative;overflow:hidden;aspect-ratio:1000/610;background:var(--sea)}
+.stage{position:absolute;inset:0;transform-origin:0 0;transition:transform .9s cubic-bezier(.65,0,.25,1)}
+.hkmap,.overlay{position:absolute;inset:0;width:100%;height:100%;display:block}
+.sea-hi{stop-color:#e9dfc6}.sea-lo{stop-color:#d6c9a8}
+html.night .sea-hi{stop-color:#0b1220}html.night .sea-lo{stop-color:#04070d}
+.rp{fill:none;stroke-linejoin:round}
+.r1{stroke:rgba(29,42,74,.16);stroke-width:30}.r1g{stroke:#ddd2b4;stroke-width:28.6}
+.r2{stroke:rgba(29,42,74,.2);stroke-width:19}.r2g{stroke:#e0d5b8;stroke-width:17.6}
+.r3{stroke:rgba(29,42,74,.26);stroke-width:9.5}.r3g{stroke:#e3d9bd;stroke-width:8.1}
+html.night .r1{stroke:rgba(92,225,255,.10)}html.night .r2{stroke:rgba(92,225,255,.14)}html.night .r3{stroke:rgba(92,225,255,.2)}
+html.night .r1g,html.night .r2g,html.night .r3g{stroke:#070b13}
+.lift{fill:rgba(20,16,16,.35)}
+html.night .lift{fill:rgba(0,0,0,.8)}
+.coast{fill:none;stroke:#141010;stroke-width:2.6;stroke-linejoin:round}
+html.night .coast{stroke:#5ce1ff;stroke-width:2.4;filter:drop-shadow(0 0 3px rgba(92,225,255,.9))}
+.land-fill{fill:#f6ecd3}
+html.night .land-fill{fill:#111725}
+.relief{mix-blend-mode:soft-light;opacity:1}
+html.night .relief{mix-blend-mode:overlay;opacity:.55}
+.borders path{fill:none;stroke:rgba(20,16,16,.4);stroke-width:.8;stroke-dasharray:3 2.5}
+html.night .borders path{stroke:rgba(92,225,255,.25)}
+.mb-route{fill:none;stroke:#0b7a3b;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:1 4.5;opacity:.85}
+html.night .mb-route{stroke:#3dff8a;filter:drop-shadow(0 0 2px #3dff8a)}
+.minibus .mb-body{fill:#fffbe8;stroke:#141010;stroke-width:.8}
+.minibus .mb-roof{fill:#0b7a3b;stroke:#141010;stroke-width:.6}
+.minibus .mb-sign{fill:#141010}
+.minibus .mb-no{font:700 3px "Courier Prime",monospace;fill:#ffcf3a;text-anchor:middle}
+.minibus .mb-win{stroke:#141010;stroke-width:2;stroke-dasharray:2.4 1}
+html.night .minibus .mb-win{stroke:#ffcf3a;filter:drop-shadow(0 0 2px #ffb000)}
+.labels text{font-family:"Courier Prime",monospace;fill:var(--label);text-anchor:middle;pointer-events:none}
+.labels .dz{font-family:"Noto Serif SC","Songti SC",serif;font-weight:700;font-size:15px;letter-spacing:.15em}
+.labels .de{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase}
+.labels .water{font-size:11px;letter-spacing:.3em;font-style:italic;fill:rgba(29,42,74,.55)}
+.labels .water tspan:first-child{font-family:"Noto Serif SC","Songti SC",serif;font-style:normal;font-size:14px;letter-spacing:.5em}
+html.night .labels .water{fill:rgba(92,225,255,.45)}
+.string{fill:none;stroke:var(--string);stroke-linecap:round;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+html.night .string{filter:drop-shadow(0 0 3px #ff2d55)}
+.string.draw{transition:stroke-dashoffset 2.4s ease-in-out;stroke-dashoffset:0!important}
+.leader{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.7}.leader-dot{fill:var(--ink)}
+
+/* pins: constant screen size even when the camera pushes in */
+.pin{position:absolute;width:0;height:0;padding:0;border:0;background:none;cursor:pointer;z-index:2;transform:scale(calc(1 / var(--z,1)))}
+.pin .head{position:absolute;left:-13px;top:-13px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff7a6e,var(--pin) 55%,#8c0f0a);
+  border:2px solid #141010;box-shadow:2px 3px 0 rgba(20,16,16,.55);display:grid;place-items:center;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+html.night .pin .head{border-color:#ffd0da;box-shadow:0 0 10px #ff2d55,0 0 22px rgba(255,45,85,.55)}
+.pin .num{font:700 10px/1 var(--mono);color:#fff;letter-spacing:-.02em}
+.pin.approx .head::after{content:"";position:absolute;inset:-12px;border-radius:50%;border:2px dashed var(--pin);opacity:.7}
+.pin:hover .head,.pin:focus-visible .head,.pin.on .head{transform:scale(1.2)}
+.pin:focus-visible{outline:none}.pin:focus-visible .head{outline:3px solid #f6c400;outline-offset:2px}
+.pin.on{z-index:4}
+.pin:hover,.pin:focus-visible{z-index:6}
+/* Hong Kong minibus placard */
+.placard{position:absolute;left:16px;top:-30px;display:flex;flex-direction:column;align-items:flex-start;white-space:nowrap;padding:4px 9px 3px;border-radius:5px;
+  background:#0b7a3b;color:#fff;border:2px solid #fff;box-shadow:0 0 0 2px #141010,3px 3px 0 2px rgba(20,16,16,.6);opacity:0;transform:translateY(4px) scale(.9);
+  transform-origin:0 100%;transition:opacity .15s,transform .2s;pointer-events:none}
+.placard b{font-family:"Noto Serif SC","Songti SC",serif;font-weight:900;font-size:15px;letter-spacing:.06em;line-height:1.15}
+.placard small{font:700 9px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;opacity:.9}
+.placard.k-night,.placard.k-shopping,.placard.k-food,.placard.k-cinema{background:#c8102e}
+.pin:hover .placard,.pin:focus-visible .placard,.pin.on .placard{opacity:1;transform:none}
+html.night .placard{box-shadow:0 0 0 2px #000,0 0 14px rgba(255,255,255,.25)}
+
+.inset{position:absolute;right:18px;bottom:18px;width:150px;height:auto;z-index:3;border:1.5px solid #141010;box-shadow:3px 3px 0 rgba(20,16,16,.8);background:#fffbe8}
+.inset-bg{fill:#e6dcc3}.inset-land{fill:#fffbe8;stroke:#141010;stroke-width:.5}.inset-frame{fill:rgba(211,36,28,.12);stroke:#d3241c;stroke-width:1.4}
+.inset-t{font:700 7px "Courier Prime",monospace;letter-spacing:.12em;fill:#141010}
+html.night .inset{background:#0e131d;border-color:#2a3550}html.night .inset-bg{fill:#06090f}html.night .inset-land{fill:#121826;stroke:#5ce1ff}html.night .inset-t{fill:#9fe8ff}
+.zoom-out{display:none;position:absolute;right:18px;top:20px;z-index:6;font:700 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.06em;background:#141010;color:#f6c400;
+  border:2px solid #141010;padding:8px 11px;cursor:pointer;box-shadow:3px 3px 0 #d3241c}
+
+/* scene card */
+.scene{position:absolute;right:26px;top:26px;z-index:7;width:min(360px,calc(100% - 52px));background:#fffbe8;color:#141010;border:2px solid #141010;
+  box-shadow:6px 6px 0 rgba(20,16,16,.9);padding:16px 18px 14px;animation:scene-in .35s cubic-bezier(.34,1.56,.64,1)}
+.scene[hidden]{display:none}
+@keyframes scene-in{from{opacity:0;transform:translateY(14px) rotate(1deg)}to{opacity:1;transform:none}}
+html.night .scene{box-shadow:6px 6px 0 #ff2d55}
+.scene-x{position:absolute;right:8px;top:8px;width:30px;height:30px;border:2px solid #141010;background:#fffbe8;cursor:pointer;font-weight:700}
+.scene-no{margin:0;font-family:var(--anton);font-size:14px;letter-spacing:.24em;color:#d3241c;text-transform:uppercase}
+.scene-slug{margin:6px 34px 10px 0;font:700 12px/1.45 var(--mono);text-transform:uppercase;text-decoration:underline;text-underline-offset:3px}
+.scene-zh{margin:0;font-family:"Noto Serif SC","Songti SC",serif;font-weight:900;font-size:26px;line-height:1.25}
+.scene-en:empty{display:none}
+.scene-en{margin:2px 0 0;font-family:var(--anton);font-size:18px;letter-spacing:.02em;text-transform:uppercase}
+.scene-meta{margin:6px 0 10px;font:700 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:rgba(20,16,16,.6)}
+/* Hong Kong film subtitles: yellow Chinese over white English, black outline, on a dark frame */
+.screen{background:#0a0a0a;padding:16px 12px 12px;text-align:center;min-height:62px;display:flex;flex-direction:column;justify-content:flex-end}
+.screen.empty{display:none}
+.sub-zh{margin:0;font-family:"Noto Serif SC","Songti SC",serif;font-weight:700;font-size:19px;color:#ffe34d;letter-spacing:.06em;
+  text-shadow:-1.5px -1.5px 0 #000,1.5px -1.5px 0 #000,-1.5px 1.5px 0 #000,1.5px 1.5px 0 #000}
+.sub-en{margin:4px 0 0;font:600 14px/1.35 "Courier Prime",monospace;color:#fff;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
+.sub-zh:empty,.sub-en:empty{display:none}
+.scene-nav{display:flex;justify-content:space-between;margin-top:12px}
+.scene-nav button{font:700 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:none;border:0;border-bottom:2px solid #d3241c;color:#141010;padding:4px 0;cursor:pointer}
+
+/* film strip of scenes */
+.strip{position:relative;min-width:0;background:#141010;padding:15px 0;border:2px solid #141010;box-shadow:6px 6px 0 var(--hard)}
+html.night .strip{border-color:#2a3550;box-shadow:6px 6px 0 #ff2d55}
+.strip::before,.strip::after{content:"";position:absolute;left:0;right:0;height:6px;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 7px,#efd8a4 7px 14px,transparent 14px 20px);opacity:.8}
+.strip::before{top:4px}.strip::after{bottom:4px}
+.strip ol{list-style:none;margin:0;padding:0 8px;display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none}
+.strip ol::-webkit-scrollbar{display:none}
+.strip li{flex:1 0 auto;scroll-snap-align:center}
+.frame{position:relative;width:100%;min-width:74px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 10px;
+  background:#2a2420;color:#efe3c6;border:0;border-radius:3px;cursor:pointer;transition:background .2s,color .2s,transform .2s}
+.frame:hover{background:#3a312b}
+.frame.on{background:#f6c400;color:#141010;transform:translateY(-1px)}
+html.night .frame.on{background:#ff2d55;color:#fff}
+.frame:focus-visible{outline:2px solid #f6c400;outline-offset:2px}
+.f-n{font:700 10px/1 var(--mono);letter-spacing:.1em;opacity:.7}
+.frame.on .f-n{opacity:1}
+.f-zh{font-family:"Noto Serif SC","Songti SC",serif;font-weight:700;font-size:14px;line-height:1.1;white-space:nowrap}
+.sr{position:absolute;left:0;top:0;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.credits{font:11px/1.6 var(--mono);color:var(--quiet);margin:0 0 10px}
+
+
+/* ===== the living layer ===== */
+.route{fill:none;stroke:var(--ink);stroke-width:.9;stroke-dasharray:2 3;opacity:.35}
+.tram-track{stroke-dasharray:1 2.2;opacity:.45}
+.lm .tower{fill:#fffbe8;stroke:#141010;stroke-width:1.1;stroke-linejoin:round}
+.lm .floors{stroke:#141010;stroke-width:.5;opacity:.6}
+.lm-t{font:700 7px "Courier Prime",monospace;letter-spacing:.12em;text-anchor:middle;fill:var(--label)}
+html.night .lm .tower{fill:#141a28;stroke:#5ce1ff;filter:drop-shadow(0 0 2px rgba(92,225,255,.8))}
+html.night .lm .floors{stroke:#ffcf3a;stroke-width:1.1;opacity:.85;stroke-dasharray:1.5 1.2;animation:winflick 7s infinite}
+@keyframes winflick{0%,100%{opacity:.85}46%{opacity:.85}48%{opacity:.4}52%{opacity:.85}}
+.pumpkin .gourd{fill:#e3741c;stroke:#141010;stroke-width:1}
+.pumpkin .ribs,.pumpkin .stem{fill:none;stroke:#141010;stroke-width:.8}
+.pumpkin .face{fill:#141010}
+html.night .pumpkin .face{fill:#ffd23a;filter:drop-shadow(0 0 3px #ffb000);animation:candle 1.8s infinite}
+@keyframes candle{0%,100%{opacity:1}30%{opacity:.7}55%{opacity:.95}75%{opacity:.6}}
+.fireworks{opacity:0;transition:opacity .4s}
+html.night .fireworks,.scout.fw-on .fireworks{opacity:1}
+.burst{fill:none;stroke-width:1.6;stroke-linecap:round;transform-box:fill-box;transform-origin:center;animation:burst 4.2s infinite}
+.b1{stroke:#ffcf3a}.b2{stroke:#ff4d6d;animation-delay:1.3s}.b3{stroke:#5ce1ff;animation-delay:2.6s}
+html.night .burst{filter:drop-shadow(0 0 3px currentColor)}
+@keyframes burst{0%{transform:scale(.05);opacity:0}6%{opacity:1}38%{transform:scale(1);opacity:.95}62%,100%{transform:scale(1.12);opacity:0}}
+.ferry .hull{fill:#0b7a3b;stroke:#141010;stroke-width:.9}
+.ferry .deck{fill:#fffbe8;stroke:#141010;stroke-width:.9}
+.ferry .windows{stroke:#141010;stroke-width:1.4;stroke-dasharray:1.6 1.2}
+.tram .tram-body{fill:#0b7a3b;stroke:#141010;stroke-width:.9}
+.tram .tram-win{stroke:#fffbe8;stroke-width:2.4;stroke-dasharray:2.4 1.1}
+.tram .wheel{fill:#141010}
+.junk .junk-hull{fill:#5a3a22;stroke:#141010;stroke-width:.9}
+.junk .sail{fill:#c8102e;stroke:#141010;stroke-width:.9}
+.junk .batten{stroke:#141010;stroke-width:.6}
+html.night .ferry .windows,html.night .tram .tram-win{stroke:#ffcf3a;filter:drop-shadow(0 0 2px #ffb000)}
+html.night .junk .sail{filter:drop-shadow(0 0 3px rgba(255,45,85,.7))}
+
+.peak-tram{stroke-dasharray:3 2;opacity:.55}
+.cruise .hull-w,.cruise .deck-w{fill:#fffbe8;stroke:#141010;stroke-width:.8}
+.cruise .portholes{stroke:#141010;stroke-width:1;stroke-dasharray:1 1.6}
+html.night .cruise .portholes{stroke:#ffcf3a;filter:drop-shadow(0 0 2px #ffb000)}
+.plane .fuselage,.plane .wing{fill:#fffbe8;stroke:#141010;stroke-width:.7;stroke-linejoin:round}
+html.night .plane .fuselage,html.night .plane .wing{fill:#1b2233;stroke:#cfe9ff}
+/* neon signs: switched off by day, on (and buzzing) at night */
+.sign-box{fill:none;stroke:var(--ink);stroke-width:.8;opacity:.35}
+.sign-t{font-family:"Noto Serif SC","Songti SC",serif;font-weight:900;font-size:11px;text-anchor:middle;dominant-baseline:middle;fill:none;stroke:var(--ink);stroke-width:.5;opacity:.35}
+.sign-bat{fill:none;stroke:var(--ink);stroke-width:.7;opacity:.35}
+html.night .sign-box,html.night .sign-t,html.night .sign-bat{stroke:var(--c);opacity:1;filter:drop-shadow(0 0 2.5px var(--c));animation:signbuzz 6s infinite}
+html.night .sign-t{stroke-width:.9}
+html.night .sign:nth-child(2) *{animation-delay:-2.1s}html.night .sign:nth-child(3) *{animation-delay:-4.3s}
+@keyframes signbuzz{0%,100%{opacity:1}61%{opacity:1}62%{opacity:.25}63%{opacity:1}65%{opacity:.4}66%{opacity:1}}
+
+/* Hong Kong right now: time + weather */
+.hk-now{position:absolute;right:22px;top:20px;z-index:4;background:#141010;color:#f2e6cc;font:700 11px/1 var(--mono);letter-spacing:.06em;
+  padding:7px 10px 6px;box-shadow:3px 3px 0 #d3241c;transform:rotate(1deg)}
+.hk-now b{color:#f6c400;font-weight:700}
+#hkWx:not(:empty)::before{content:" · "}
+.wx{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;transition:opacity 1.2s}
+.wx.rain{opacity:1;background:repeating-linear-gradient(106deg,transparent 0 9px,rgba(29,42,74,.28) 9px 10px,transparent 10px 23px);
+  background-size:120px 120px;animation:rain .5s linear infinite}
+html.night .wx.rain{background:repeating-linear-gradient(106deg,transparent 0 9px,rgba(92,225,255,.28) 9px 10px,transparent 10px 23px);background-size:120px 120px}
+@keyframes rain{to{background-position:-34px 120px}}
+.wx.fog{opacity:1;background:radial-gradient(120% 70% at 30% 40%,rgba(255,255,255,.55),transparent 70%),radial-gradient(90% 60% at 80% 70%,rgba(255,255,255,.45),transparent 70%);
+  animation:fog 18s ease-in-out infinite alternate}
+html.night .wx.fog{background:radial-gradient(120% 70% at 30% 40%,rgba(160,190,220,.22),transparent 70%),radial-gradient(90% 60% at 80% 70%,rgba(160,190,220,.18),transparent 70%)}
+@keyframes fog{to{transform:translateX(4%)}}
+.wx.storm{animation:rain .45s linear infinite,flash 9s infinite}
+@keyframes flash{0%,93%,100%{filter:none}94%{filter:brightness(2.2)}95%{filter:none}96%{filter:brightness(1.8)}}
+@media(max-width:760px){ .hk-now{right:auto;left:auto;top:auto;bottom:10px;right:10px;font-size:9px;padding:5px 7px 4px} }
+@media(prefers-reduced-motion:reduce){ .burst,.wx,.pumpkin .face,.lm .floors,.sign *{animation:none!important} }
+
+@media(max-width:760px){
+  .board{padding:6px}
+  .case-label{left:12px;top:12px;font-size:9px;padding:4px 7px 3px}.case-label b{font-size:12px}
+  .inset{display:none}
+  .tape{width:60px;height:18px}
+  .labels .dz{font-size:20px}.labels .de{display:none}.labels .water{font-size:15px}.labels .water tspan:first-child{font-size:18px}
+  .scene{position:relative;right:auto;top:auto;width:auto;margin-top:-4px}
+  .zoom-out{display:block;right:10px;top:12px;font-size:10px;padding:6px 8px}
+  .zoom-out[hidden]{display:none}
+  .placard b{font-size:13px}
+  .frame{min-width:66px;height:48px;padding:0 8px}.f-zh{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){.stage,.string.draw{transition:none}.scene{animation:none}}
+</style>
