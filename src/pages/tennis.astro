@@ -1,35 +1,50 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 ---
-<PageLayout title="Clay Court" description="A tiny tennis game: Han vs 奶蛙 on clay. First to three games.">
+<PageLayout title="Clay Court" description="A tennis game on clay: Han vs 奶蛙. Charge, time and place every shot. First to three games.">
   <div class="standalone-heading court-heading">
     <span class="kicker">Exhibition match</span>
     <h1>Clay Court</h1>
-    <p>Han vs 奶蛙. First to three games. No line judges, no challenges.</p>
+    <p>Han vs 奶蛙. Charge it, time it, place it. First to three games.</p>
   </div>
 
   <div class="court-wrap" id="wrap">
-    <canvas id="court" aria-label="Tennis game. Move with the mouse, a finger, or the arrow keys; tap or press Space to serve and for a power shot."></canvas>
+    <canvas id="court" tabindex="0" aria-label="Tennis game. Move with WASD or arrow keys. Hold J or Space to charge a drive, K for a touch shot, and release to hit; movement keys aim while charging."></canvas>
     <div class="court-card" id="card">
-      <p class="cc-kicker">Chapter 15–40</p>
-      <h2 class="cc-title">Han <span>vs</span> 奶蛙</h2>
-      <ul class="cc-how">
-        <li><b>Move</b> mouse · drag · ← → ↑ ↓</li>
-        <li><b>Hit</b> automatic: where the ball meets your racket sets the angle</li>
-        <li><b>Power</b> tap / Space just before contact</li>
-        <li><b>Serve</b> tap / Space</li>
-      </ul>
+      <p class="cc-kicker" id="ccKicker">Chapter 15–40</p>
+      <h2 class="cc-title" id="ccTitle">Han <span>vs</span> 奶蛙</h2>
+      <div class="cc-stats" id="ccStats" hidden></div>
+      <div class="cc-levels" role="group" aria-label="Opponent level">
+        <button type="button" data-level="0">Amateur</button>
+        <button type="button" data-level="1" aria-pressed="true">Pro</button>
+        <button type="button" data-level="2">Legend</button>
+      </div>
       <button type="button" id="play" class="cc-play">Play ▸</button>
+      <p class="cc-tip" id="ccTip">Hold to charge · release when the marker hits green</p>
     </div>
   </div>
-  <p class="court-note">Best on a phone held upright, or any window. Sound off, as nature intended.</p>
+
+  <div class="pad" id="pad" aria-hidden="true">
+    <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
+    <div class="shots">
+      <button type="button" data-shot="drive" class="s-drive">DRIVE<small>hold longer = flat</small></button>
+      <button type="button" data-shot="touch" class="s-touch">TOUCH<small>↑ lob · ↓ drop</small></button>
+    </div>
+  </div>
+
+  <div class="keys">
+    <div><b>Move</b> WASD / arrows · <b>Sprint</b> Shift</div>
+    <div><b>Drive</b> J or Space — hold to charge (topspin; charge into the red for a flat bomb)</div>
+    <div><b>Touch</b> K — slice · with ↑ a lob · with ↓ a drop shot</div>
+    <div><b>Aim</b> move keys while charging · <b>Serve</b> hold either, release in the green</div>
+  </div>
 
   <script is:inline>
   (() => {
+    // ================================================================ setup
     const canvas = document.getElementById("court"), ctx = canvas.getContext("2d");
     const card = document.getElementById("card"), playBtn = document.getElementById("play");
-    const VW = 600, VH = 800;                                  // virtual canvas size
-    const AUTO = /autoplay/.test(location.search);              // test harness: the player plays itself
+    const VW = 600, VH = 800, AUTO = /autoplay/.test(location.search);
     let scale = 1, dpr = 1;
     function resize() {
       const w = Math.min(canvas.parentElement.clientWidth, 560);
@@ -38,417 +53,629 @@ import PageLayout from "@layouts/PageLayout.astro";
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(w * VH / VW * dpr);
     }
     resize(); addEventListener("resize", resize);
+    const touch = matchMedia("(hover: none)").matches;
+    document.getElementById("pad").hidden = !touch;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
 
-    // ---------- court geometry: x ∈ [-1, 1] singles sidelines, y 0 = near baseline … 1 = far baseline, net at 0.5 ----------
-    const NEAR_Y = 0.85 * VH, FAR_Y = 0.2 * VH, HALF_NEAR = 0.39 * VW, HALF_FAR = 0.27 * VW;
+    // ================================================================ court, in metres
+    const HW = 4.115, DW = 5.485, LEN = 23.77, NET = LEN / 2, SVC = 6.40, G = 9.81, R = 0.033;
+    const TIME = 0.7;                                         // game seconds per real second: real ball speeds, playable pace
+    const netH = x => 0.914 + 0.156 * Math.min(1, Math.abs(x) / 6.4);
+    const NEAR_Y = 0.86 * VH, FAR_Y = 0.21 * VH, HALF_NEAR = 0.34 * VW, HALF_FAR = 0.225 * VW;
     const persp = t => t * 1.3 / (1 + 0.3 * t);
     function P(x, y, z = 0) {
-      const ty = persp(y), s = 1 + (HALF_FAR / HALF_NEAR - 1) * ty;
-      return { x: VW / 2 + x * HALF_NEAR * s, y: NEAR_Y + (FAR_Y - NEAR_Y) * ty - z * 300 * s, s };
-    }
-    function unproject(sx, sy, yHint) {                       // screen → court (for pointer control)
-      let lo = -0.4, hi = 1.4;
-      for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; (P(0, mid).y > sy) ? (lo = mid) : (hi = mid); }
-      const y = (lo + hi) / 2, s = P(0, y).s;
-      return { x: (sx - VW / 2) / (HALF_NEAR * s), y };
-    }
-    const SERVICE_NEAR = 0.5 - 0.5 * 0.538, SERVICE_FAR = 0.5 + 0.5 * 0.538;
-
-    // ---------- state ----------
-    const names = ["HAN", "奶蛙"];
-    let state = "title";                                        // title | serve | rally | point | over
-    let games = [0, 0], pts = [0, 0], server = 0, pointNo = 0;
-    let matchPointsSaved = 0, wasDown02 = false;
-    const me = { x: 0.3, y: -0.06, tx: 0.3, ty: -0.06, swing: 0, side: 1, powerAt: -9 };
-    const op = { x: -0.3, y: 1.06, tx: -0.3, ty: 1.06, swing: 0, side: 1, react: 0 };
-    let ball = null, sub = null, subUntil = 0, toss = 0, cpuServeAt = 0, pointEndsAt = 0;
-    const keys = new Set();
-    let pointer = null;
-
-    function say(who, text, ms = 1600) { sub = { who, text }; subUntil = performance.now() + ms; }
-
-    function resetPositions() {
-      const even = (pts[0] + pts[1]) % 2 === 0, dir = even ? 1 : -1;  // deuce court first
-      if (server === 0) { me.x = me.tx = 0.32 * dir; me.y = me.ty = -0.08; op.x = op.tx = -0.42 * dir; op.y = op.ty = 1.08; }
-      else { op.x = op.tx = -0.32 * dir; op.y = op.ty = 1.08; me.x = me.tx = 0.42 * dir; me.y = me.ty = -0.08; }
-      ball = null; toss = 0;
-      state = "serve";
-      if (server === 1) cpuServeAt = performance.now() + 1100;
+      const ty = persp(y / LEN), s = 1 + (HALF_FAR / HALF_NEAR - 1) * ty;
+      return { x: VW / 2 + (x / HW) * HALF_NEAR * s, y: NEAR_Y + (FAR_Y - NEAR_Y) * ty - z * 36 * s, s };
     }
 
-    // a shot = straight line in x/y with a parabolic z, from (x0,y0,z0) to the bounce (xb,yb) in T seconds
-    function shoot(hitter, x0, y0, z0, xb, yb, T, apex, kind) {
-      ball = { hitter, x0, y0, z0, xb, yb, T, apex, t: 0, phase: 1, kind, x: x0, y: y0, z: z0, touched: false };
-    }
-    function zAt(t, T, z0, apex) {                              // parabola: z0 at 0, apex near middle, 0 at T
-      const u = t / T; return (1 - u) * z0 + 4 * apex * u * (1 - u);
-    }
+    // ================================================================ shots: each has pace, net margin, spin and how it comes off the clay
+    const SHOT = {
+      topspin: { v: 25, clr: 1.05, spin: 6.5,  e: 0.80, fr: 0.84, depth: 2.6, label: "TOPSPIN" },
+      flat:    { v: 31, clr: 0.40, spin: 0.6,  e: 0.70, fr: 0.90, depth: 2.2, label: "FLAT" },
+      slice:   { v: 20, clr: 0.55, spin: -3.2, e: 0.52, fr: 0.70, depth: 3.0, label: "SLICE" },
+      lob:     { v: 15, clr: 4.4,  spin: 1.2,  e: 0.74, fr: 0.76, depth: 1.6, label: "LOB" },
+      drop:    { v: 10, clr: 0.55, spin: -2.0, e: 0.45, fr: 0.52, depth: 0,   label: "DROP SHOT" },
+      serve:   { v: 44, clr: 0.25, spin: 1.5,  e: 0.68, fr: 0.86, depth: 0,   label: "SERVE" },
+    };
+    const LEVELS = [
+      { name: "Amateur", speed: 4.4, sigmaT: 0.10, aim: 0.70, read: 0.24, fault: 0.14, attack: 0.10, posNoise: 0.5 },
+      { name: "Pro",     speed: 5.2, sigmaT: 0.07, aim: 0.88, read: 0.17, fault: 0.09, attack: 0.16, posNoise: 0.34 },
+      { name: "Legend",  speed: 5.9, sigmaT: 0.045, aim: 0.96, read: 0.11, fault: 0.05, attack: 0.26, posNoise: 0.2 },
+    ];
+    let level = LEVELS[1];
 
-    function pointTo(w, why) {
-      if (state !== "rally" && state !== "serve") return;
-      state = "point"; pointEndsAt = performance.now() + 1500;
-      const l = 1 - w;
-      // was the CPU on match point?
-      const cpuMatchPoint = games[1] === 2 && pts[1] >= 3 && pts[1] > pts[0];
-      if (cpuMatchPoint && w === 0) matchPointsSaved++;
-      pts[w]++;
-      let line = why;
-      if (pts[w] >= 4 && pts[w] - pts[l] >= 2) {
-        games[w]++; pts = [0, 0]; server = 1 - server;
-        if (games[0] === 0 && games[1] === 2) wasDown02 = true;
-        if (games[w] === 3) {
-          state = "over"; pointEndsAt = performance.now() + 900;
-          const comeback = w === 0 && wasDown02, saved = w === 0 && matchPointsSaved > 0;
-          say("COMMENTATOR", w === 0
-            ? (comeback && saved ? `From 0–2 down, ${matchPointsSaved} match point${matchPointsSaved > 1 ? "s" : ""} saved. Roland-Garros 2025 energy.`
-              : comeback ? "From two games down. Pure Alcaraz." : saved ? "Match point saved — and the match. Unreal." : "Game, set and match, Han.")
-            : "Game, set and match, 奶蛙. Horse stance wins again.", 4000);
-          setTimeout(showEnd, 1600);
-          return;
-        }
-        line = `Game, ${w === 0 ? "Han" : "奶蛙"}.`;
-      } else if (pts[0] >= 3 && pts[1] >= 3) {
-        line = pts[0] === pts[1] ? "Deuce." : `Advantage, ${pts[0] > pts[1] ? "Han" : "奶蛙"}.`;
-        if (why && !/Deuce|Advantage/.test(why)) line = `${why} ${line}`;
+    // ================================================================ ball physics
+    let ball = null, simNow = 0;
+    function launch(hitter, from, target, type, speedMul, netErr) {
+      const s = SHOT[type], dx = target.x - from.x, dy = target.y - from.y, dist = Math.hypot(dx, dy), gEff = G + s.spin;
+      let T = dist / (s.v * speedMul);
+      const clearance = T0 => {
+        const vz = (0.5 * gEff * T0 * T0 - from.z) / T0, tn = (NET - from.y) / (dy / T0);
+        return tn > 0 && tn < T0 ? from.z + vz * tn - 0.5 * gEff * tn * tn - netH(from.x + dx * tn / T0) : 9;
+      };
+      for (let i = 0; i < 40 && clearance(T) < s.clr; i++) T *= 1.05;               // loop it up until it clears with its margin
+      T *= 1 - netErr;                                                              // a bad contact flattens the arc
+      const vz = (0.5 * gEff * T * T - from.z) / T;
+      ball = { x: from.x, y: from.y, z: from.z, vx: dx / T, vy: dy / T, vz, spin: s.spin, type, s, hitter, bounces: 0, netted: false, born: simNow };
+      ball.speed = Math.hypot(ball.vx, ball.vy, vz);
+      rally.shots++;
+    }
+    function stepBall(b, dt) {
+      const px = b.x, py = b.y, pz = b.z;
+      b.vz -= (G + (b.bounces ? b.spin * 0.25 : b.spin)) * dt;
+      b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+      if (!b.netted && b.bounces === 0 && (py - NET) * (b.y - NET) <= 0) {
+        const f = (NET - py) / ((b.y - py) || 1e-6), zx = pz + (b.z - pz) * f, xx = px + (b.x - px) * f;
+        if (zx < netH(xx) + R) { b.netted = true; b.y = NET - Math.sign(b.vy) * 0.05; b.vx *= 0.1; b.vy *= -0.12; b.vz = Math.min(0, b.vz) * 0.3; return "net"; }
       }
-      if (line) say("COMMENTATOR", line, 1500);
+      if (b.z <= R && b.vz < 0) {
+        b.z = R; b.vz = -b.vz * (b.bounces ? 0.5 : b.s.e); b.vx *= b.s.fr; b.vy *= b.s.fr; b.bounces++;
+        if (b.vz < 0.4) b.vz = 0;
+        return "bounce";
+      }
+      return null;
+    }
+    // when does the ball reach a player's hitting plane? (after the bounce, or before it for a volley)
+    function predict(b, plane, allowVolley) {
+      const c = { ...b }; let t = 0;
+      for (let i = 0; i < 700; i++) {
+        if (stepBall(c, 0.005) === "net") return null;
+        t += 0.005;
+        const crossed = c.vy < 0 ? c.y <= plane : c.y >= plane;
+        if (crossed && (c.bounces >= 1 || (allowVolley && c.z > 0.25))) return { t, x: c.x, y: c.y, z: c.z, volley: c.bounces === 0 };
+        if (c.bounces >= 2) return { t: Math.max(0, t - 0.1), x: c.x, y: c.y, z: c.z, late: true };
+      }
+      return null;
     }
 
+    // ================================================================ players
+    const mk = near => ({ near, x: 0, y: near ? -0.6 : LEN + 0.6, vx: 0, vy: 0, tx: 0, ty: 0, stamina: 1, swing: 0, side: 1, charge: null, aimX: 0, aimY: 0, plan: null, pending: null });
+    const me = mk(true), op = mk(false), players = [me, op];
+    const contactPlane = p => p.near ? p.y + 0.45 : p.y - 0.45;
+    const canVolley = p => p.near ? p.y > NET - SVC - 0.5 : p.y < NET + SVC + 0.5;
+
+    // ================================================================ match state
+    let state = "title";                                   // title | serve | rally | point | over
+    let games = [0, 0], pts = [0, 0], server = 0, secondServe = false, faultPending = false;
+    let serveMeter = null, cpuServeAt = 0, pointEndAt = 0, rally = { shots: 0 };
+    let stats, popups = [], subtitle = null, subUntil = 0, matchPointsSaved = 0, wasDown02 = false;
+    const freshStats = () => ({ winners: [0, 0], ue: [0, 0], aces: [0, 0], dfs: [0, 0], perfect: 0, swings: 0, fastest: 0, longest: 0 });
+    const say = (who, text, ms = 1700) => { subtitle = { who, text }; subUntil = performance.now() + ms; };
+    const pop = (text, x, y, color = "#f6c400") => popups.push({ text, x, y, color, t: performance.now() });
+
+    function placeForPoint() {
+      const deuce = (pts[0] + pts[1]) % 2 === 0, nearSide = deuce ? 1 : -1, farSide = -nearSide;   // near player's right is +x, far player's is −x
+      if (server === 0) { me.x = 0.9 * nearSide; me.y = -0.5; op.x = 2.6 * farSide; op.y = LEN + 1.2; }
+      else { op.x = 0.9 * farSide; op.y = LEN + 0.5; me.x = 2.6 * nearSide; me.y = -1.2; }
+      players.forEach(p => { p.vx = p.vy = 0; p.tx = p.x; p.ty = p.y; p.charge = null; p.plan = null; p.pending = null; p.swing = 0; p.stamina = Math.min(1, p.stamina + 0.18); });
+      ball = null; serveMeter = null; rally = { shots: 0 }; me.auto = null;
+      state = "serve";
+      if (server === 1) cpuServeAt = simNow + (secondServe ? 0.7 : 1.0);
+    }
+    function endPoint(winner, why, kind) {
+      if (state !== "rally" && state !== "serve") return;
+      state = "point"; pointEndAt = simNow + 1.0; faultPending = false;
+      const loser = 1 - winner;
+      if (kind === "winner") stats.winners[winner]++;
+      if (kind === "ue") stats.ue[loser]++;
+      if (kind === "ace") stats.aces[winner]++;
+      if (kind === "df") stats.dfs[loser]++;
+      stats.longest = Math.max(stats.longest, rally.shots);
+      if (games[1] === 2 && pts[1] >= 3 && pts[1] > pts[0] && winner === 0) matchPointsSaved++;
+      pts[winner]++; secondServe = false;
+      let line = why;
+      if (pts[winner] >= 4 && pts[winner] - pts[loser] >= 2) {
+        games[winner]++; pts = [0, 0]; server = 1 - server;
+        if (games[0] === 0 && games[1] === 2) wasDown02 = true;
+        if (games[winner] === 3) return finish(winner);
+        line = `${why ? why + " " : ""}Game, ${winner === 0 ? "Han" : "奶蛙"}.`;
+      } else if (pts[0] >= 3 && pts[1] >= 3) {
+        line = `${why ? why + " " : ""}${pts[0] === pts[1] ? "Deuce." : `Advantage, ${pts[0] > pts[1] ? "Han" : "奶蛙"}.`}`;
+      }
+      if (line) say("COMMENTATOR", line, 1600);
+    }
+    function fault(text) {
+      if (secondServe) return endPoint(1 - server, "Double fault.", "df");
+      secondServe = true; faultPending = true; say("UMPIRE", text, 1100);
+      state = "point"; pointEndAt = simNow + 0.9;
+    }
+    function finish(winner) {
+      state = "over";
+      const comeback = winner === 0 && wasDown02, saved = winner === 0 && matchPointsSaved > 0;
+      say("COMMENTATOR", winner === 0
+        ? (comeback && saved ? `From 0–2 down, ${matchPointsSaved} match point${matchPointsSaved > 1 ? "s" : ""} saved. Roland-Garros 2025 energy.`
+          : comeback ? "From two games down. Pure Alcaraz." : saved ? "Match point saved — and then the match." : "Game, set and match, Han.")
+        : "Game, set and match, 奶蛙. The horse stance holds.", 4200);
+      setTimeout(showEnd, 1800);
+    }
     function scoreText(i) {
       const a = pts[i], b = pts[1 - i];
       if (a >= 3 && b >= 3) return a === b ? "40" : a > b ? "AD" : "40";
       return ["0", "15", "30", "40"][Math.min(a, 3)];
     }
 
-    // ---------- input ----------
-    function toCanvas(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale }; }
-    canvas.addEventListener("pointermove", e => { pointer = toCanvas(e); });
-    canvas.addEventListener("pointerdown", e => { pointer = toCanvas(e); action(); canvas.setPointerCapture(e.pointerId); });
-    canvas.addEventListener("pointerleave", () => { if (matchMedia("(hover: hover)").matches) pointer = null; });
+    // ================================================================ input: two shot buttons
+    //   DRIVE (J / Space): topspin; charge past 85% for a flat bomb
+    //   TOUCH (K): slice; with ↑ a lob, with ↓ a drop shot
+    const keys = new Set(); let stick = { x: 0, y: 0, active: false };
+    const SHOT_KEYS = { j: "drive", " ": "drive", k: "touch" };
     addEventListener("keydown", e => {
-      if (state === "title") return;
+      if (state === "title" || state === "over") return;
+      const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
       if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(e.key)) e.preventDefault();
-      if (e.key === " ") action(); else keys.add(e.key);
+      if (SHOT_KEYS[k]) { if (!e.repeat) press(SHOT_KEYS[k]); } else keys.add(k);
     });
-    addEventListener("keyup", e => keys.delete(e.key));
-    function action() {
-      const now = performance.now();
-      if (state === "serve" && server === 0 && !toss) { toss = now; return; }
-      me.powerAt = now;
+    addEventListener("keyup", e => { const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (SHOT_KEYS[k]) release(SHOT_KEYS[k]); keys.delete(k); });
+    function moveInput() {
+      let x = (keys.has("ArrowRight") || keys.has("d") ? 1 : 0) - (keys.has("ArrowLeft") || keys.has("a") ? 1 : 0);
+      let y = (keys.has("ArrowUp") || keys.has("w") ? 1 : 0) - (keys.has("ArrowDown") || keys.has("s") ? 1 : 0);
+      if (stick.active) { x = stick.x; y = stick.y; }
+      return { x, y, sprint: keys.has("Shift") || (stick.active && Math.hypot(stick.x, stick.y) > 0.92) };
     }
-    playBtn.addEventListener("click", start);
-    function start() {
-      games = [0, 0]; pts = [0, 0]; server = 0; matchPointsSaved = 0; wasDown02 = false;
-      card.hidden = true; resetPositions();
-      say("COMMENTATOR", "Han to serve. Tap or press Space.", 2200);
+    const stickEl = document.getElementById("stick"), knob = document.getElementById("knob");
+    function moveStick(e) {
+      const r = stickEl.getBoundingClientRect(), rad = r.width / 2;
+      let dx = (e.clientX - r.left - rad) / rad, dy = (r.top + rad - e.clientY) / rad; const m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m; }
+      stick.x = dx; stick.y = dy; knob.style.transform = `translate(${dx * rad * 0.6}px, ${-dy * rad * 0.6}px)`;
+    }
+    const capture = (el, e) => { try { el.setPointerCapture(e.pointerId); } catch (_) {} };
+    stickEl.addEventListener("pointerdown", e => { stick.active = true; moveStick(e); capture(stickEl, e); });
+    stickEl.addEventListener("pointermove", e => { if (stick.active) moveStick(e); });
+    const endStick = () => { stick = { x: 0, y: 0, active: false }; knob.style.transform = ""; };
+    stickEl.addEventListener("pointerup", endStick); stickEl.addEventListener("pointercancel", endStick);
+    document.querySelectorAll(".shots button").forEach(b => {
+      b.addEventListener("pointerdown", e => { e.preventDefault(); b.classList.add("down"); if (state !== "title" && state !== "over") press(b.dataset.shot); capture(b, e); });
+      const up = () => { b.classList.remove("down"); release(b.dataset.shot); };
+      b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up);
+    });
+
+    const chargeOf = c => clamp((simNow - c.t0) / 0.75, 0, 1.25);
+    function resolveShot(button, charge, aimY) {
+      if (button === "drive") return charge >= 0.85 ? "flat" : "topspin";
+      return aimY > 0.5 ? "lob" : aimY < -0.5 ? "drop" : "slice";
+    }
+    function press(button) {
+      if (state === "serve" && server === 0 && !serveMeter) { serveMeter = { t0: simNow }; me.charge = { button, t0: simNow }; return; }
+      if (state !== "rally" || me.charge) return;
+      me.charge = { button, t0: simNow };
+    }
+    function release(button) {
+      if (!me.charge || me.charge.button !== button) return;
+      if (state === "serve" && serveMeter) { me.charge = null; return doServe(me, meterValue(), me.aimX); }
+      const c = chargeOf(me.charge); me.charge = null;
+      swing(me, resolveShot(button, c, me.aimY), c, simNow);
+    }
+    const meterValue = () => { const t = (simNow - serveMeter.t0) / 1.0; return t <= 1 ? t : Math.max(0, 2 - t); };
+
+    // ================================================================ hitting
+    function swing(p, type, power, releaseAt) {
+      p.swing = 1;
+      if (!ball || ball.hitter === players.indexOf(p) || ball.netted) return;
+      const pr = predict(ball, contactPlane(p), canVolley(p));
+      if (!pr) return;
+      const err = releaseAt - (simNow + pr.t);                                         // < 0 early, > 0 late
+      if (err < -0.24) { if (p === me) pop("TOO EARLY", p.x, p.y, "#ff6b6b"); return; }
+      // early releases wait for the ball; late ones (the ball is already here) hit now
+      p.pending = { type, power, err: clamp(err, -0.24, 0.24), at: simNow + pr.t };
+    }
+    function execute(p) {
+      const pd = p.pending; p.pending = null;
+      const who = players.indexOf(p);
+      if (!ball || ball.hitter === who || ball.netted) return;
+      const lat = ball.x - p.x, depthOff = ball.y - contactPlane(p);
+      if (Math.abs(lat) > 1.75 || Math.abs(depthOff) > 1.0 || ball.z > 2.7) { if (p === me) pop("MISSED", p.x, p.y, "#ff6b6b"); return; }
+      p.side = lat >= 0 ? 1 : -1; p.swing = 1;
+      // ---- quality: timing × position × contact height × stamina × incoming pace
+      const e = Math.abs(pd.err);
+      const timing = e < 0.045 ? 1 : e < 0.11 ? 0.86 : e < 0.17 ? 0.66 : 0.42;
+      const al = Math.abs(lat), pos = al < 0.3 ? 0.62 : al < 0.55 ? 0.85 : al <= 1.2 ? 1 : al <= 1.5 ? 0.78 : 0.55;
+      let type = pd.type;
+      const volley = ball.bounces === 0;
+      if (volley && type !== "lob" && type !== "drop") type = "flat";
+      const h = ball.z, height = h < 0.35 ? (type === "slice" ? 0.85 : 0.65) : h <= 1.4 ? 1 : h <= 1.9 ? 0.85 : 0.7;
+      const pace = clamp(1.08 - (Math.hypot(ball.vx, ball.vy) - 18) / 60, 0.78, 1);
+      const q = timing * pos * height * (0.7 + 0.3 * p.stamina) * pace;
+      if (p === me) { stats.swings++; if (timing === 1) stats.perfect++; }
+      // ---- target, in world coordinates
+      const dir = p.near ? 1 : -1, baseline = p.near ? LEN : 0, s = SHOT[type];
+      let tx = p.aimX * 3.85, ty;
+      if (type === "drop") ty = NET + dir * 2.4;
+      else if (type === "lob") ty = baseline - dir * s.depth;
+      else ty = baseline - dir * (s.depth + (p.aimY < 0 ? -p.aimY * 3.4 : -p.aimY * 0.9));
+      tx += clamp(pd.err / 0.2, -1.2, 1.2) * 1.5 * p.side * dir;                         // early pulls, late pushes
+      // ---- error: spread grows with bad quality, raw power and risky targets
+      const power = Math.min(1, pd.power), over = Math.max(0, pd.power - 1);
+      const spread = (1 - q) * 2.4 + power * 0.35 + over * 2.2 + Math.max(0, Math.abs(tx) - 2.6) * 0.6;
+      tx += gauss() * spread * 0.75; ty += gauss() * spread * 0.9;
+      const netErr = Math.max(0, gauss() * (1 - q) * 0.16 + (type === "flat" ? 0.02 : 0));
+      const speedMul = (0.82 + 0.38 * power) * (0.85 + 0.15 * q);
+      p.stamina = Math.max(0, p.stamina - 0.012 - power * 0.02);
+      launch(who, { x: ball.x, y: ball.y, z: clamp(ball.z, 0.5, 2.2) }, { x: tx, y: ty }, type, speedMul, netErr);
+      if (p === me) {
+        const tag = timing === 1 ? "PERFECT" : timing > 0.8 ? "GOOD" : pd.err < 0 ? "EARLY" : "LATE";
+        pop(`${tag} · ${volley ? "VOLLEY" : s.label}`, p.x, p.y, timing === 1 ? "#7dffb0" : timing > 0.8 ? "#f6c400" : "#ff9a5c");
+      }
+      players[1 - who].plan = null;
+    }
+    function doServe(p, meter, aim) {
+      const who = players.indexOf(p), deuce = (pts[0] + pts[1]) % 2 === 0, dir = p.near ? 1 : -1;
+      const boxSign = p.near ? (deuce ? -1 : 1) : (deuce ? 1 : -1);                    // the box diagonal from the server
+      let tx = boxSign * 1.95 + clamp(aim, -1, 1) * 1.6;                                // ← → picks wide / body / T
+      let ty = NET + dir * (SVC - 0.7);
+      const sweet = meter >= 0.8 && meter <= 0.92, off = sweet ? 0 : meter > 0.92 ? (meter - 0.92) * 7 : (0.8 - meter) * 1.2;
+      const spread = (secondServe ? 0.35 : 0.55) + off * 0.9;
+      tx += gauss() * spread; ty += dir * (gauss() * spread * 0.8 + (meter > 0.92 ? (meter - 0.92) * 6 : 0));
+      const speedMul = secondServe ? 0.62 + 0.12 * meter : 0.68 + 0.42 * Math.min(1, meter);
+      p.swing = 1; p.side = 1;
+      launch(who, { x: p.x, y: p.y + dir * 0.3, z: 2.75 }, { x: tx, y: ty }, "serve", speedMul, secondServe ? 0 : Math.max(0, gauss() * 0.04));
+      ball.serve = true; ball.boxSign = boxSign;
+      const kmh = Math.round(ball.speed * 3.6);
+      if (p === me) { stats.fastest = Math.max(stats.fastest, kmh); pop(`${sweet ? "PERFECT · " : ""}${kmh} KM/H`, p.x, p.y, sweet ? "#7dffb0" : "#f6c400"); }
+      serveMeter = null; state = "rally";
+    }
+
+    // ================================================================ 奶蛙: same physics, same error model
+    function aiThink(p) {
+      const who = players.indexOf(p);
+      if (!ball || ball.netted) return;
+      if (ball.hitter === who) { p.tx = clamp(-ball.x * 0.25, -1.2, 1.2); p.ty = LEN + 0.9; p.plan = null; return; }   // recover
+      if (simNow - ball.born < level.read) return;                                       // reaction time
+      if (!p.plan) {
+        const standY = LEN + 0.8;
+        let pr = predict(ball, standY - 0.45, false);
+        if (!pr || pr.late) {                                                            // short ball: come in for it
+          const c = { ...ball }; let t = 0;
+          for (let i = 0; i < 700; i++) { stepBall(c, 0.005); t += 0.005; if (c.bounces >= 1 && c.vz < 0 && c.z < 1.1) break; }
+          pr = { t, x: c.x, y: c.y, z: c.z };
+        }
+        const off = pr.x >= p.x ? -0.85 : 0.85;                                          // keep the ball at arm's length
+        const hanAtNet = me.y > NET - SVC - 0.5, stretched = Math.abs(pr.x - p.x) > 2.6;
+        let type = "topspin";
+        if (hanAtNet && Math.random() < 0.45) type = "lob";
+        else if (stretched) type = Math.random() < 0.7 ? "slice" : "topspin";
+        else if (pr.y < LEN - 5 || Math.random() < level.attack || Math.abs(me.x) > 2.6) type = "flat";
+        else if (Math.random() < 0.12) type = "slice";
+        if (type === "slice" && me.y < 1 && Math.random() < 0.15) type = "drop";
+        const open = me.x > 0 ? -1 : 1;                                                  // aim away from Han
+        p.aimX = clamp(open * level.aim * (0.7 + Math.random() * 0.4) + gauss() * 0.12, -1, 1);
+        p.aimY = Math.random() < 0.7 ? 0.35 : -0.2;
+        p.plan = { at: simNow + pr.t, x: pr.x + off + gauss() * level.posNoise, y: pr.y + 0.45, type };   // nobody arrives perfectly
+      }
+      p.tx = p.plan.x; p.ty = clamp(p.plan.y, NET + 1.5, LEN + 3);
+      if (!p.pending && !p.plan.done && simNow >= p.plan.at - 0.25) {
+        const pr = predict(ball, contactPlane(p), canVolley(p));
+        if (pr) { p.pending = { type: p.plan.type, power: 0.55 + Math.random() * 0.4, err: clamp(gauss() * level.sigmaT, -0.2, 0.2), at: simNow + pr.t }; p.plan.done = true; }
+      }
+    }
+    function aiServe(p) {
+      const aim = Math.random() * 2 - 1;
+      if (Math.random() < level.fault * (secondServe ? 0.25 : 1)) doServe(p, 0.97 + Math.random() * 0.05, aim);
+      else doServe(p, secondServe ? 0.6 + Math.random() * 0.2 : 0.8 + Math.random() * 0.12, aim);
+    }
+
+    // ================================================================ autoplay test harness: Han plays himself
+    function autoplay() {
+      if (state === "serve" && server === 0) {
+        if (!serveMeter) press("drive");
+        else { me.aimX = Math.random() * 2 - 1; if (meterValue() > 0.84) release("drive"); }
+        return;
+      }
+      if (state !== "rally" || !ball || ball.hitter === 0 || ball.netted) { me.auto = null; return; }
+      const pr = predict(ball, contactPlane(me), false); if (!pr) return;
+      if (!me.auto) me.auto = { button: Math.random() < 0.8 ? "drive" : "touch", aimX: Math.random() * 1.6 - 0.8, aimY: Math.random() < 0.8 ? 0 : -0.2, hold: 0.3 + Math.random() * 0.5 };
+      me.autoTarget = pr.x - (pr.x >= me.x ? 0.85 : -0.85);
+      if (!me.charge && pr.t < me.auto.hold && pr.t > 0.05) press(me.auto.button);
+      if (me.charge) { me.aimX = me.auto.aimX; me.aimY = me.auto.aimY; }
+      if (me.charge && pr.t < 0.02) release(me.auto.button);
+    }
+
+    // ================================================================ simulation
+    function movePlayer(p, dt, ix, iy, sprint, maxSpeed) {
+      const sp = maxSpeed * (sprint && p.stamina > 0.1 ? 1.25 : 1) * (0.75 + 0.25 * p.stamina);
+      const m = Math.max(1, Math.hypot(ix, iy)), a = 22 * dt;
+      p.vx += clamp(ix / m * sp - p.vx, -a, a); p.vy += clamp(iy / m * sp - p.vy, -a, a);
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.stamina = sprint && Math.hypot(ix, iy) > 0.2 ? Math.max(0, p.stamina - 0.05 * dt) : Math.min(1, p.stamina + 0.03 * dt);
+    }
+    function update(rdt) {
+      const dt = rdt * TIME; simNow += dt;
+      if (AUTO) autoplay();
+      // ---- Han: move, or (while charging) aim — with a little automatic footwork toward the ball
+      const inp = moveInput();
+      if (me.charge) {
+        if (!AUTO) { me.aimX = clamp(inp.x, -1, 1); me.aimY = clamp(inp.y, -1, 1); }
+        if (ball && state === "rally" && ball.hitter === 1 && !ball.netted) {
+          const pr = predict(ball, contactPlane(me), canVolley(me));
+          if (pr) { const want = pr.x - (pr.x >= me.x ? 0.85 : -0.85); movePlayer(me, dt, clamp((want - me.x) * 2, -1, 1) * 0.6, 0, false, 5); }
+        }
+      } else if (state === "serve" && server === 0) { /* set to serve */ }
+      else if (AUTO && state === "rally" && me.autoTarget != null) movePlayer(me, dt, clamp((me.autoTarget - me.x) * 2, -1, 1), clamp((-0.6 - me.y) * 2, -1, 1), true, 5.2);
+      else movePlayer(me, dt, inp.x, inp.y, inp.sprint, 5.2);
+      me.x = clamp(me.x, -DW - 0.6, DW + 0.6); me.y = clamp(me.y, -4, NET - 0.6);
+      // ---- 奶蛙
+      if (state === "rally") aiThink(op);
+      if (state === "serve" && server === 1 && simNow > cpuServeAt) aiServe(op);
+      if (state === "rally" || state === "point") movePlayer(op, dt, clamp((op.tx - op.x) * 1.6, -1, 1), clamp((op.ty - op.y) * 1.6, -1, 1), Math.abs(op.tx - op.x) > 2, level.speed);
+      op.x = clamp(op.x, -DW - 0.6, DW + 0.6); op.y = clamp(op.y, NET + 0.6, LEN + 4);
+      players.forEach(p => { p.swing = Math.max(0, p.swing - rdt * 4); if (p.pending && simNow >= p.pending.at) execute(p); });
+      // ---- the ball
+      if (ball) {
+        for (let i = 0; i < 4 && ball; i++) {
+          const ev = stepBall(ball, dt / 4);
+          if (state !== "rally") continue;
+          const hitter = ball.hitter, recv = 1 - hitter;
+          if (ev === "net") { if (ball.serve) fault("Net. Second serve."); else endPoint(recv, "Into the net.", "ue"); continue; }
+          if (ev === "bounce" && ball.bounces === 1) {
+            const inX = Math.abs(ball.x) <= HW + R, inY = hitter === 0 ? ball.y >= NET && ball.y <= LEN + R : ball.y <= NET && ball.y >= -R;
+            if (ball.serve) {
+              const boxY = hitter === 0 ? ball.y <= NET + SVC + R : ball.y >= NET - SVC - R;
+              const boxX = ball.boxSign > 0 ? ball.x >= -R && ball.x <= HW + R : ball.x <= R && ball.x >= -HW - R;
+              if (!(inY && boxY && boxX)) { pop("FAULT", ball.x, ball.y, "#ff6b6b"); fault("Fault."); continue; }
+            } else if (!(inX && inY)) { pop("OUT", ball.x, ball.y, "#ff6b6b"); endPoint(recv, Math.abs(ball.x) > HW + R ? "Wide." : "Long.", "ue"); continue; }
+          }
+          if (ev === "bounce" && ball.bounces === 2) {
+            if (ball.serve && rally.shots === 1) endPoint(hitter, "Ace.", "ace");
+            else endPoint(hitter, hitter === 0 ? "Winner." : "", "winner");
+            continue;
+          }
+          if (Math.abs(ball.x) > DW + 6 || ball.y < -9 || ball.y > LEN + 9) endPoint(hitter, "", "winner");
+        }
+      }
+      if (state === "point" && simNow > pointEndAt) placeForPoint();
+      popups = popups.filter(p => performance.now() - p.t < 1100);
+      if (AUTO) window.__tennis = { state, games: games.slice(), pts: pts.slice(), server, stats, level: level.name };
+    }
+
+    // ================================================================ start / end
+    document.querySelectorAll(".cc-levels button").forEach(b => b.addEventListener("click", () => {
+      level = LEVELS[+b.dataset.level];
+      document.querySelectorAll(".cc-levels button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    }));
+    playBtn.addEventListener("click", () => {
+      games = [0, 0]; pts = [0, 0]; server = 0; secondServe = false; matchPointsSaved = 0; wasDown02 = false;
+      stats = freshStats(); players.forEach(p => p.stamina = 1);
+      card.hidden = true; placeForPoint();
+      say("COMMENTATOR", touch ? "Han to serve. Hold a button, release in the green." : "Han to serve. Hold J or K, release in the green.", 2600);
       canvas.focus({ preventScroll: true });
-    }
+    });
     function showEnd() {
       card.hidden = false;
-      card.querySelector(".cc-kicker").textContent = games[0] > games[1] ? "Final · Han wins" : "Final · 奶蛙 wins";
-      card.querySelector(".cc-title").innerHTML = `${games[0]} <span>–</span> ${games[1]}`;
-      playBtn.textContent = "Rematch ▸";
+      document.getElementById("ccKicker").textContent = `Final · ${level.name}`;
+      document.getElementById("ccTitle").innerHTML = `${games[0]} <span>–</span> ${games[1]}`;
+      const st = document.getElementById("ccStats"), pct = stats.swings ? Math.round(stats.perfect / stats.swings * 100) : 0;
+      st.hidden = false;
+      st.innerHTML = `<table><tr><th></th><th>HAN</th><th>奶蛙</th></tr>
+        <tr><td>Winners</td><td>${stats.winners[0]}</td><td>${stats.winners[1]}</td></tr>
+        <tr><td>Unforced errors</td><td>${stats.ue[0]}</td><td>${stats.ue[1]}</td></tr>
+        <tr><td>Aces</td><td>${stats.aces[0]}</td><td>${stats.aces[1]}</td></tr>
+        <tr><td>Double faults</td><td>${stats.dfs[0]}</td><td>${stats.dfs[1]}</td></tr></table>
+        <p>Perfect timing ${pct}% · Fastest serve ${stats.fastest || "—"} km/h · Longest rally ${stats.longest} shots</p>`;
+      playBtn.textContent = "Rematch ▸"; document.getElementById("ccTip").hidden = true;
     }
 
-    // ---------- simulation ----------
-    const REACH_X = 0.26, REACH_Y = 0.1;
-    function update(dt, now) {
-      // player movement: pointer or keys, capped speed so you have to read the ball
-      if (pointer && state !== "title") { const c = unproject(pointer.x, pointer.y); me.tx = c.x; me.ty = c.y; }
-      const kx = (keys.has("ArrowRight") || keys.has("d") ? 1 : 0) - (keys.has("ArrowLeft") || keys.has("a") ? 1 : 0);
-      const ky = (keys.has("ArrowUp") || keys.has("w") ? 1 : 0) - (keys.has("ArrowDown") || keys.has("s") ? 1 : 0);
-      if (kx || ky) { me.tx = me.x + kx * 0.5; me.ty = me.y + ky * 0.5; pointer = null; }
-      me.tx = Math.max(-1.3, Math.min(1.3, me.tx)); me.ty = Math.max(-0.22, Math.min(0.42, me.ty));
-      if (AUTO && state !== "title") {
-        if (state === "serve" && server === 0 && !toss) toss = now;
-        if (ball && ball.hitter === 1 && !ball.dead) { const tgt = ball.phase === 1 ? ball.xb + (ball.xb - ball.x0) / (ball.yb - ball.y0 || -1) * (-0.04 - ball.yb) : ball.x; me.tx = tgt + (Math.random() - 0.5) * 0.3; me.ty = -0.04; }
-        window.__tennis = { state, games: games.slice(), pts: pts.slice(), server };
-      }
-      if (state === "serve" && server === 0) { me.tx = me.x; me.ty = me.y; }
-      step(me, dt, 1.7, 1.1);
-      step(op, dt, 1.25 + 0.08 * (games[0] + games[1]), 0.9);
-      me.swing = Math.max(0, me.swing - dt * 5); op.swing = Math.max(0, op.swing - dt * 5);
-
-      if (state === "serve") {
-        if (server === 0 && toss && now - toss > 380) {             // player serve
-          const dir = (pts[0] + pts[1]) % 2 === 0 ? 1 : -1;
-          me.swing = 1; me.side = dir > 0 ? -1 : 1;
-          shoot(0, me.x, me.y, 0.32, -dir * (0.28 + Math.random() * 0.45), SERVICE_FAR - 0.03 - Math.random() * 0.2, 0.82, 0.12, "serve");
-          state = "rally";
-        }
-        if (server === 1 && now > cpuServeAt) {                      // CPU serve
-          const dir = (pts[0] + pts[1]) % 2 === 0 ? 1 : -1;
-          op.swing = 1;
-          if (Math.random() < 0.035) { say("COMMENTATOR", "Double fault.", 1300); pointTo(0, ""); return; }
-          shoot(1, op.x, op.y, 0.32, dir * (0.25 + Math.random() * 0.5), SERVICE_NEAR + 0.03 + Math.random() * 0.18, 0.85, 0.12, "serve");
-          state = "rally";
-        }
-      }
-
-      if (ball && ball.net) {                                         // caught by the net: drop and roll back a little
-        const n = ball.net; n.t += dt; ball.x = n.x; ball.y = n.y + (ball.hitter === 0 ? -1 : 1) * Math.min(0.03, n.t * 0.03);
-        ball.z = Math.max(0, n.z - n.t * 0.5);
-      } else if (ball && (state === "rally" || state === "point" || state === "over")) {
-        ball.t += dt;
-        if (ball.phase === 1) {
-          const u = Math.min(1, ball.t / ball.T);
-          ball.x = ball.x0 + (ball.xb - ball.x0) * u; ball.y = ball.y0 + (ball.yb - ball.y0) * u;
-          ball.z = zAt(Math.min(ball.t, ball.T), ball.T, ball.z0, ball.apex);
-          // net: crossing y = 0.5 too low
-          const crossing = (ball.y0 - 0.5) * (ball.y - 0.5) <= 0 && !ball.netChecked;
-          if (crossing) { ball.netChecked = true; if (ball.z < 0.07 && state === "rally") { ball.dead = true; ball.net = { x: ball.x, y: ball.hitter === 0 ? 0.485 : 0.515, z: ball.z, t: 0 }; pointTo(1 - ball.hitter, "Net."); } }
-          if (ball.t >= ball.T) {                                      // first bounce
-            ball.phase = 2; ball.t = 0; ball.bx = ball.xb; ball.by = ball.yb;
-            const vx = (ball.xb - ball.x0) / ball.T, vy = (ball.yb - ball.y0) / ball.T;
-            ball.vx = vx * 0.78; ball.vy = vy * 0.78; ball.T2 = ball.T * 0.62; ball.apex2 = Math.max(0.07, ball.apex * 0.55);
-            const otherHalf = ball.hitter === 0 ? (ball.yb >= 0.5 && ball.yb <= 1) : (ball.yb >= 0 && ball.yb <= 0.5);
-            let inBox = Math.abs(ball.xb) <= 1 && otherHalf;
-            if (ball.kind === "serve") inBox = inBox && (ball.hitter === 0 ? ball.yb <= SERVICE_FAR : ball.yb >= SERVICE_NEAR);
-            if (!inBox && state === "rally") { ball.dead = true; pointTo(1 - ball.hitter, "Out."); }
-          }
-        } else {
-          ball.x = ball.bx + ball.vx * ball.t; ball.y = ball.by + ball.vy * ball.t;
-          const tt = ball.t % ball.T2, bounces = Math.floor(ball.t / ball.T2);
-          ball.z = 4 * ball.apex2 * Math.pow(0.45, bounces) * (tt / ball.T2) * (1 - tt / ball.T2);
-          if (state === "rally" && !ball.dead) {
-            const receiver = ball.hitter === 0 ? op : me;
-            if (bounces >= 1 || ball.y < -0.32 || ball.y > 1.32 || Math.abs(ball.x) > 1.6) {
-              ball.dead = true;
-              pointTo(ball.hitter, ball.kind === "serve" && !ball.touched ? "Ace." : (ball.hitter === 0 ? "Winner." : ""));
-            } else if (Math.abs(ball.x - receiver.x) < REACH_X && Math.abs(ball.y - receiver.y) < REACH_Y && ball.z < 0.5) {
-              hit(receiver === me ? 0 : 1, now);
-            }
-          }
-        }
-      }
-
-      // CPU positioning: read the ball, a beat late
-      if (ball && state === "rally" && ball.hitter === 0 && !ball.dead) {
-        if (!op.react) op.react = now + 170;
-        if (now > op.react) {
-          let px, py;
-          if (ball.phase === 1) {
-            const dx = (ball.xb - ball.x0) / (ball.yb - ball.y0 || 1);
-            py = Math.min(1.08, Math.max(0.82, ball.yb + 0.22)); px = ball.xb + dx * (py - ball.yb);
-          } else { py = Math.min(1.08, Math.max(0.8, ball.y + 0.08)); px = ball.x + (ball.vx / (ball.vy || 1)) * (py - ball.y); }
-          op.tx = px + (op.x < px ? -0.12 : 0.12); op.ty = py;
-        }
-      } else if (state === "rally" && ball && ball.hitter === 1) { op.react = 0; op.tx = op.x * 0.6; op.ty = 1.04; }
-
-      if ((state === "point") && now > pointEndsAt) resetPositions();
-    }
-
-    function step(p, dt, vmaxX, vmaxY) {
-      const dx = p.tx - p.x, dy = p.ty - p.y;
-      p.x += Math.max(-vmaxX * dt, Math.min(vmaxX * dt, dx));
-      p.y += Math.max(-vmaxY * dt, Math.min(vmaxY * dt, dy));
-    }
-
-    function hit(who, now) {
-      const p = who === 0 ? me : op;
-      ball.touched = true;
-      const offset = Math.max(-1.2, Math.min(1.2, (ball.x - p.x) / REACH_X));   // −1 = ball on your left, +1 = right
-      p.swing = 1; p.side = offset >= 0 ? 1 : -1;
-      if (who === 0) {
-        const power = now - me.powerAt < 360;
-        const xb = -offset * 0.98 + (Math.random() - 0.5) * 0.12;
-        const yb = power ? 0.84 + Math.random() * 0.2 : 0.66 + Math.random() * 0.26;
-        shoot(0, ball.x, ball.y, Math.max(0.08, ball.z), xb, yb, power ? 0.72 : 1.0, power ? 0.12 : 0.2, power ? "power" : "rally");
-        if (power) say("", "POWER.", 600);
-      } else {
-        const r = Math.random(), lvl = 0.02 * (games[0] + games[1]);
-        let xb = (me.x > 0 ? -1 : 1) * (0.25 + Math.random() * 0.6), yb = 0.04 + Math.random() * 0.3, apex = 0.2, T = 1.0 - lvl * 2;
-        if (r < 0.06 - lvl) { xb = (Math.random() < 0.5 ? -1 : 1) * (1.05 + Math.random() * 0.2); }      // wide
-        else if (r < 0.1 - lvl) { yb = -0.04 - Math.random() * 0.08; }                                    // long
-        else if (r < 0.14 - lvl) { apex = 0.03; yb = 0.45; }                                              // into the net
-        shoot(1, ball.x, ball.y, Math.max(0.08, ball.z), xb, yb, T, apex, "rally");
-      }
-    }
-
-    // ---------- drawing ----------
-    const C = { paper: "#efd8a4", surround: "#a9471f", clay: "#c4622d", clayDark: "#b5552a", line: "#fff6e6", ink: "#141010", red: "#d3241c", yellow: "#f6c400" };
+    // ================================================================ drawing
+    const C = { surround: "#a9471f", clay: "#c4622d", clayDark: "#b5552a", line: "#fff6e6", ink: "#141010", red: "#d3241c", yellow: "#f6c400" };
+    const marks = [], trail = [];
     function quad(a, b, c, d, fill) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); }
-    function seg(x1, y1, x2, y2, w = 3) { const a = P(x1, y1), b = P(x2, y2); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineWidth = w * a.s; ctx.stroke(); }
-
-    function drawCourt() {
-      // stands and back wall
+    function seg(x1, y1, x2, y2, w = 1) { const a = P(x1, y1), b = P(x2, y2); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineWidth = 2.6 * w * a.s; ctx.stroke(); }
+    function courtLines() {
+      seg(-DW, 0, DW, 0, 1.6); seg(-DW, LEN, DW, LEN, 1.6);
+      seg(-DW, 0, -DW, LEN); seg(DW, 0, DW, LEN); seg(-HW, 0, -HW, LEN); seg(HW, 0, HW, LEN);
+      seg(-HW, NET - SVC, HW, NET - SVC); seg(-HW, NET + SVC, HW, NET + SVC);
+      seg(0, NET - SVC, 0, NET + SVC); seg(0, 0, 0, 0.3); seg(0, LEN - 0.3, 0, LEN);
+    }
+    function drawCourt(now) {
       ctx.fillStyle = C.surround; ctx.fillRect(0, 0, VW, VH);
       ctx.fillStyle = "#1b2a1f"; ctx.fillRect(0, 0, VW, FAR_Y - 40);
       for (let i = 0; i < 26; i++) { ctx.fillStyle = i % 2 ? "#22362a" : "#1e3025"; ctx.fillRect(i * VW / 26, 18, VW / 26, FAR_Y - 70); }
-      ctx.fillStyle = "#0e1a12"; ctx.fillRect(0, FAR_Y - 54, VW, 16);
-      ctx.fillStyle = C.yellow; ctx.font = "16px 'Anton', Impact, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText("C O U R T   P H I L I P P E - Z H A N G", VW / 2, FAR_Y - 46);
-      // surround
-      quad(P(-1.75, -0.45), P(1.75, -0.45), P(1.6, 1.38), P(-1.6, 1.38), C.surround);
-      ctx.fillStyle = C.surround; ctx.fillRect(0, FAR_Y - 38, VW, 30);
-      // court with brushed clay stripes
-      for (let i = 0; i < 12; i++) {
-        const y0 = i / 12, y1 = (i + 1) / 12;
-        quad(P(-1.22, y0), P(1.22, y0), P(1.22, y1), P(-1.22, y1), i % 2 ? C.clay : C.clayDark);
-      }
-      // floodlight falloff: brighter near, dimmer far; soft vignette at the sides
+      ctx.fillStyle = "#0e1a12"; ctx.fillRect(0, FAR_Y - 56, VW, 18);
+      ctx.fillStyle = C.yellow; ctx.font = "15px 'Anton', Impact, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("C O U R T   P H I L I P P E - Z H A N G", VW / 2, FAR_Y - 47);
+      for (let i = 0; i < 14; i++) { const y0 = i / 14 * LEN, y1 = (i + 1) / 14 * LEN; quad(P(-DW - 0.8, y0), P(DW + 0.8, y0), P(DW + 0.8, y1), P(-DW - 0.8, y1), i % 2 ? C.clay : C.clayDark); }
       const g = ctx.createLinearGradient(0, FAR_Y - 40, 0, VH);
       g.addColorStop(0, "rgba(40,10,0,.34)"); g.addColorStop(.45, "rgba(40,10,0,.06)"); g.addColorStop(1, "rgba(255,230,190,.10)");
       ctx.fillStyle = g; ctx.fillRect(0, FAR_Y - 40, VW, VH);
       const v = ctx.createRadialGradient(VW / 2, VH * 0.6, VW * 0.25, VW / 2, VH * 0.6, VW * 0.85);
       v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(30,6,0,.35)"); ctx.fillStyle = v; ctx.fillRect(0, 0, VW, VH);
-      // lines, with a faint shadow so they sit on the clay
+      marks.forEach(m => { const p = P(m.x, m.y), a = 0.4 * (1 - (now - m.t) / 6000); ctx.fillStyle = `rgba(110,35,8,${a})`; ctx.beginPath(); ctx.ellipse(p.x, p.y, 6 * p.s, 2.4 * p.s, 0, 0, Math.PI * 2); ctx.fill(); });
       ctx.lineCap = "round";
       ctx.save(); ctx.translate(1.5, 2); ctx.strokeStyle = "rgba(60,15,0,.35)"; courtLines(); ctx.restore();
       ctx.strokeStyle = C.line; courtLines();
     }
-    function courtLines() {
-      seg(-1.22, 0, 1.22, 0, 4); seg(-1.22, 1, 1.22, 1, 4);              // baselines
-      seg(-1.22, 0, -1.22, 1); seg(1.22, 0, 1.22, 1);                     // doubles sidelines
-      seg(-1, 0, -1, 1); seg(1, 0, 1, 1);                                 // singles sidelines
-      seg(-1, SERVICE_NEAR, 1, SERVICE_NEAR); seg(-1, SERVICE_FAR, 1, SERVICE_FAR);
-      seg(0, SERVICE_NEAR, 0, SERVICE_FAR); seg(0, -0.02, 0, 0.02); seg(0, 0.98, 0, 1.02);
-    }
     function drawNet() {
-      const a = P(-1.38, 0.5), b = P(1.38, 0.5), h = 0.095;
-      const at = P(-1.38, 0.5, h), bt = P(1.38, 0.5, h);
-      ctx.fillStyle = "rgba(20,16,16,.18)"; quad(P(-1.38, 0.5), P(1.38, 0.5), P(1.38, 0.535), P(-1.38, 0.535), "rgba(20,16,16,.16)");
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(bt.x, bt.y); ctx.lineTo(at.x, at.y); ctx.closePath();
+      const L = -DW - 0.9, Rr = DW + 0.9, a = P(L, NET), b = P(Rr, NET), top = [];
+      for (let i = 0; i <= 20; i++) { const x = L + (Rr - L) * i / 20; top.push(P(x, NET, netH(x))); }
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); top.forEach(p => ctx.lineTo(p.x, p.y)); ctx.lineTo(b.x, b.y); ctx.closePath();
       ctx.fillStyle = "rgba(20,16,16,.55)"; ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,.18)"; ctx.lineWidth = 1;
-      for (let i = 0; i <= 40; i++) { const x = -1.38 + i * 2.76 / 40, p1 = P(x, 0.5), p2 = P(x, 0.5, h); ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
-      ctx.strokeStyle = C.line; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(at.x, at.y); ctx.lineTo(bt.x, bt.y); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.16)"; ctx.lineWidth = 1;
+      for (let i = 0; i <= 44; i++) { const x = L + (Rr - L) * i / 44, p1 = P(x, NET), p2 = P(x, NET, netH(x)); ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+      ctx.strokeStyle = C.line; ctx.lineWidth = 4; ctx.beginPath(); top.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
       ctx.strokeStyle = C.ink; ctx.lineWidth = 4;
-      for (const p of [[a, at], [b, bt]]) { ctx.beginPath(); ctx.moveTo(p[0].x, p[0].y); ctx.lineTo(p[1].x, p[1].y - 4); ctx.stroke(); }
+      for (const x of [L, Rr]) { const p1 = P(x, NET), p2 = P(x, NET, 1.07); ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y - 3); ctx.stroke(); }
     }
-    function shadow(x, y, r) { const p = P(x, y); ctx.fillStyle = "rgba(60,20,8,.32)"; ctx.beginPath(); ctx.ellipse(p.x, p.y, r * p.s, r * 0.38 * p.s, 0, 0, Math.PI * 2); ctx.fill(); }
-    function racket(cx, cy, s, side, swing, far) {
-      const ang = side * (0.6 - swing * 2.2) + (far ? Math.PI : 0);
+    function shadow(x, y, r, a = 0.32) { const p = P(x, y); ctx.fillStyle = `rgba(60,20,8,${a})`; ctx.beginPath(); ctx.ellipse(p.x, p.y, r * p.s, r * 0.38 * p.s, 0, 0, Math.PI * 2); ctx.fill(); }
+    function racket(cx, cy, s, side, swing, far, charging) {
+      const ang = side * (0.6 - swing * 2.4 + (charging ? -0.9 : 0)) + (far ? Math.PI : 0);
       ctx.save(); ctx.translate(cx + side * 16 * s, cy - 6 * s); ctx.rotate(ang);
       ctx.strokeStyle = C.ink; ctx.lineWidth = 3 * s; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -14 * s); ctx.stroke();
       ctx.fillStyle = "rgba(255,250,232,.6)"; ctx.beginPath(); ctx.ellipse(0, -24 * s, 7 * s, 10 * s, 0, 0, Math.PI * 2); ctx.fill();
       ctx.lineWidth = 2.4 * s; ctx.stroke(); ctx.restore();
     }
-    function drawHan() {
-      shadow(me.x, me.y, 20);
-      const p = P(me.x, me.y), s = p.s * 1.25;
+    function drawHan(now) {
+      shadow(me.x, me.y, 22);
+      const p = P(me.x, me.y), s = p.s * 1.25, run = Math.min(1, Math.hypot(me.vx, me.vy) / 5), leg = Math.sin(now / 70) * 5 * run;
       ctx.lineWidth = 2.4 * s; ctx.strokeStyle = C.ink;
-      ctx.beginPath(); ctx.moveTo(p.x - 6 * s, p.y); ctx.lineTo(p.x - 4 * s, p.y - 16 * s); ctx.moveTo(p.x + 6 * s, p.y); ctx.lineTo(p.x + 4 * s, p.y - 16 * s); ctx.stroke();
-      ctx.fillStyle = "#f2e6cc"; ctx.fillRect(p.x - 8 * s, p.y - 20 * s, 16 * s, 6 * s);              // shorts
+      ctx.beginPath(); ctx.moveTo(p.x - 6 * s, p.y); ctx.lineTo(p.x - 4 * s + leg * s * 0.3, p.y - 16 * s); ctx.moveTo(p.x + 6 * s, p.y); ctx.lineTo(p.x + 4 * s - leg * s * 0.3, p.y - 16 * s); ctx.stroke();
+      ctx.fillStyle = "#f2e6cc"; ctx.fillRect(p.x - 8 * s, p.y - 20 * s, 16 * s, 6 * s);
       ctx.fillStyle = C.red; ctx.beginPath(); ctx.roundRect(p.x - 10 * s, p.y - 40 * s, 20 * s, 22 * s, 5 * s); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#f1c9a5"; ctx.beginPath(); ctx.arc(p.x, p.y - 48 * s, 9 * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(p.x, p.y - 51 * s, 9 * s, Math.PI * 1.05, Math.PI * 1.95); ctx.fill();
-      racket(p.x, p.y - 28 * s, s, me.side, me.swing, false);
+      racket(p.x, p.y - 28 * s, s, me.side, me.swing, false, !!me.charge);
     }
     function drawFrog() {
       shadow(op.x, op.y, 24);
       const p = P(op.x, op.y), s = p.s * 1.55;
-      ctx.lineWidth = 2 * s; ctx.strokeStyle = C.ink;
-      // horse-stance legs
-      ctx.fillStyle = "#efc23a";
-      ctx.beginPath(); ctx.moveTo(p.x - 6 * s, p.y - 12 * s); ctx.lineTo(p.x - 13 * s, p.y - 4 * s); ctx.lineTo(p.x - 11 * s, p.y); ctx.lineTo(p.x - 4 * s, p.y - 8 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(p.x + 6 * s, p.y - 12 * s); ctx.lineTo(p.x + 13 * s, p.y - 4 * s); ctx.lineTo(p.x + 11 * s, p.y); ctx.lineTo(p.x + 4 * s, p.y - 8 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
-      // pear body + belly
+      ctx.lineWidth = 2 * s; ctx.strokeStyle = C.ink; ctx.fillStyle = "#efc23a";
+      for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(p.x + k * 6 * s, p.y - 12 * s); ctx.lineTo(p.x + k * 13 * s, p.y - 4 * s); ctx.lineTo(p.x + k * 11 * s, p.y); ctx.lineTo(p.x + k * 4 * s, p.y - 8 * s); ctx.closePath(); ctx.fill(); ctx.stroke(); }
       ctx.beginPath(); ctx.moveTo(p.x - 4 * s, p.y - 44 * s);
       ctx.bezierCurveTo(p.x - 18 * s, p.y - 30 * s, p.x - 16 * s, p.y - 8 * s, p.x, p.y - 8 * s);
       ctx.bezierCurveTo(p.x + 16 * s, p.y - 8 * s, p.x + 18 * s, p.y - 30 * s, p.x + 6 * s, p.y - 44 * s);
       ctx.quadraticCurveTo(p.x + 1 * s, p.y - 50 * s, p.x - 4 * s, p.y - 44 * s); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#f4dfbd"; ctx.beginPath(); ctx.ellipse(p.x - 1 * s, p.y - 20 * s, 9 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#a8d46a";
-      for (const ex of [-4, 3]) { ctx.beginPath(); ctx.arc(p.x + ex * s, p.y - 42 * s, 3 * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(p.x + ex * s, p.y - 42 * s, 1.5 * s, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#a8d46a"; }
-      racket(p.x, p.y - 26 * s, s, op.side, op.swing, true);
-    }
-    const trail = [];
-    function drawReach(now) {
-      if (!(ball && ball.hitter === 1 && !ball.dead && state === "rally")) return;
-      const p = P(me.x, me.y), a = 0.35 + 0.2 * Math.sin(now / 120);
-      ctx.save(); ctx.strokeStyle = `rgba(246,196,0,${a})`; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
-      ctx.beginPath(); ctx.ellipse(p.x, p.y, REACH_X * HALF_NEAR * p.s, REACH_Y * 300 * p.s * 0.55, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      for (const ex of [-4, 3]) { ctx.fillStyle = "#a8d46a"; ctx.beginPath(); ctx.arc(p.x + ex * s, p.y - 42 * s, 3 * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(p.x + ex * s, p.y - 42 * s, 1.5 * s, 0, Math.PI * 2); ctx.fill(); }
+      racket(p.x, p.y - 26 * s, s, op.side, op.swing, true, false);
     }
     function drawBall() {
-      if (!ball && !(state === "serve" && toss)) { trail.length = 0; return; }
       let x, y, z;
-      if (ball) { x = ball.x; y = ball.y; z = ball.z; }
-      else { const u = Math.min(1, (performance.now() - toss) / 380); x = me.x; y = me.y; z = 0.15 + 0.35 * Math.sin(u * Math.PI); }
-      shadow(x, y, 5);
-      const p = P(x, y, z), r = 6.2 * p.s;
-      trail.push([p.x, p.y, r]); if (trail.length > 7) trail.shift();
+      if (ball) ({ x, y, z } = ball);
+      else if (state === "serve" && serveMeter && server === 0) { const u = Math.min(1, (simNow - serveMeter.t0) / 0.5); x = me.x + 0.3; y = me.y + 0.3; z = 1.2 + 2.0 * Math.sin(u * Math.PI / 2); }
+      else { trail.length = 0; return; }
+      shadow(x, y, 5, Math.max(0.12, 0.38 - z * 0.05));
+      const p = P(x, y, z), r = Math.max(3, 6.6 * p.s);
+      trail.push([p.x, p.y, r]); if (trail.length > 8) trail.shift();
       trail.forEach(([tx, ty, tr], i) => { ctx.fillStyle = `rgba(227,242,74,${(i + 1) / trail.length * 0.28})`; ctx.beginPath(); ctx.arc(tx, ty, tr * (0.5 + i / trail.length * 0.5), 0, Math.PI * 2); ctx.fill(); });
-      ctx.fillStyle = "#e3f24a"; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.6;
-      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(p.x - r * 0.9, p.y, r * 0.8, -0.9, 0.9); ctx.stroke();
+      ctx.fillStyle = "#e3f24a"; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(p.x - r * 0.9, p.y, r * 0.8, -0.9, 0.9); ctx.stroke();
+    }
+    function label(t, y) { ctx.save(); ctx.font = "700 12px 'Courier Prime', monospace"; ctx.textAlign = "center"; ctx.fillStyle = "#fff6e6"; ctx.fillText(t, VW / 2, y); ctx.restore(); }
+    function drawHUD() {
+      const W = 260, H = 14, x0 = VW / 2 - W / 2, y0 = VH - 34;
+      // aim marker on 奶蛙's side while charging
+      if (me.charge && state === "rally") {
+        const type = resolveShot(me.charge.button, chargeOf(me.charge), me.aimY), s = SHOT[type];
+        const ty = type === "drop" ? NET + 2.4 : type === "lob" ? LEN - s.depth : LEN - (s.depth + (me.aimY < 0 ? -me.aimY * 3.4 : -me.aimY * 0.9));
+        const p = P(me.aimX * 3.85, ty);
+        ctx.strokeStyle = C.yellow; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.ellipse(p.x, p.y, 14 * p.s, 6 * p.s, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(p.x - 6, p.y); ctx.lineTo(p.x + 6, p.y); ctx.moveTo(p.x, p.y - 4); ctx.lineTo(p.x, p.y + 4); ctx.stroke();
+      }
+      if (state === "serve" && server === 0) {                                          // serve power meter: green 80–92%, red past it
+        const m = serveMeter ? meterValue() : 0;
+        ctx.fillStyle = "rgba(0,0,0,.72)"; ctx.fillRect(x0 - 4, y0 - 4, W + 8, H + 8);
+        ctx.fillStyle = "#3a312b"; ctx.fillRect(x0, y0, W, H);
+        ctx.fillStyle = "#2f9e5b"; ctx.fillRect(x0 + W * 0.8, y0, W * 0.12, H);
+        ctx.fillStyle = "#b8231b"; ctx.fillRect(x0 + W * 0.92, y0, W * 0.08, H);
+        ctx.fillStyle = C.yellow; ctx.fillRect(x0, y0 + 3, W * m, H - 6);
+        return label(`${secondServe ? "2ND" : "1ST"} SERVE · ${serveMeter ? "RELEASE IN THE GREEN · ← → TO AIM" : "HOLD A SHOT"}`, y0 - 12);
+      }
+      if (!(state === "rally" && ball && ball.hitter === 1 && !ball.netted)) return;
+      const pr = predict(ball, contactPlane(me), canVolley(me));
+      if (!pr || pr.t > 1.1) return;
+      // timing meter: the marker slides toward the contact line (green ±45 ms, amber ±110 ms of game time)
+      ctx.fillStyle = "rgba(0,0,0,.72)"; ctx.fillRect(x0 - 4, y0 - 4, W + 8, H + 8);
+      ctx.fillStyle = "#3a312b"; ctx.fillRect(x0, y0, W, H);
+      const cx = x0 + W * 0.78, px = t => cx + (t / 0.9) * (W * 0.78);
+      ctx.fillStyle = "#b8862a"; ctx.fillRect(px(-0.11), y0, px(0.11) - px(-0.11), H);
+      ctx.fillStyle = "#2f9e5b"; ctx.fillRect(px(-0.045), y0, px(0.045) - px(-0.045), H);
+      const mx = clamp(px(-pr.t), x0, x0 + W);
+      ctx.fillStyle = me.charge ? "#fff" : C.yellow; ctx.fillRect(mx - 3, y0 - 6, 6, H + 12);
+      if (me.charge) {                                                                   // power bar under it; red = flat bomb (drive)
+        const c = chargeOf(me.charge);
+        ctx.fillStyle = "#3a312b"; ctx.fillRect(x0, y0 + H + 5, W, 5);
+        ctx.fillStyle = c >= 0.85 && me.charge.button === "drive" ? "#ff5a4a" : C.yellow; ctx.fillRect(x0, y0 + H + 5, W * Math.min(1, c / 1.25), 5);
+      }
+      const typeNow = me.charge ? resolveShot(me.charge.button, chargeOf(me.charge), me.aimY) : null;
+      label(typeNow ? `${SHOT[typeNow].label} · RELEASE IN THE GREEN` : (pr.volley ? "VOLLEY · HOLD A SHOT" : "HOLD A SHOT"), y0 - 12);
     }
     function drawScore() {
-      const x = 16, y = 16, rowH = 30, w = 186;
+      const x = 16, y = 16, rowH = 30, w = 196;
       ctx.save();
       ctx.fillStyle = C.red; ctx.fillRect(x + 4, y + 4, w, rowH * 2);
       ctx.fillStyle = "#0b0908"; ctx.fillRect(x, y, w, rowH * 2);
-      ctx.font = "700 17px 'Anton', Impact, sans-serif"; ctx.textBaseline = "middle";
-      for (let i = 0; i < 2; i++) {
+      ctx.font = "17px 'Anton', Impact, sans-serif"; ctx.textBaseline = "middle";
+      ["HAN", "奶蛙"].forEach((n, i) => {
         const ry = y + rowH * i + rowH / 2;
-        ctx.textAlign = "left"; ctx.fillStyle = "#f2e6cc";
-        ctx.fillText(names[i], x + 22, ry);
+        ctx.textAlign = "left"; ctx.fillStyle = "#f2e6cc"; ctx.fillText(n, x + 22, ry);
         if (server === i && state !== "over") { ctx.fillStyle = C.yellow; ctx.beginPath(); ctx.arc(x + 10, ry, 4, 0, Math.PI * 2); ctx.fill(); }
-        ctx.textAlign = "center"; ctx.fillStyle = "#f2e6cc"; ctx.fillText(games[i], x + 120, ry);
-        ctx.fillStyle = C.yellow; ctx.fillRect(x + 140, y + rowH * i + 3, 42, rowH - 6);
-        ctx.fillStyle = "#0b0908"; ctx.fillText(state === "over" ? "" : scoreText(i), x + 161, ry + 1);
-      }
+        ctx.textAlign = "center"; ctx.fillStyle = "#f2e6cc"; ctx.fillText(games[i], x + 128, ry);
+        ctx.fillStyle = C.yellow; ctx.fillRect(x + 148, y + rowH * i + 3, 44, rowH - 6);
+        ctx.fillStyle = "#0b0908"; ctx.fillText(state === "over" ? "" : scoreText(i), x + 170, ry + 1);
+      });
+      ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(x, y + rowH * 2 + 8, w, 8);
+      ctx.fillStyle = me.stamina > 0.35 ? "#7dffb0" : "#ff6b6b"; ctx.fillRect(x + 1, y + rowH * 2 + 9, (w - 2) * me.stamina, 6);
+      ctx.font = "700 9px 'Courier Prime', monospace"; ctx.fillStyle = "#fff6e6"; ctx.textAlign = "left"; ctx.fillText("STAMINA", x + 2, y + rowH * 2 + 24);
       ctx.restore();
+    }
+    function drawPopups(now) {
+      popups.forEach(pp => {
+        const age = (now - pp.t) / 1100, p = P(pp.x, pp.y), y = p.y - 90 * p.s - age * 24;
+        ctx.save(); ctx.globalAlpha = 1 - age; ctx.font = "16px 'Anton', Impact, sans-serif"; ctx.textAlign = "center";
+        ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0,0,0,.8)"; ctx.strokeText(pp.text, p.x, y); ctx.fillStyle = pp.color; ctx.fillText(pp.text, p.x, y); ctx.restore();
+      });
     }
     function drawSub(now) {
-      if (!sub || now > subUntil) return;
-      ctx.save(); ctx.font = "700 18px 'Courier Prime', monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      const text = (sub.who ? `[${sub.who}] ` : "") + sub.text;
-      const lines = []; let cur = "";
+      if (!subtitle || now > subUntil) return;
+      ctx.save(); ctx.font = "700 17px 'Courier Prime', monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      const text = (subtitle.who ? `[${subtitle.who}] ` : "") + subtitle.text, lines = []; let cur = "";
       for (const word of text.split(" ")) { const t = cur ? cur + " " + word : word; if (ctx.measureText(t).width > VW - 80) { lines.push(cur); cur = word; } else cur = t; }
       lines.push(cur);
-      const h = lines.length * 26 + 14, top = VH - 30 - h;
-      ctx.fillStyle = "rgba(0,0,0,.78)"; ctx.fillRect(28, top, VW - 56, h);
-      lines.forEach((l, i) => { ctx.fillStyle = C.yellow; ctx.fillText(l, VW / 2, top + 20 + i * 26); });
+      const h = lines.length * 24 + 12, top = VH - 64 - h;
+      ctx.fillStyle = "rgba(0,0,0,.8)"; ctx.fillRect(28, top, VW - 56, h);
+      lines.forEach((l, i) => { ctx.fillStyle = C.yellow; ctx.fillText(l, VW / 2, top + 18 + i * 24); });
       ctx.restore();
     }
-    function drawPrompt(now) {
-      if (state === "serve" && server === 0 && !toss) {
-        const p = P(me.x, me.y), a = 0.55 + 0.45 * Math.sin(now / 220);
-        ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = C.ink; ctx.font = "700 13px 'Courier Prime', monospace"; ctx.textAlign = "center";
-        ctx.fillText("TAP / SPACE TO SERVE", p.x, p.y + 30); ctx.restore();
-      }
-    }
 
-    let last = performance.now();
+    let last = performance.now(), prevBounces = 0;
     function frame(now) {
-      const dt = Math.min(0.033, (now - last) / 1000); last = now;
-      if (state !== "title") update(dt, now);
+      const rdt = Math.min(0.033, (now - last) / 1000); last = now;
+      if (state !== "title" && !document.hidden) update(rdt);
+      if (ball && ball.bounces > prevBounces && ball.bounces <= 2) marks.push({ x: ball.x, y: ball.y, t: now });
+      prevBounces = ball ? ball.bounces : 0;
+      while (marks.length && now - marks[0].t > 6000) marks.shift();
       ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
-      ctx.fillStyle = C.paper; ctx.fillRect(0, 0, VW, VH);
-      drawCourt();
-      // depth sort: far player, net, near player; ball by depth
-      const ballFar = ball ? ball.y > 0.5 : false;
+      drawCourt(now);
+      const ballFar = ball ? ball.y > NET : false;
       drawFrog();
-      if (ball && ballFar) drawBall();
+      if (ballFar) drawBall();
       drawNet();
-      if (!ball || !ballFar) drawBall();
-      drawReach(now);
-      drawHan();
-      drawScore(); drawPrompt(now); drawSub(now);
+      if (!ballFar) drawBall();
+      drawHan(now);
+      drawHUD(); drawScore(); drawPopups(now); drawSub(now);
       requestAnimationFrame(frame);
     }
+    stats = freshStats(); placeForPoint(); state = "title";
     requestAnimationFrame(frame);
-    document.addEventListener("visibilitychange", () => { last = performance.now(); });
   })();
   </script>
 </PageLayout>
 
 <style is:global>
 .court-heading{max-width:none}
-.court-wrap{position:relative;max-width:560px;margin:0 auto 16px;border:2px solid var(--strong);box-shadow:8px 8px 0 var(--hard);background:#efd8a4;line-height:0}
+.court-wrap{position:relative;max-width:560px;margin:0 auto 12px;border:2px solid var(--strong);box-shadow:8px 8px 0 var(--hard);background:#a9471f;line-height:0}
 html.night .court-wrap{box-shadow:8px 8px 0 #ff2d55}
-.court-wrap canvas{display:block;touch-action:none;cursor:crosshair;max-width:100%}
-.court-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(11,9,8,.86);color:#f2e6cc;
-  line-height:1.4;text-align:center;padding:24px}
+.court-wrap canvas{display:block;touch-action:none;max-width:100%;outline:none}
+.court-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(11,9,8,.88);color:#f2e6cc;
+  line-height:1.4;text-align:center;padding:22px}
 .court-card[hidden]{display:none}
 .cc-kicker{margin:0;font-family:var(--anton);font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:#fff}
 .cc-title{margin:0;font-family:var(--anton);font-weight:400;font-size:clamp(40px,10vw,64px);line-height:1;color:#f6c400;text-transform:uppercase}
 .cc-title span{font-size:.5em;color:#f2e6cc;vertical-align:middle;margin:0 .2em}
-.cc-how{list-style:none;margin:6px 0 4px;padding:0;font:13px/1.7 var(--mono);color:#e9e2cf}
-.cc-how b{color:#f6c400;margin-right:.5em;letter-spacing:.08em;text-transform:uppercase}
+.cc-levels{display:flex;gap:6px;margin-top:4px}
+.cc-levels button{font:700 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:none;color:#f2e6cc;border:1.5px solid #f2e6cc;padding:7px 10px;cursor:pointer}
+.cc-levels button[aria-pressed="true"]{background:#f6c400;color:#141010;border-color:#f6c400}
 .cc-play{font:700 16px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;background:#d3241c;color:#f6c400;border:2px solid #f6c400;padding:12px 22px;cursor:pointer;
-  box-shadow:4px 4px 0 #f6c400;margin-top:8px}
+  box-shadow:4px 4px 0 #f6c400;margin-top:6px}
 .cc-play:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #f6c400}
-.court-note{text-align:center;font:12px/1.6 var(--mono);color:var(--quiet);margin:0 0 30px}
+.cc-tip{margin:2px 0 0;font:12px/1.5 var(--mono);color:#cfc6b2}
+.cc-stats{font:13px/1.5 var(--mono)}
+.cc-stats table{border-collapse:collapse;margin:0 auto 6px}
+.cc-stats th,.cc-stats td{padding:2px 12px;text-align:center}
+.cc-stats th{font-family:var(--anton);font-weight:400;letter-spacing:.1em;color:#f6c400}
+.cc-stats td:first-child{text-align:left;color:#cfc6b2}
+.cc-stats p{margin:4px 0 0;color:#cfc6b2;font-size:12px}
+/* touch pad: a stick on the left, two shot buttons on the right */
+.pad{max-width:560px;margin:0 auto 14px;display:flex;justify-content:space-between;align-items:center;gap:14px;user-select:none;-webkit-user-select:none;touch-action:none}
+.pad[hidden]{display:none}
+.stick{position:relative;width:128px;height:128px;border-radius:50%;background:rgba(20,16,16,.08);border:2px solid var(--strong);touch-action:none;flex:none}
+.knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px;border-radius:50%;background:var(--strong);box-shadow:0 3px 0 rgba(0,0,0,.3)}
+.shots{display:flex;gap:10px;flex:1;max-width:240px}
+.shots button{flex:1;height:96px;border:2px solid #141010;border-radius:50%;font:700 14px/1.1 var(--mono);letter-spacing:.06em;color:#141010;box-shadow:3px 3px 0 #141010;
+  touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.shots button small{font-size:8.5px;letter-spacing:.02em;font-weight:700;opacity:.75}
+.shots button.down{transform:translate(2px,2px);box-shadow:1px 1px 0 #141010}
+.s-drive{background:#f6c400}.s-touch{background:#8fd3ff}
+.keys{max-width:560px;margin:0 auto 30px;font:12px/1.7 var(--mono);color:var(--quiet);text-align:center}
+.keys b{color:var(--strong);letter-spacing:.06em}
+@media(hover:none){.keys{display:none}}
 </style>
