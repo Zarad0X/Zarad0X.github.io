@@ -77,6 +77,17 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
       <button class="zoom-out" id="zoomOut" type="button" hidden>← Wide shot</button>
     </div>
 
+    <nav class="strip" id="strip" aria-label="Scenes">
+      <ol>
+        {cards.map((p, i) => (
+          <li><button class="frame" type="button" data-i={i}>
+            <span class="f-n">{p.n}</span><span class="f-zh">{p.zh.split(" · ")[0]}</span>
+            <span class="sr">{p.slug}. {p.en}.{p.note?.zh ? ` ${p.note.zh}.` : ""}{p.note?.en ? ` ${p.note.en}` : ""}</span>
+          </button></li>
+        ))}
+      </ol>
+    </nav>
+
     <aside class="scene" id="scene" hidden aria-live="polite">
       <button class="scene-x" id="sceneClose" type="button" aria-label="Close scene">✕</button>
       <p class="scene-no" id="sceneNo"></p>
@@ -89,17 +100,6 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
     </aside>
   </div>
 
-  <h2 class="list-sign">Shot list</h2>
-  <ol class="shot-list">
-    {cards.map((p, i) => (
-      <li><button type="button" data-i={i}>
-        <span class="sl-n">{p.n}</span>
-        <span class="sl-body"><span class="sl-slug">{p.slug}</span><span class="sl-name">{p.zh}{p.en !== p.zh && <em>{p.en}</em>}</span>
-          {(p.note?.en || p.note?.zh) && <span class="sl-note">{p.note?.zh}{p.note?.zh && p.note?.en ? " · " : ""}{p.note?.en}</span>}</span>
-        <span class="sl-kind">{p.kindLabel}</span>
-      </button></li>
-    ))}
-  </ol>
   <p class="credits">Coastline © OpenStreetMap contributors (ODbL). District boundaries: Home Affairs Department, HKSAR, via DATA.GOV.HK. Drawn and simplified for this page; not for navigation.</p>
 
   <script is:inline define:vars={{ cards, pts, W, H }}>
@@ -160,6 +160,8 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
       active = i;
       const c = cards[i];
       pins.forEach((p, j) => p.classList.toggle("on", j === i));
+      frames.forEach((f, j) => { f.classList.toggle("on", j === i); f.setAttribute("aria-current", j === i ? "true" : "false"); });
+      frames[i].scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest", inline: "center" });
       set("sceneNo", `Scene ${c.n} / ${String(cards.length).padStart(2, "0")}`);
       set("sceneSlug", c.slug);
       set("sceneZh", c.zh); set("sceneEn", c.en === c.zh ? "" : c.en);
@@ -170,12 +172,11 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
       camera(i);
     }
     function close() {
-      active = -1; scene.hidden = true; pins.forEach(p => p.classList.remove("on")); camera(-1);
+      active = -1; scene.hidden = true; pins.forEach(p => p.classList.remove("on")); frames.forEach(f => { f.classList.remove("on"); f.setAttribute("aria-current", "false"); }); camera(-1);
     }
     pins.forEach((el, i) => el.addEventListener("click", () => (active === i ? close() : open(i))));
-    document.querySelectorAll(".shot-list button").forEach(b => b.addEventListener("click", () => {
-      open(+b.dataset.i); scout.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-    }));
+    const frames = [...document.querySelectorAll("#strip .frame")];
+    frames.forEach(b => b.addEventListener("click", () => (active === +b.dataset.i ? close() : open(+b.dataset.i))));
     document.getElementById("sceneClose").addEventListener("click", close);
     zoomOut.addEventListener("click", close);
     document.getElementById("prevScene").addEventListener("click", () => open((active - 1 + cards.length) % cards.length));
@@ -200,7 +201,7 @@ const cards = places.map((p, i) => ({ ...p, n: pad(i + 1), kindLabel: kindName[p
 
 <style is:global>
 .scout-heading{max-width:none}
-.scout{position:relative;display:grid;grid-template-columns:1fr;gap:18px;margin:6px 0 40px;
+.scout{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:18px;margin:6px 0 40px;
   --paper:#f7ecd2;--sea:#d8cfb6;--dot:rgba(29,42,74,.32);--ink:#141010;--pin:#d3241c;--string:#c8102e;--label:rgba(20,16,16,.55)}
 html.night .scout{--paper:#0e131d;--sea:#06090f;--dot:rgba(92,225,255,.16);--ink:#5ce1ff;--pin:#ff2d55;--string:#ff2d55;--label:rgba(160,230,255,.55)}
 
@@ -254,11 +255,11 @@ html.night .placard{box-shadow:0 0 0 2px #000,0 0 14px rgba(255,255,255,.25)}
 .inset-bg{fill:#e6dcc3}.inset-land{fill:#fffbe8;stroke:#141010;stroke-width:.5}.inset-frame{fill:rgba(211,36,28,.12);stroke:#d3241c;stroke-width:1.4}
 .inset-t{font:700 7px "Courier Prime",monospace;letter-spacing:.12em;fill:#141010}
 html.night .inset{background:#0e131d;border-color:#2a3550}html.night .inset-bg{fill:#06090f}html.night .inset-land{fill:#121826;stroke:#5ce1ff}html.night .inset-t{fill:#9fe8ff}
-.zoom-out{position:absolute;right:18px;top:20px;z-index:6;font:700 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.06em;background:#141010;color:#f6c400;
+.zoom-out{display:none;position:absolute;right:18px;top:20px;z-index:6;font:700 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.06em;background:#141010;color:#f6c400;
   border:2px solid #141010;padding:8px 11px;cursor:pointer;box-shadow:3px 3px 0 #d3241c}
 
 /* scene card */
-.scene{position:absolute;right:26px;bottom:26px;z-index:7;width:min(360px,calc(100% - 52px));background:#fffbe8;color:#141010;border:2px solid #141010;
+.scene{position:absolute;right:26px;top:26px;z-index:7;width:min(360px,calc(100% - 52px));background:#fffbe8;color:#141010;border:2px solid #141010;
   box-shadow:6px 6px 0 rgba(20,16,16,.9);padding:16px 18px 14px;animation:scene-in .35s cubic-bezier(.34,1.56,.64,1)}
 .scene[hidden]{display:none}
 @keyframes scene-in{from{opacity:0;transform:translateY(14px) rotate(1deg)}to{opacity:1;transform:none}}
@@ -280,22 +281,25 @@ html.night .scene{box-shadow:6px 6px 0 #ff2d55}
 .scene-nav{display:flex;justify-content:space-between;margin-top:12px}
 .scene-nav button{font:700 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:none;border:0;border-bottom:2px solid #d3241c;color:#141010;padding:4px 0;cursor:pointer}
 
-/* shot list */
-.list-sign{display:inline-block;font-family:var(--anton);font-weight:400;font-size:18px;letter-spacing:.22em;text-transform:uppercase;background:var(--strong);color:var(--yellow);
-  padding:6px 12px 4px;margin:10px 0 16px;transform:rotate(-1.5deg);box-shadow:3px 3px 0 var(--red)}
-html.night .list-sign{background:#000;color:var(--yellow);border:1.5px solid #3a2f27}
-.shot-list{list-style:none;margin:0 0 24px;padding:0;border-top:2px solid var(--strong)}
-.shot-list button{width:100%;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:baseline;text-align:left;background:none;border:0;border-bottom:1px dashed var(--line);
-  padding:12px 4px;cursor:pointer;color:var(--text);font:inherit}
-.shot-list button:hover{background:var(--tint)}
-.sl-n{font-family:var(--anton);font-size:22px;color:var(--red)}
-html.night .sl-n{color:var(--yellow)}
-.sl-body{display:flex;flex-direction:column;gap:3px}
-.sl-slug{font:700 12px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.03em}
-.sl-name{font-family:"Noto Serif SC","Songti SC",serif;font-weight:700;font-size:16px}
-.sl-name em{font-family:var(--mono);font-style:normal;font-weight:400;font-size:13px;color:var(--muted);margin-left:6px}
-.sl-note{font:13px/1.5 var(--mono);color:var(--muted)}
-.sl-kind{font:700 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;border:1.5px solid var(--strong);padding:4px 7px;white-space:nowrap}
+/* film strip of scenes */
+.strip{position:relative;min-width:0;background:#141010;padding:15px 0;border:2px solid #141010;box-shadow:6px 6px 0 var(--hard)}
+html.night .strip{border-color:#2a3550;box-shadow:6px 6px 0 #ff2d55}
+.strip::before,.strip::after{content:"";position:absolute;left:0;right:0;height:6px;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 7px,#efd8a4 7px 14px,transparent 14px 20px);opacity:.8}
+.strip::before{top:4px}.strip::after{bottom:4px}
+.strip ol{list-style:none;margin:0;padding:0 8px;display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none}
+.strip ol::-webkit-scrollbar{display:none}
+.strip li{flex:1 0 auto;scroll-snap-align:center}
+.frame{position:relative;width:100%;min-width:74px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 10px;
+  background:#2a2420;color:#efe3c6;border:0;border-radius:3px;cursor:pointer;transition:background .2s,color .2s,transform .2s}
+.frame:hover{background:#3a312b}
+.frame.on{background:#f6c400;color:#141010;transform:translateY(-1px)}
+html.night .frame.on{background:#ff2d55;color:#fff}
+.frame:focus-visible{outline:2px solid #f6c400;outline-offset:2px}
+.f-n{font:700 10px/1 var(--mono);letter-spacing:.1em;opacity:.7}
+.frame.on .f-n{opacity:1}
+.f-zh{font-family:"Noto Serif SC","Songti SC",serif;font-weight:700;font-size:14px;line-height:1.1;white-space:nowrap}
+.sr{position:absolute;left:0;top:0;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
 .credits{font:11px/1.6 var(--mono);color:var(--quiet);margin:0 0 10px}
 
 @media(max-width:760px){
@@ -304,10 +308,11 @@ html.night .sl-n{color:var(--yellow)}
   .inset{display:none}
   .tape{width:60px;height:18px}
   .labels .dz{font-size:20px}.labels .de{display:none}.labels .water{font-size:15px}.labels .water tspan:first-child{font-size:18px}
-  .scene{position:static;width:auto;margin-top:-4px}
-  .zoom-out{right:10px;top:12px;font-size:10px;padding:6px 8px}
+  .scene{position:relative;right:auto;top:auto;width:auto;margin-top:-4px}
+  .zoom-out{display:block;right:10px;top:12px;font-size:10px;padding:6px 8px}
+  .zoom-out[hidden]{display:none}
   .placard b{font-size:13px}
-  .shot-list button{grid-template-columns:34px 1fr;gap:8px}.sl-kind{display:none}
+  .frame{min-width:66px;height:48px;padding:0 8px}.f-zh{font-size:13px}
 }
 @media(prefers-reduced-motion:reduce){.stage,.string.draw{transition:none}.scene{animation:none}}
 </style>
