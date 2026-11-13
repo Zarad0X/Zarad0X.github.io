@@ -58,7 +58,7 @@ main.wrap{display:grid;gap:22px;padding-block:22px}
 .in.num{font:400 22px var(--f-num);letter-spacing:.03em;text-align:center;padding:6px}
 .hint{font-size:13px;color:var(--dim);min-height:1.2em;margin:0}
 .hint a{color:var(--red);font-weight:700}
-.btn{border:3px solid var(--ink);background:var(--ink);color:var(--yellow);padding:10px 16px;font:400 20px var(--f-cn);letter-spacing:.12em;border-radius:0}
+.btn{text-decoration:none;display:inline-block;border:3px solid var(--ink);background:var(--ink);color:var(--yellow);padding:10px 16px;font:400 20px var(--f-cn);letter-spacing:.12em;border-radius:0}
 .btn.alt{background:var(--paper);color:var(--ink)}
 .btn.red{background:var(--red);border-color:var(--ink);color:var(--paper)}
 .btn.sm{font-size:16px;padding:6px 12px}
@@ -507,22 +507,55 @@ async function connect(tok){
     sync.gistId=id;saveSync();syncMsg='';await doSync();toast('已连接，开始同步');
   }catch(e){sync={};saveSync();syncMsg='连接失败：'+e.message;renderSync()}
 }
+const TOKEN_URL='https://github.com/settings/tokens/new?scopes=gist&description=lianggongbu-sync';
 function renderSync(){
   const box=$('#syncBox');
   if(!sync.gistId){
-    box.innerHTML=`<p class="hint">在每台设备上填一次 GitHub 令牌，记录就会存进你 GitHub 账号里一个不公开的 Gist，手机和电脑自动同步。</p>
-      <p class="hint">1. 打开 <a href="https://github.com/settings/tokens/new?scopes=gist&description=lianggongbu" target="_blank" rel="noopener">GitHub 新建令牌页面</a>，只勾选 gist，有效期选「No expiration」，生成后复制。<br>2. 粘贴到下面，点连接。另一台设备用同一个令牌。</p>
-      <div class="quick"><input class="in" id="tok" type="password" placeholder="ghp_..." autocomplete="off"><button class="btn sm" id="tokBtn">连接</button></div>
+    box.innerHTML=`<p class="hint">记录会存进你 GitHub 账号里一个不公开的 Gist，手机和电脑自动同步。只需要在一台设备上做一次：</p>
+      <div class="row"><a class="btn sm" href="${TOKEN_URL}" target="_blank" rel="noopener">1. 去 GitHub 生成</a><button class="btn red sm" id="pasteBtn">2. 粘贴并连接</button></div>
+      <p class="hint">在 GitHub 页面里直接点最下面的「Generate token」，然后复制那串 ghp_ 开头的令牌，回来点第 2 步。其他设备之后扫码连接就行。</p>
+      <details><summary class="hint" style="cursor:pointer">粘贴不了？手动填</summary>
+        <div class="quick" style="margin-top:6px"><input class="in" id="tok" type="password" placeholder="ghp_..." autocomplete="off"><button class="btn sm" id="tokBtn">连接</button></div></details>
       ${syncMsg?`<p class="hint" style="color:var(--red)">${esc(syncMsg)}</p>`:''}`;
-    $('#tokBtn').onclick=()=>{const v=$('#tok').value;if(!v.trim()){toast('先粘贴令牌');return}connect(v)};
+    $('#pasteBtn').onclick=async()=>{
+      let v='';try{v=(await navigator.clipboard.readText()).trim()}catch(e){}
+      if(!/^(ghp_|github_pat_|gho_)\w+/.test(v)){toast('剪贴板里没有令牌，请先在 GitHub 复制，或用手动填');return}
+      connect(v);
+    };
+    $('#tokBtn').onclick=()=>{const v=$('#tok').value;if(!v.trim()){toast('先填令牌');return}connect(v)};
   }else{
     const t=sync.last?new Date(sync.last):null;
     box.innerHTML=`<p class="hint">${syncMsg?esc(syncMsg):t?`已连接 · 上次同步 ${t.getMonth()+1}月${t.getDate()}日 ${pad(t.getHours())}:${pad(t.getMinutes())}`:'已连接'}</p>
-      <div class="row"><button class="btn sm" id="syncNow">立即同步</button><button class="btn alt sm" id="syncOff">在这台设备上断开</button></div>`;
+      <div class="row"><button class="btn sm" id="syncNow">立即同步</button><button class="btn red sm" id="pairBtn">连接另一台设备</button><button class="btn alt sm" id="syncOff">断开</button></div>
+      <div id="pair" hidden style="display:grid;gap:8px;justify-items:start">
+        <div id="qr" style="background:#fff;padding:10px;border:3px solid var(--ink)"></div>
+        <p class="hint">用手机相机扫这个码，打开后就自动连好了。码里含有你的令牌，别给别人看，用完点「收起」。</p>
+        <button class="btn alt sm" id="pairHide">收起</button>
+      </div>`;
     $('#syncNow').onclick=()=>doSync();
     $('#syncOff').onclick=()=>{sync={};saveSync();syncMsg='';renderSync();toast('已断开，本机记录还在')};
+    $('#pairBtn').onclick=()=>showPair();
+    $('#pairHide').onclick=()=>{$('#pair').hidden=true;$('#qr').innerHTML=''};
   }
 }
+function pairLink(){
+  const base=location.protocol.startsWith('http')?location.origin+location.pathname:'https://zarad0x.github.io/vol1/';
+  return base+'#pair='+encodeURIComponent(sync.token)+'.'+encodeURIComponent(sync.gistId);
+}
+function showPair(){
+  const box=$('#pair'),q=$('#qr');box.hidden=false;q.innerHTML='';
+  const draw=()=>{try{new QRCode(q,{text:pairLink(),width:200,height:200,correctLevel:QRCode.CorrectLevel.M})}catch(e){q.textContent='二维码生成失败'}};
+  if(window.QRCode)return draw();
+  const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  sc.onload=draw;sc.onerror=()=>{q.textContent='二维码加载失败，检查一下网络'};document.head.appendChild(sc);
+}
+/* arriving from a pairing QR code: take the token, then wipe it from the address bar */
+(function(){
+  const m=location.hash.match(/^#pair=([^.]+)\.(.+)$/);if(!m)return;
+  history.replaceState(null,'',location.pathname+location.search);
+  sync={token:decodeURIComponent(m[1]),gistId:decodeURIComponent(m[2])};saveSync();
+  setTimeout(()=>toast('已连接，正在同步'),300);
+})();
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')doSync()});
 
 fillProfile();
