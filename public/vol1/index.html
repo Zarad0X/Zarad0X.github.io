@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="练功簿">
+<meta name="theme-color" content="#111111">
+<title>练功簿</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+/* Layout: one column of "chapter" cards on a tracksuit-yellow ground; black title bands, one red slash as the only ornament. Single committed look (no dark variant). */
+:root{
+  --yellow:#F3C51B; --ink:#111111; --paper:#FFF8DC; --red:#C8102E; --dim:#5A4A12; --line:#111111;
+  --f-cn:"ZCOOL QingKe HuangYou","PingFang SC","Noto Sans SC",sans-serif;
+  --f-num:"Anton","Impact","Arial Narrow",sans-serif;
+  --f-body:"Noto Sans SC","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--yellow);color:var(--ink);font:15px/1.55 var(--f-body);-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--ink);z-index:10}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:620px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* title band */
+.hero{background:var(--ink);color:var(--yellow);position:relative;overflow:hidden}
+.hero .wrap{padding-block:26px 22px;position:relative;z-index:1;display:grid;gap:6px}
+.hero h1{margin:0;font:400 64px/0.95 var(--f-cn);letter-spacing:.04em}
+.hero .vol{font:400 15px/1 var(--f-num);letter-spacing:.3em;color:var(--paper);opacity:.85}
+.hero .today{font-size:15px;color:var(--paper);margin:0}
+.hero .today b{color:var(--yellow);font-weight:700}
+.slash{position:absolute;right:-40px;top:50%;width:360px;height:14px;background:var(--red);transform:rotate(-24deg);transform-origin:center;z-index:0}
+.slash::after{content:"";position:absolute;left:30px;right:120px;top:18px;height:4px;background:var(--red)}
+@media (prefers-reduced-motion:no-preference){.slash{animation:cut .5s cubic-bezier(.2,.9,.2,1) both}@keyframes cut{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}}
+
+main.wrap{display:grid;gap:22px;padding-block:22px}
+.ch{background:var(--paper);border:3px solid var(--line);display:grid}
+.ch-h{background:var(--ink);color:var(--yellow);padding:10px 14px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ch-h h2{margin:0;font:400 26px/1.1 var(--f-cn);letter-spacing:.06em}
+.ch-h span{font:400 13px var(--f-num);letter-spacing:.25em;color:var(--paper)}
+.ch-b{padding:14px;display:grid;gap:12px}
+
+.seg{display:grid;grid-template-columns:1fr 1fr;border:3px solid var(--ink)}
+.seg button{border:0;background:var(--paper);padding:9px;font:400 20px var(--f-cn);letter-spacing:.1em}
+.seg button.on{background:var(--ink);color:var(--yellow)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.f{display:grid;gap:3px;min-width:0}
+.f>span{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--dim)}
+.in{width:100%;border:2px solid var(--ink);background:#fff;padding:9px 10px;border-radius:0}
+.in.num{font:400 22px var(--f-num);letter-spacing:.03em;text-align:center;padding:6px}
+.hint{font-size:13px;color:var(--dim);min-height:1.2em;margin:0}
+.hint a{color:var(--red);font-weight:700}
+.btn{border:3px solid var(--ink);background:var(--ink);color:var(--yellow);padding:10px 16px;font:400 20px var(--f-cn);letter-spacing:.12em;border-radius:0}
+.btn.alt{background:var(--paper);color:var(--ink)}
+.btn.red{background:var(--red);border-color:var(--ink);color:var(--paper)}
+.btn.sm{font-size:16px;padding:6px 12px}
+.btn:active{transform:translate(2px,2px)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.quick{display:flex;gap:8px}
+.quick .in{flex:1;min-width:0}
+
+/* entries */
+.day{display:grid;gap:0}
+.day+.day{margin-top:14px}
+.day-h{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid var(--ink);padding-bottom:4px;margin-bottom:2px}
+.day-h b{font:400 20px var(--f-cn);letter-spacing:.06em}
+.day-h small{font:400 14px var(--f-num);letter-spacing:.12em;color:var(--dim)}
+.e{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--dim)}
+.e:last-child{border-bottom:0}
+.tag{font:700 11px var(--f-body);letter-spacing:.1em;padding:2px 6px;background:var(--ink);color:var(--yellow)}
+.tag.t{background:var(--red);color:var(--paper)}
+.e .nm{font-weight:700;min-width:0;overflow-wrap:anywhere}
+.e .nm small{display:block;font-weight:400;font-size:12.5px;color:var(--dim)}
+.e .v{font:400 20px var(--f-num);letter-spacing:.03em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.x{border:2px solid var(--ink);background:transparent;width:32px;height:32px;font-weight:700;line-height:1;padding:0}
+.x.sure{width:auto;padding:0 8px;background:var(--red);border-color:var(--red);color:var(--paper);font-size:13px}
+.empty{color:var(--dim);font-size:14px;padding:4px 0;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:3px solid var(--ink)}
+.stats div{padding:8px 10px;display:grid;border-left:3px solid var(--ink)}
+.stats div:first-child{border-left:0}
+.stats b{font:400 30px/1 var(--f-num);font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--dim);font-weight:700}
+
+.days{display:flex;flex-wrap:wrap;gap:6px}
+.days button{border:2px solid var(--ink);background:var(--paper);width:42px;height:38px;font-weight:700;border-radius:0}
+.days button.on{background:var(--ink);color:var(--yellow)}
+.days.t button.on{background:var(--red);border-color:var(--red);color:var(--paper)}
+.sched{display:grid;gap:12px}
+.sched-row{display:grid;gap:6px}
+.sched-row .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sched-row .top b{font:400 20px var(--f-cn);letter-spacing:.06em}
+.sched-row input[type=time]{width:auto;font:400 20px var(--f-num);padding:4px 8px}
+
+details.ch>summary{list-style:none;cursor:pointer}
+details.ch>summary::-webkit-details-marker{display:none}
+details.ch>summary .ch-h span::after{content:" ＋"}
+details.ch[open]>summary .ch-h span::after{content:" －"}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pgrid .wide{grid-column:1/-1}
+textarea.in{resize:vertical;min-height:64px;font:inherit}
+@media (max-width:420px){.pgrid{grid-template-columns:1fr 1fr}}
+#toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--red);color:var(--paper);padding:10px 18px;font:400 18px var(--f-cn);letter-spacing:.08em;z-index:30;max-width:calc(100% - 32px);border:3px solid var(--ink)}
+footer{text-align:center;font:400 12px var(--f-num);letter-spacing:.3em;color:var(--dim);padding-block:4px 0}
+@media (max-width:380px){.hero h1{font-size:52px}.grid{grid-template-columns:1fr 1fr}.grid .f:first-child{grid-column:1/-1}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="slash" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="vol">TRAINING LOG · VOL. 1</span>
+    <h1>练功簿</h1>
+    <p class="today" id="todayLine">今天</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="ch" aria-labelledby="c1">
+    <div class="ch-h"><h2 id="c1">第一章 记录</h2><span>CHAPTER 1</span></div>
+    <div class="ch-b">
+      <div class="seg">
+        <button id="kGym" class="on" aria-pressed="true">健身</button>
+        <button id="kTen" aria-pressed="false">网球</button>
+      </div>
+      <div id="gymForm" class="ch-b" style="padding:0">
+        <label class="f"><span>动作</span><input class="in" id="name" list="names" placeholder="例如 卧推" autocomplete="off"></label>
+        <datalist id="names"></datalist>
+        <div class="grid">
+          <label class="f"><span>重量 KG</span><input class="in num" id="w" inputmode="decimal" placeholder="0"></label>
+          <label class="f"><span>次数</span><input class="in num" id="r" inputmode="numeric" placeholder="8"></label>
+          <label class="f"><span>组数</span><input class="in num" id="s" inputmode="numeric" placeholder="3"></label>
+        </div>
+        <p class="hint" id="lastHint"></p>
+      </div>
+      <div id="tenForm" class="ch-b" style="padding:0" hidden>
+        <div class="grid" style="grid-template-columns:1fr 2fr">
+          <label class="f"><span>时长 分钟</span><input class="in num" id="tmin" inputmode="numeric" placeholder="90"></label>
+          <label class="f"><span>备注</span><input class="in" id="tnote" placeholder="例如 练反手，第二发球不稳"></label>
+        </div>
+      </div>
+      <div class="row">
+        <label class="f" style="flex:1;min-width:140px"><span>日期</span><input class="in" id="date" type="date"></label>
+        <button class="btn" id="add" style="align-self:end">记下</button>
+      </div>
+      <div class="f"><span>或者一句话</span>
+        <div class="quick"><input class="in" id="quick" placeholder="深蹲 50公斤 8个 3组 / 网球 90分钟" autocomplete="off"><button class="btn alt sm" id="quickBtn">记</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ch" aria-labelledby="c2">
+    <div class="ch-h"><h2 id="c2">第二章 战绩</h2><span>CHAPTER 2</span></div>
+    <div class="ch-b">
+      <div class="stats">
+        <div><b id="stWeek">0</b><span>本周练了几天</span></div>
+        <div><b id="stMonth">0</b><span>本月练了几天</span></div>
+        <div><b id="stTen">0</b><span>本月网球小时</span></div>
+      </div>
+      <div id="history"></div>
+      <button class="btn alt sm" id="more" hidden>显示更早的记录</button>
+    </div>
+  </section>
+
+  <section class="ch" aria-labelledby="c3">
+    <div class="ch-h"><h2 id="c3">第三章 提醒</h2><span>CHAPTER 3</span></div>
+    <div class="ch-b">
+      <div class="sched">
+        <div class="sched-row">
+          <div class="top"><b>健身日</b><input class="in" type="time" id="gymTime" aria-label="健身时间"></div>
+          <div class="days" id="gymDays"></div>
+        </div>
+        <div class="sched-row">
+          <div class="top"><b>网球日</b><input class="in" type="time" id="tenTime" aria-label="网球时间"></div>
+          <div class="days t" id="tenDays"></div>
+        </div>
+      </div>
+      <p class="hint">导出后用 iPhone 或 Mac 打开这个文件，会加进系统日历，每次训练前 30 分钟提醒。改了安排就重新导出一次。</p>
+      <div class="row"><button class="btn" id="ics">导出到日历</button></div>
+    </div>
+  </section>
+
+  <details class="ch" id="profileBox">
+    <summary><div class="ch-h"><h2>第四章 档案</h2><span>PROFILE</span></div></summary>
+    <div class="ch-b">
+      <p class="hint">只在导出给 AI 时用到，填多少都行。改完自动保存。</p>
+      <div class="pgrid">
+        <label class="f"><span>性别</span><select class="in" id="p-sex" data-p="sex"><option value="">不填</option><option>男</option><option>女</option></select></label>
+        <label class="f"><span>年龄</span><input class="in" id="p-age" data-p="age" inputmode="numeric" placeholder="22"></label>
+        <label class="f"><span>身高 CM</span><input class="in" id="p-height" data-p="height" inputmode="decimal" placeholder="175"></label>
+        <label class="f"><span>体重 KG</span><input class="in" id="p-weight" data-p="weight" inputmode="decimal" placeholder="65"></label>
+        <label class="f"><span>体脂 %</span><input class="in" id="p-fat" data-p="fat" inputmode="decimal" placeholder="可不填"></label>
+        <label class="f"><span>训练经验</span><input class="in" id="p-exp" data-p="experience" placeholder="2 个月"></label>
+        <label class="f wide"><span>目标（按优先级）</span><textarea class="in" id="p-goal" data-p="goal" placeholder="例如 1. 身体健康 2. 练出薄肌 3. 提升网球能力"></textarea></label>
+        <label class="f wide"><span>网球水平</span><input class="in" id="p-tennis" data-p="tennis" placeholder="例如 NTRP 3.0，每周两次课"></label>
+        <label class="f wide"><span>伤病或不适</span><input class="in" id="p-injury" data-p="injury" placeholder="例如 右肘偶尔酸"></label>
+        <label class="f wide"><span>作息和饮食</span><input class="in" id="p-life" data-p="life" placeholder="例如 7:30 起床，23:30 睡；不太吃早饭"></label>
+        <label class="f wide"><span>其他想让 AI 知道的</span><textarea class="in" id="p-note" data-p="note" placeholder="例如 健身房只有哑铃和器械，没有杠铃"></textarea></label>
+      </div>
+    </div>
+  </details>
+
+  <section class="ch" aria-labelledby="c5">
+    <div class="ch-h"><h2 id="c5">第五章 存档</h2><span>CHAPTER 5</span></div>
+    <div class="ch-b">
+      <div class="f"><span>手机和电脑同步</span>
+        <div id="syncBox"></div>
+      </div>
+      <div class="f"><span>给 AI 看</span>
+        <p class="hint">把档案、每周安排、每个动作的进步和全部记录整理成一段文字并复制。粘贴给任何 AI，让它给反馈。</p>
+        <div class="row"><button class="btn red" id="ai">复制给 AI</button><button class="btn alt sm" id="aiFile">存成文件</button></div>
+      </div>
+      <div class="f"><span>备份</span>
+        <p class="hint">记录自动保存在这个浏览器里。清除浏览器数据会丢失，隔一阵导出一次备份。</p>
+        <div class="row">
+          <button class="btn" id="exp">导出备份</button>
+          <button class="btn alt" id="impBtn">导入备份</button>
+          <input type="file" id="imp" accept=".json,application/json" hidden>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>THE END · 明天继续</footer>
+</main>
+<div id="toast" hidden></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const keyOf=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseKey=k=>{const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+const today=()=>keyOf(new Date());
+const DOW=['日','一','二','三','四','五','六'],ORDER=[1,2,3,4,5,6,0];
+const KEY='lianggongbu';
+const OLD_GOAL='提升网球运动能力，练成薄肌';
+const DEF={entries:[],deleted:[],settingsAt:0,schedule:{gym:[1,3,5],tennis:[2,6],gymTime:'18:30',tenTime:'19:30'},profile:{experience:'2 个月',goal:'1. 身体健康，增强身体素质；2. 练出薄肌；3. 提升网球专项运动能力'}};
+
+let D=load(),kind='gym',showDays=14,pendingDel=null;
+function load(){
+  try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&Array.isArray(x.entries)){const pr={...DEF.profile,...(x.profile||{})};if(pr.goal===OLD_GOAL)pr.goal=DEF.profile.goal;return{entries:x.entries,deleted:x.deleted||[],settingsAt:x.settingsAt||0,schedule:{...DEF.schedule,...x.schedule},profile:pr}}}catch(e){}
+  return JSON.parse(JSON.stringify(DEF));
+}
+function saveLocal(){
+  try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast('保存失败：浏览器不让存数据，请导出备份')}
+}
+function save(settings){if(settings)D.settingsAt=Date.now();saveLocal();queueSync()}
+let tt;function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2400)}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* one-line parser: "卧推 60公斤 8个 3组" / "深蹲 50kg 8x3" / "网球 90分钟 练反手" */
+function parse(txt){
+  const s=txt.trim();if(!s)return null;
+  const name=(s.match(/^[^\d]+/)||[''])[0].trim();
+  const rest=s.slice(name.length);
+  if(/网球/.test(name)){
+    const m=rest.match(/(\d+(?:\.\d+)?)\s*(小时|h)?/i);let min=m?+m[1]:0;if(m&&m[2])min*=60;
+    const note=(name.replace(/网球/,'')+' '+rest.replace(/(\d+(?:\.\d+)?)\s*(分钟|分|min|小时|h)?/i,'')).trim();
+    return{kind:'tennis',min:Math.round(min)||60,note};
+  }
+  if(!name)return null;
+  let w=null,r=null,sets=null;
+  const mw=rest.match(/(\d+(?:\.\d+)?)\s*(?:kg|公斤|千克)/i);if(mw)w=+mw[1];
+  const mj=rest.match(/(\d+(?:\.\d+)?)\s*斤/);if(w===null&&mj)w=+mj[1]/2;
+  const mr=rest.match(/(\d+)\s*(?:个|次|下|reps?)/i);if(mr)r=+mr[1];
+  const ms=rest.match(/(\d+)\s*组/);if(ms)sets=+ms[1];
+  const x=rest.match(/(\d+)\s*[x×*乘]\s*(\d+)/i);
+  if(x){const a=+x[1],b=+x[2];sets??=Math.min(a,b);r??=Math.max(a,b)}
+  const used=[w,r,sets].filter(v=>v!==null);
+  const free=(rest.replace(/(\d+)\s*[x×*乘]\s*(\d+)/i,'').match(/\d+(?:\.\d+)?/g)||[]).map(Number).filter(n=>!used.includes(n));
+  if(w===null&&free.length)w=free.shift();
+  if(r===null&&free.length)r=free.shift();
+  if(sets===null&&free.length)sets=free.shift();
+  return{kind:'gym',name,w:w||0,r:r||0,sets:sets||1};
+}
+
+function addEntry(e){
+  D.entries.push({id:uid(),date:$('#date').value||today(),ts:Date.now(),...e});
+  save();render();
+}
+function lastOf(name){
+  const n=name.trim();if(!n)return null;
+  return D.entries.filter(e=>e.kind==='gym'&&e.name===n).sort((a,b)=>b.date.localeCompare(a.date)||b.ts-a.ts)[0]||null;
+}
+const fmtSet=e=>`${e.w?e.w+'kg × ':''}${e.r} × ${e.sets}组`;
+const md=k=>{const d=parseKey(k);return `${d.getMonth()+1}月${d.getDate()}日`};
+
+function render(){
+  const t=today(),dow=new Date().getDay(),sc=D.schedule;
+  const plan=sc.gym.includes(dow)&&sc.tennis.includes(dow)?'健身 + 网球':sc.gym.includes(dow)?`健身日 · ${sc.gymTime}`:sc.tennis.includes(dow)?`网球日 · ${sc.tenTime}`:'休息日';
+  const doneToday=D.entries.some(e=>e.date===t);
+  $('#todayLine').innerHTML=`${md(t)} 周${DOW[dow]} · <b>${plan}</b>${doneToday?' · 今日已记':''}`;
+
+  const names=[...new Set(D.entries.filter(e=>e.kind==='gym').sort((a,b)=>b.ts-a.ts).map(e=>e.name))];
+  $('#names').innerHTML=names.map(n=>`<option value="${esc(n)}">`).join('');
+
+  const ws=(()=>{const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));return keyOf(d)})();
+  const month=t.slice(0,7);
+  const daysSet=f=>new Set(D.entries.filter(f).map(e=>e.date)).size;
+  $('#stWeek').textContent=daysSet(e=>e.date>=ws&&e.date<=t);
+  $('#stMonth').textContent=daysSet(e=>e.date.startsWith(month));
+  const tm=D.entries.filter(e=>e.kind==='tennis'&&e.date.startsWith(month)).reduce((a,e)=>a+(+e.min||0),0);
+  $('#stTen').textContent=tm%60?(tm/60).toFixed(1):String(tm/60);
+
+  const byDay={};D.entries.forEach(e=>(byDay[e.date]||(byDay[e.date]=[])).push(e));
+  const days=Object.keys(byDay).sort().reverse();
+  $('#history').innerHTML=days.length?days.slice(0,showDays).map(k=>{
+    const d=parseKey(k),list=byDay[k].sort((a,b)=>a.ts-b.ts);
+    return `<div class="day"><div class="day-h"><b>${md(k)} 周${DOW[d.getDay()]}</b><small>${k===t?'TODAY':d.getFullYear()}</small></div>
+      ${list.map(e=>`<div class="e">
+        <span class="tag ${e.kind==='tennis'?'t':''}">${e.kind==='tennis'?'网球':'健身'}</span>
+        <span class="nm">${e.kind==='tennis'?'网球':esc(e.name)}${e.note?`<small>${esc(e.note)}</small>`:''}</span>
+        <span class="v">${e.kind==='tennis'?`${esc(e.min)} 分钟`:esc(fmtSet(e))}</span>
+        <button class="x ${pendingDel===e.id?'sure':''}" data-del="${esc(e.id)}" aria-label="删除这条">${pendingDel===e.id?'确认删除':'×'}</button>
+      </div>`).join('')}</div>`}).join('')
+    :'<p class="empty">还没有记录。在第一章写下第一组，比如「深蹲 40公斤 8个 3组」。</p>';
+  $('#more').hidden=days.length<=showDays;
+
+  const dayBtns=(arr,key)=>ORDER.map(d=>`<button class="${arr.includes(d)?'on':''}" data-day="${d}" data-key="${key}" aria-pressed="${arr.includes(d)}" aria-label="周${DOW[d]}">${DOW[d]}</button>`).join('');
+  $('#gymDays').innerHTML=dayBtns(sc.gym,'gym');
+  $('#tenDays').innerHTML=dayBtns(sc.tennis,'tennis');
+  $('#gymTime').value=sc.gymTime;$('#tenTime').value=sc.tenTime;
+  hint();
+}
+function hint(){
+  const l=lastOf($('#name').value);
+  $('#lastHint').textContent=l?`上次（${md(l.date)}）：${fmtSet(l)}`:'';
+}
+
+function setKind(k){kind=k;$('#kGym').classList.toggle('on',k==='gym');$('#kTen').classList.toggle('on',k==='tennis');$('#kGym').setAttribute('aria-pressed',k==='gym');$('#kTen').setAttribute('aria-pressed',k==='tennis');$('#gymForm').hidden=k!=='gym';$('#tenForm').hidden=k!=='tennis'}
+$('#kGym').onclick=()=>setKind('gym');$('#kTen').onclick=()=>setKind('tennis');
+$('#name').addEventListener('input',hint);
+$('#add').onclick=()=>{
+  if(kind==='gym'){
+    const name=$('#name').value.trim(),w=parseFloat($('#w').value)||0,r=parseInt($('#r').value)||0,s=parseInt($('#s').value)||1;
+    if(!name){toast('先写动作名');$('#name').focus();return}
+    if(!r){toast('写一下做了几个');$('#r').focus();return}
+    addEntry({kind:'gym',name,w,r,sets:s});
+    toast(`记下了：${name} ${fmtSet({w,r,sets:s})}`);
+  }else{
+    const min=parseInt($('#tmin').value)||0;
+    if(!min){toast('写一下打了多久');$('#tmin').focus();return}
+    addEntry({kind:'tennis',min,note:$('#tnote').value.trim()});
+    $('#tmin').value='';$('#tnote').value='';toast(`记下了：网球 ${min} 分钟`);
+  }
+};
+function quick(){
+  const p=parse($('#quick').value);
+  if(!p||(p.kind==='gym'&&!p.r)){toast('没看懂，试试「卧推 60公斤 8个 3组」');return}
+  addEntry(p);$('#quick').value='';
+  toast(p.kind==='tennis'?`记下了：网球 ${p.min} 分钟`:`记下了：${p.name} ${fmtSet(p)}`);
+}
+$('#quickBtn').onclick=quick;
+$('#quick').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();quick()}});
+['#name','#w','#r','#s','#tmin','#tnote'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#add').click()}}));
+$('#more').onclick=()=>{showDays+=14;render()};
+document.addEventListener('click',e=>{
+  const del=e.target.closest('[data-del]');
+  if(del){
+    const id=del.dataset.del;
+    if(pendingDel===id){D.entries=D.entries.filter(x=>x.id!==id);D.deleted.push(id);pendingDel=null;save();toast('已删除')}
+    else{pendingDel=id;setTimeout(()=>{if(pendingDel===id){pendingDel=null;render()}},4000)}
+    render();return;
+  }
+  const day=e.target.closest('[data-day]');
+  if(day){const arr=D.schedule[day.dataset.key],v=+day.dataset.day,i=arr.indexOf(v);i>=0?arr.splice(i,1):arr.push(v);save(true);render()}
+});
+$('#gymTime').onchange=e=>{D.schedule.gymTime=e.target.value||'18:30';save(true);render()};
+$('#tenTime').onchange=e=>{D.schedule.tenTime=e.target.value||'19:30';save(true);render()};
+
+function download(name,data,type){
+  const url=URL.createObjectURL(new Blob([data],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+$('#ics').onclick=()=>{
+  const sc=D.schedule,now=new Date(),L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//lianggongbu//CN','CALSCALE:GREGORIAN','X-WR-CALNAME:练功簿'];
+  const stamp=now.toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+  const f=x=>`${x.getFullYear()}${pad(x.getMonth()+1)}${pad(x.getDate())}T${pad(x.getHours())}${pad(x.getMinutes())}00`;
+  const ev=(d,type,time,title,dur)=>{
+    const [hh,mm]=time.split(':').map(Number);const st=new Date(now.getFullYear(),now.getMonth(),now.getDate(),hh,mm);
+    while(st.getDay()!==d||st<now)st.setDate(st.getDate()+1);
+    const en=new Date(st.getTime()+dur*60000);
+    L.push('BEGIN:VEVENT',`UID:lgb-${type}-${d}@lianggongbu`,`DTSTAMP:${stamp}`,`DTSTART:${f(st)}`,`DTEND:${f(en)}`,'RRULE:FREQ=WEEKLY',`SUMMARY:${title}`,'BEGIN:VALARM','ACTION:DISPLAY',`DESCRIPTION:${title}`,'TRIGGER:-PT30M','END:VALARM','END:VEVENT');
+  };
+  sc.gym.forEach(d=>ev(d,'gym',sc.gymTime,'健身',60));
+  sc.tennis.forEach(d=>ev(d,'tennis',sc.tenTime,'网球',90));
+  if(L.length===5){toast('先选至少一个训练日');return}
+  L.push('END:VCALENDAR');
+  download('练功簿-提醒.ics',L.join('\r\n'),'text/calendar');toast('已导出，打开文件加进日历');
+};
+$('#exp').onclick=()=>{download(`练功簿-备份-${today()}.json`,JSON.stringify(D,null,2),'application/json');toast(`已导出 ${D.entries.length} 条记录`)};
+$('#impBtn').onclick=()=>$('#imp').click();
+$('#imp').onchange=async e=>{
+  const file=e.target.files[0];if(!file)return;
+  try{
+    const x=JSON.parse(await file.text());
+    if(!x||!Array.isArray(x.entries))throw 0;
+    const have=new Set(D.entries.map(e=>e.id));let n=0;
+    x.entries.forEach(en=>{if(en&&en.id&&/^\d{4}-\d{2}-\d{2}$/.test(en.date)&&(en.kind==='gym'||en.kind==='tennis')&&!have.has(en.id)){D.entries.push(en);n++}});
+    if(x.schedule&&Array.isArray(x.schedule.gym)&&Array.isArray(x.schedule.tennis))D.schedule={...D.schedule,...x.schedule};
+    if(x.profile&&typeof x.profile==='object')D.profile={...D.profile,...x.profile};fillProfile();
+    save();render();toast(`导入了 ${n} 条新记录`);
+  }catch(err){toast('这个文件不是练功簿的备份')}
+  e.target.value='';
+};
+
+/* profile (only used for the AI export) */
+function fillProfile(){document.querySelectorAll('[data-p]').forEach(el=>{el.value=D.profile[el.dataset.p]||''})}
+document.querySelectorAll('[data-p]').forEach(el=>el.addEventListener('input',()=>{D.profile[el.dataset.p]=el.value.trim();save(true)}));
+
+/* plain-text summary for any AI */
+function aiText(){
+  const p=D.profile,sc=D.schedule,t=today();
+  const days=a=>[...a].sort((x,y)=>ORDER.indexOf(x)-ORDER.indexOf(y)).map(d=>'周'+DOW[d]).join('、')||'无';
+  const ent=[...D.entries].sort((a,b)=>a.date.localeCompare(b.date)||a.ts-b.ts);
+  const L=[];
+  L.push(`# 我的训练记录（导出于 ${t}）`,'',
+    '请你作为我的私人教练（懂体能训练、增肌塑形和网球专项训练），围绕我在「目标」里写的几个目标，根据下面的信息给我反馈：哪里做得好，哪里需要改进，下周具体怎么练（具体到动作、重量、次数），饮食和作息上有什么要调整。如果信息不够，先问我。','');
+  const v=x=>x||'未填';
+  L.push('## 基本信息',`- 性别：${v(p.sex)}`,`- 年龄：${v(p.age)}`,`- 身高：${p.height?p.height+' cm':'未填'}`,`- 体重：${p.weight?p.weight+' kg':'未填'}`,`- 体脂：${p.fat?p.fat+'%':'未填'}`,
+    `- 训练经验：${v(p.experience)}`,`- 目标：${v(p.goal)}`,`- 网球水平：${v(p.tennis)}`,`- 伤病或不适：${v(p.injury)}`,`- 作息和饮食：${v(p.life)}`);
+  if(p.note)L.push(`- 其他：${p.note}`);
+  L.push('','## 每周安排',`- 健身：${days(sc.gym)}，${sc.gymTime}`,`- 网球：${days(sc.tennis)}，${sc.tenTime}`,'');
+  if(!ent.length){L.push('## 训练记录','还没有记录。');return L.join('\n')}
+  const dates=[...new Set(ent.map(e=>e.date))];
+  L.push('## 概况',`- 记录范围：${dates[0]} 到 ${dates[dates.length-1]}，共 ${dates.length} 天有训练`);
+  const wk=[];for(let i=3;i>=0;i--){const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7)-7*i);const s=keyOf(d),e=new Date(d);e.setDate(e.getDate()+6);const ek=keyOf(e);
+    wk.push(`${md(s)}起 ${new Set(ent.filter(x=>x.date>=s&&x.date<=ek).map(x=>x.date)).size} 天`)}
+  L.push(`- 最近 4 周每周训练天数：${wk.join('；')}`,'');
+  const gym=ent.filter(e=>e.kind==='gym'),names=[...new Set(gym.map(e=>e.name))];
+  if(names.length){
+    L.push('## 各动作的变化（每次训练的最好一组，按时间）');
+    names.forEach(n=>{
+      const byDate={};gym.filter(e=>e.name===n).forEach(e=>{const b=byDate[e.date];const sc=e.w*(1+e.r/30)||e.r;if(!b||sc>b.sc)byDate[e.date]={...e,sc}});
+      L.push(`- ${n}：${Object.keys(byDate).sort().map(d=>`${md(d)} ${fmtSet(byDate[d])}`).join(' → ')}`);
+    });L.push('');
+  }
+  const ten=ent.filter(e=>e.kind==='tennis');
+  if(ten.length){const tot=ten.reduce((a,e)=>a+(+e.min||0),0);L.push('## 网球',`- 共 ${ten.length} 次，合计 ${(tot/60).toFixed(1)} 小时`);
+    ten.filter(e=>e.note).forEach(e=>L.push(`- ${md(e.date)}：${e.note}`));L.push('')}
+  L.push('## 全部记录（按日期）');
+  dates.forEach(d=>{L.push(`### ${d} 周${DOW[parseKey(d).getDay()]}`);ent.filter(e=>e.date===d).forEach(e=>L.push(e.kind==='tennis'?`- 网球 ${e.min} 分钟${e.note?'，'+e.note:''}`:`- ${e.name} ${fmtSet(e)}`))});
+  return L.join('\n');
+}
+$('#ai').onclick=async()=>{
+  const txt=aiText();
+  try{await navigator.clipboard.writeText(txt);toast('已复制，去粘贴给 AI 吧')}
+  catch(e){download(`练功簿-给AI-${today()}.md`,txt,'text/markdown');toast('浏览器不让复制，已存成文件')}
+};
+$('#aiFile').onclick=()=>{download(`练功簿-给AI-${today()}.md`,aiText(),'text/markdown');toast('已存成文件')};
+
+/* sync through a secret GitHub Gist: each device keeps a token; entries merge by id, deletions are kept as tombstones, settings use last-write-wins */
+const SYNC_KEY='lianggongbu-sync',FILE='lianggongbu.json';
+let sync=(()=>{try{return JSON.parse(localStorage.getItem(SYNC_KEY)||'null')||{}}catch(e){return{}}})();
+let syncing=false,syncAgain=false,syncT,syncMsg='';
+const saveSync=()=>{try{localStorage.setItem(SYNC_KEY,JSON.stringify(sync))}catch(e){}};
+async function gh(path,opt={}){
+  const r=await fetch('https://api.github.com'+path,{...opt,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+sync.token,...(opt.body?{'Content-Type':'application/json'}:{})}});
+  if(!r.ok){throw new Error(r.status===401?'令牌无效或已过期':r.status===403?'令牌没有 gist 权限，或请求太频繁':r.status===404?'找不到同步数据':'GitHub 返回 '+r.status)}
+  return r.json();
+}
+async function findGist(){
+  for(let page=1;page<=10;page++){const list=await gh(`/gists?per_page=100&page=${page}`);const g=list.find(x=>x.files&&x.files[FILE]);if(g)return g.id;if(list.length<100)break}
+  return null;
+}
+async function pull(){
+  const g=await gh('/gists/'+sync.gistId),f=g.files&&g.files[FILE];if(!f)return null;
+  const txt=f.truncated?await (await fetch(f.raw_url)).text():f.content;
+  return JSON.parse(txt);
+}
+function merge(a,b){
+  const del=new Set([...(a.deleted||[]),...(b.deleted||[])]),map=new Map();
+  [...(b.entries||[]),...(a.entries||[])].forEach(e=>{if(e&&e.id&&!del.has(e.id))map.set(e.id,e)});
+  const n=(a.settingsAt||0)>=(b.settingsAt||0)?a:b;
+  return {entries:[...map.values()],deleted:[...del],settingsAt:Math.max(a.settingsAt||0,b.settingsAt||0),schedule:{...DEF.schedule,...n.schedule},profile:{...DEF.profile,...n.profile}};
+}
+function queueSync(){if(!sync.gistId)return;clearTimeout(syncT);syncT=setTimeout(doSync,1500)}
+async function doSync(){
+  if(!sync.token||!sync.gistId)return;
+  if(syncing){syncAgain=true;return}
+  syncing=true;syncMsg='同步中…';renderSync();
+  try{
+    const remote=await pull();
+    if(remote)D=merge(D,remote);
+    saveLocal();
+    await gh('/gists/'+sync.gistId,{method:'PATCH',body:JSON.stringify({files:{[FILE]:{content:JSON.stringify(D)}}})});
+    sync.last=Date.now();saveSync();syncMsg='';
+    render();if(!(document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.p))fillProfile();
+  }catch(e){syncMsg='同步失败：'+e.message+'。数据已存在本机，稍后会再试。'}
+  syncing=false;renderSync();
+  if(syncAgain){syncAgain=false;doSync()}
+}
+async function connect(tok){
+  sync={token:tok.trim()};syncMsg='连接中…';renderSync();
+  try{
+    let id=await findGist();
+    if(!id){const g=await gh('/gists',{method:'POST',body:JSON.stringify({description:'练功簿同步数据（自动生成，请勿手动修改）',public:false,files:{[FILE]:{content:JSON.stringify(D)}}})});id=g.id}
+    sync.gistId=id;saveSync();syncMsg='';await doSync();toast('已连接，开始同步');
+  }catch(e){sync={};saveSync();syncMsg='连接失败：'+e.message;renderSync()}
+}
+function renderSync(){
+  const box=$('#syncBox');
+  if(!sync.gistId){
+    box.innerHTML=`<p class="hint">在每台设备上填一次 GitHub 令牌，记录就会存进你 GitHub 账号里一个不公开的 Gist，手机和电脑自动同步。</p>
+      <p class="hint">1. 打开 <a href="https://github.com/settings/tokens/new?scopes=gist&description=lianggongbu" target="_blank" rel="noopener">GitHub 新建令牌页面</a>，只勾选 gist，有效期选「No expiration」，生成后复制。<br>2. 粘贴到下面，点连接。另一台设备用同一个令牌。</p>
+      <div class="quick"><input class="in" id="tok" type="password" placeholder="ghp_..." autocomplete="off"><button class="btn sm" id="tokBtn">连接</button></div>
+      ${syncMsg?`<p class="hint" style="color:var(--red)">${esc(syncMsg)}</p>`:''}`;
+    $('#tokBtn').onclick=()=>{const v=$('#tok').value;if(!v.trim()){toast('先粘贴令牌');return}connect(v)};
+  }else{
+    const t=sync.last?new Date(sync.last):null;
+    box.innerHTML=`<p class="hint">${syncMsg?esc(syncMsg):t?`已连接 · 上次同步 ${t.getMonth()+1}月${t.getDate()}日 ${pad(t.getHours())}:${pad(t.getMinutes())}`:'已连接'}</p>
+      <div class="row"><button class="btn sm" id="syncNow">立即同步</button><button class="btn alt sm" id="syncOff">在这台设备上断开</button></div>`;
+    $('#syncNow').onclick=()=>doSync();
+    $('#syncOff').onclick=()=>{sync={};saveSync();syncMsg='';renderSync();toast('已断开，本机记录还在')};
+  }
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')doSync()});
+
+fillProfile();
+renderSync();
+doSync();
+$('#date').value=today();
+render();
+</script>
+</body>
+</html>
